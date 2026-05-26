@@ -194,6 +194,24 @@ def detect_mood(body: str, *, has_lam_amr: bool) -> MoodResult:
     if len(plain) < 2:
         return res
 
+    # PATCH 2D (2026-05-26) — Form V/VI past pre-check.
+    # تَفَعَّلَ (V) and تَفَاعَلَ (VI) past forms start with تَ — which the
+    # IV-prefix check below would otherwise classify as imperfect. When the
+    # verb ENDS in an unambiguous past-2nd-person subject suffix (تُمْ /
+    # تُمَا / تُنَّ), the verb is unambiguously past, not imperfect.
+    # Targets from Quran 2:282: تَدَايَنْتُمْ, تَبَايَعْتُمْ.
+    # Coordinated with segmenter.py PATCH 2C which blocks IMPERF_PREF in
+    # the same situation; this gate ensures the L3 aspect verdict matches.
+    if (body.startswith(_IV_PREFIXES_DIAC)
+            and body[:1] == "ت"  # only تَ-initial (Form V/VI signature)
+            and any(plain.endswith(suf) for suf in ("تم", "تما", "تن"))
+            and len(plain) >= 4):  # at least تَ + 2 consonants + past suffix
+        res.aspect = "PV"
+        res.evidence.append(
+            "PATCH 2D Form V/VI past (تَ-initial + past-2p suffix تم/تما/تن)"
+        )
+        return res
+
     # IV (مُضارِع)
     if body.startswith(_IV_PREFIXES_DIAC) and len(plain) >= 3:
         res.aspect = "IV"
@@ -641,6 +659,16 @@ def evaluate_verb_form(token: str) -> VerbVerdict:
     if any(stack.body.endswith(sfx) for sfx in verb_suffixes_clear):
         is_strong = True
         strong_reasons.append(f"clear verb suffix")
+    # PATCH 2D-fixup (2026-05-26): the diacritized list above misses
+    # surface forms like تَدَايَنتُم whose final م carries no sukun in
+    # the Quran rasm. Compare against diacritic-stripped tail so the
+    # past-2p subject markers تم / تما / تن are caught regardless of
+    # sukun/shadda presence on the final letter.
+    body_plain = _strip_diac(stack.body)
+    if (mood_res.aspect == "PV"
+            and any(body_plain.endswith(s) for s in ("تم", "تما", "تن"))):
+        is_strong = True
+        strong_reasons.append("past-2p subject suffix (plain-strip match)")
 
     # هَمزَة وَصل + سُكون → CV قَطعيّ
     if mood_res.aspect == "CV":

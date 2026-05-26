@@ -850,9 +850,87 @@ def _rule_article(st: _State) -> _State:
     return st
 
 
+def _normalize_for_closed_class_lookup(s: str) -> str:
+    """Lookup-only normalization for `_is_closed_class` (PATCH 2A).
+
+    The legacy `_CLOSED_CLASS_LEXEMES` set was authored with bare alef ا
+    and yaa ي. Quranic Uthmani uses alef-wasla ٱ and alef-maksura ى at
+    the word start / end. Without this normalization, lookups fail for
+    common forms like ٱلَّذِى, ٱلَّتِى, ٱلَّذَانِ — which the user's
+    PATCH 2 acceptance explicitly targets.
+
+    Mappings (lookup only — does NOT modify the returned token):
+      ٱ (U+0671 alef-wasla)   → ا (U+0627 alef)
+      آ (U+0622 alef-madda)   → ا
+      ى (U+0649 alef-maksura) → ي (U+064A yaa)
+      أ / إ                    → ا
+    """
+    if not s:
+        return s
+    return (s.replace("ٱ", "ا")
+             .replace("آ", "ا")
+             .replace("أ", "ا")
+             .replace("إ", "ا")
+             .replace("ى", "ي"))
+
+
+# PATCH 2B (2026-05-26) — demonstrative-with-addressee compounds CSV cache.
+# ذَلِكُمْ / ذَٰلِكُمْ / تِلْكُمْ / أُولَئِكُمْ etc. are atomic units
+# (addressee marker is part of the demonstrative, not a separate POSS_PRON).
+# The legacy `_CLOSED_CLASS_LEXEMES` only contains singular ذلك / تلك;
+# this CSV fills the gap without inline data growth.
+_DEMONSTRATIVE_COMPOUNDS_CACHE: set | None = None
+
+
+def _load_demonstrative_compounds() -> set:
+    """Lazy CSV loader for demonstrative compounds (PATCH 2B).
+
+    The CSV stores plain forms using bare alef ا. The loader also adds
+    alef-wasla / hamza-alef variants so that `_strip_diacritics()` output
+    (which preserves hamza-on-alef) still matches.
+    """
+    global _DEMONSTRATIVE_COMPOUNDS_CACHE
+    if _DEMONSTRATIVE_COMPOUNDS_CACHE is not None:
+        return _DEMONSTRATIVE_COMPOUNDS_CACHE
+    import csv as _csv
+    from pathlib import Path as _Path
+    out: set = set()
+    path = (_Path(__file__).resolve().parent
+            / "data" / "contracts" / "lists" / "demonstrative_compounds.csv")
+    if path.is_file():
+        with path.open(encoding="utf-8") as f:
+            for row in _csv.DictReader(f):
+                wp = (row.get("word_plain") or "").strip()
+                if not wp:
+                    continue
+                out.add(wp)
+                # Hamza variants (CSV is bare-alef; strip may leave أ)
+                if wp.startswith("ا"):
+                    out.add("أ" + wp[1:])
+                    out.add("إ" + wp[1:])
+    _DEMONSTRATIVE_COMPOUNDS_CACHE = out
+    return out
+
+
 def _is_closed_class(text: str) -> bool:
-    """True if text (after diacritic strip) is a closed-class lexeme."""
-    return _strip_diacritics(text) in _CLOSED_CLASS_LEXEMES
+    """True if text (after diacritic strip + lookup normalization) is a
+    closed-class lexeme.
+
+    PATCH 2A (2026-05-26): added `_normalize_for_closed_class_lookup` so
+    forms like ٱلَّذِى resolve via the legacy set which stores ا/ي.
+
+    PATCH 2B (2026-05-26): consults `demonstrative_compounds.csv` so
+    ذَٰلِكُمْ / تِلْكُمْ etc. are recognized as atomic units (no
+    POSS_PRON peel of the addressee marker).
+    """
+    plain = _strip_diacritics(text)
+    plain_norm = _normalize_for_closed_class_lookup(plain)
+    if plain in _CLOSED_CLASS_LEXEMES or plain_norm in _CLOSED_CLASS_LEXEMES:
+        return True
+    compounds = _load_demonstrative_compounds()
+    if plain in compounds or plain_norm in compounds:
+        return True
+    return False
 
 
 def _rule_future_particle(st: _State) -> _State:
@@ -1068,6 +1146,15 @@ def _rule_iv_prefix(st: _State) -> _State:
     plain = _strip_diacritics(s)
     # Proper-noun denylist refusal: yaḥyā, etc.
     if plain in _NO_STRIP_PROPER_NOUNS:
+        return st
+    # PATCH 2C (2026-05-26) — past-2nd-person hard block.
+    # Words ending in تم / تما / تن (perfective 2-person subject suffixes)
+    # cannot also start with imperfect prefix تَ/يَ/نَ/أَ. Form VI past
+    # tokens like تَدَايَنتُم and تَبَايَعْتُمْ otherwise get the leading
+    # تَ wrongly peeled as IMPERF_PREF.
+    # نا / وا are NOT included (they are ambiguous past/imperfect plural).
+    _PAST_2P_UNAMBIGUOUS = ("تم", "تما", "تن")
+    if any(plain.endswith(suf) for suf in _PAST_2P_UNAMBIGUOUS):
         return st
     has_verb_ending = any(plain.endswith(m) for m in _VERB_SUBJECT_MARKERS_PLAIN)
     # Tanwin refusal: word ending in ـاً/ـٌ/ـٍ is an indefinite noun.
