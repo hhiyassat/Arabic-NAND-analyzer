@@ -337,42 +337,139 @@ def t_real_imperfect_ta_still_detected():
 
 # ── PATCH 3 — functional nouns, false-lam, dual-verb, alla ─────────
 
-def t_baynakum_currently_split_as_prep():
-    """PATCH 3 target. بَيْنَ should be functional noun, not PREP."""
+def t_baynakum_no_prep_peel():
+    """PATCH 3A verified: بَيْنَكُمْ no longer has بَيْنَ peeled as PREP."""
     r = segment("بَيْنَكُمْ")
-    pref_tags = r.prefix_tags or []
-    assert "PREP" in pref_tags, (
-        f"PATCH 3 TARGET — current output: {_describe(r)}.\n"
-        f"After PATCH 3: بَيْنَ should not be peeled as PREP."
+    assert "PREP" not in (r.prefix_tags or []), (
+        f"PATCH 3A FAILED — PREP peeled: {_describe(r)}"
     )
 
 
-def t_waliyyuhu_currently_split_as_lam_prep():
-    """PATCH 3 target. وَلِيُّهُ = وَ + وَلِيّ + هُ, not و+ل(PREP)+يُّه."""
+def t_bbaynakum_no_prep_peel():
+    """PATCH 3A verified: بَّيْنَكُمْ (with elision-shadda) — no PREP peel."""
+    r = segment("بَّيْنَكُمْ")
+    assert "PREP" not in (r.prefix_tags or []), (
+        f"PATCH 3A FAILED — PREP peeled: {_describe(r)}"
+    )
+
+
+def t_baynakum_l3_not_harf():
+    """PATCH 3E BINDING: بَيْنَكُمْ L3 must NOT be class=HARF.
+    Sandbox-skipped (RootPipeline path); runs on user machine."""
+    try:
+        from i3rab_engine.layer1 import WordClassClassifier
+        c = WordClassClassifier()
+        r = c.classify("بَيْنَكُمْ")
+    except (PermissionError, OSError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+    assert r.get("word_class") != "HARF", (
+        f"PATCH 3E BINDING FAILURE — بَيْنَكُمْ word_class={r.get('word_class')!r}, "
+        f"role={r.get('role')!r}, source={r.get('source')!r}. "
+        f"Expected ISM_MUARAB (functional locative noun) via MASAQ-HARF override."
+    )
+
+
+def t_baynakum_l3_role_not_jazm():
+    """PATCH 3 FIXUP BINDING: بَيْنَكُمْ / بَّيْنَكُمْ L3 role must NOT be
+    'اسم مجزوم'. Functional locative noun → role must be ظَرف (ظرف مكان /
+    اسم ظرف مضاف / اسم مضاف / functional_noun_idafa). Sandbox-skipped
+    (RootPipeline path); runs on user machine."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        eng = I3rabEngine()
+    except (PermissionError, OSError, ImportError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+
+    _BAD = "اسم مجزوم"
+    _ACCEPTABLE = {
+        "ظرف مكان",
+        "اسم ظرف مضاف",
+        "اسم مضاف",
+        "functional_noun_idafa",
+    }
+    for surface in ["بَيْنَكُمْ", "بَّيْنَكُمْ"]:
+        try:
+            sent = eng.analyze_sentence(surface)
+        except (PermissionError, OSError) as e:
+            print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+            return
+        # Find the matching token (single-token sentence: tokens[0])
+        assert sent.tokens, f"no tokens produced for {surface!r}"
+        tok = sent.tokens[0]
+        assert tok.role_phrase != _BAD, (
+            f"PATCH 3 FIXUP BINDING FAILURE — {surface} L3 role is "
+            f"'{_BAD}' (forbidden). class={tok.word_class!r}, "
+            f"case_id={tok.case_id!r}, source={tok.role_source!r}. "
+            f"Expected one of {_ACCEPTABLE}."
+        )
+        assert tok.role_phrase in _ACCEPTABLE, (
+            f"PATCH 3 FIXUP — {surface} L3 role={tok.role_phrase!r} not "
+            f"in accepted ظرف set {_ACCEPTABLE}. source={tok.role_source!r}."
+        )
+
+
+def t_waliyyuhu_no_lam_prep_peel():
+    """PATCH 3B verified: وَلِيُّهُۥ — no لِ(PREP) peel."""
     r = segment("وَلِيُّهُۥ")
+    # After fix: only وَ(CONJ) should be peeled, لِ stays attached to stem
+    # because residual would start with ي + shadda (false-lam-in-lexical-stem).
     pref_tags = r.prefix_tags or []
-    assert "PREP" in pref_tags, (
-        f"PATCH 3 TARGET — current output: {_describe(r)}"
+    has_lam_prep = any(
+        t == "PREP" and (f.startswith("لِ") or f.startswith("ل"))
+        for f, t in zip(r.prefixes, pref_tags)
+    )
+    assert not has_lam_prep, (
+        f"PATCH 3B FAILED — لِ peeled as PREP: {_describe(r)}"
     )
 
 
-def t_yakuna_currently_treats_na_as_possessive():
-    """PATCH 3 target. يَكُونَا = dual imperfect, نا is dual marker not POSS_PRON."""
+def t_yakuna_no_na_possessive():
+    """PATCH 3C verified: يَكُونَا — نَا stays attached (dual marker, not POSS_PRON)."""
     r = segment("يَكُونَا")
-    suf_tags = r.suffix_tags or []
-    assert "POSS_PRON" in suf_tags, (
-        f"PATCH 3 TARGET — current output: {_describe(r)}"
+    assert "POSS_PRON" not in (r.suffix_tags or []), (
+        f"PATCH 3C FAILED — POSS_PRON peeled: {_describe(r)}"
     )
 
 
-def t_alla_currently_tags_an_as_prep():
-    """PATCH 3 target. أَلَّا = أن + لا. أن is HARF_NASB, not PREP."""
+def t_alla_an_tagged_harf_nasb_not_prep():
+    """PATCH 3D verified: أَلَّا = أن (HARF_NASB) + لا. أن must NOT be PREP."""
     r = segment("أَلَّا")
-    pref_tags = r.prefix_tags or []
-    assert "PREP" in pref_tags, (
-        f"PATCH 3 TARGET — current output: {_describe(r)}.\n"
-        f"After PATCH 3: tag should be HARF_NASB, not PREP."
+    assert "PREP" not in (r.prefix_tags or []), (
+        f"PATCH 3D FAILED — أن tagged as PREP: {_describe(r)}"
     )
+    assert "HARF_NASB" in (r.prefix_tags or []), (
+        f"PATCH 3D FAILED — expected HARF_NASB tag, got: {r.prefix_tags}"
+    )
+
+
+def t_patch3_regressions_intact():
+    """PATCH 3 regression guards — other prepositions / pronouns unchanged."""
+    # Other locative-noun-prepositions still peel correctly
+    for tok in ["تَحْتَكُمْ", "فَوْقَكُمْ", "عِنْدَكُمْ"]:
+        r = segment(tok)
+        assert "PREP" in (r.prefix_tags or []), (
+            f"REGRESSION — {tok} stopped peeling: {_describe(r)}"
+        )
+    # Real prep clitics still peel
+    for tok in ["بِكِتابٍ", "لِزَيدٍ"]:
+        r = segment(tok)
+        assert "PREP" in (r.prefix_tags or []), (
+            f"REGRESSION — {tok} stopped peeling PREP: {_describe(r)}"
+        )
+    # Real نا possessive still peels (no IMPERF_PREF case)
+    for tok in ["كَتَبْنا", "رَبُّنا"]:
+        r = segment(tok)
+        assert "POSS_PRON" in (r.suffix_tags or []), (
+            f"REGRESSION — {tok} stopped peeling نا: {_describe(r)}"
+        )
+    # Other assimilations stay PREP
+    for tok in ["مِمَّا", "عَمَّن", "فِيمَا"]:
+        r = segment(tok)
+        assert "PREP" in (r.prefix_tags or []), (
+            f"REGRESSION — {tok} assimilation tag changed: {_describe(r)}"
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -462,15 +559,16 @@ ALL = [
     ("t_tabaya3tum_no_imperf_prefix", t_tabaya3tum_no_imperf_prefix),
     ("t_tabaya3tum_aspect_is_past", t_tabaya3tum_aspect_is_past),
     ("t_real_imperfect_ta_still_detected", t_real_imperfect_ta_still_detected),
-    # PATCH 3
-    ("t_baynakum_currently_split_as_prep",
-     t_baynakum_currently_split_as_prep),
-    ("t_waliyyuhu_currently_split_as_lam_prep",
-     t_waliyyuhu_currently_split_as_lam_prep),
-    ("t_yakuna_currently_treats_na_as_possessive",
-     t_yakuna_currently_treats_na_as_possessive),
-    ("t_alla_currently_tags_an_as_prep",
-     t_alla_currently_tags_an_as_prep),
+    # PATCH 3 — verification
+    ("t_baynakum_no_prep_peel", t_baynakum_no_prep_peel),
+    ("t_bbaynakum_no_prep_peel", t_bbaynakum_no_prep_peel),
+    ("t_baynakum_l3_not_harf", t_baynakum_l3_not_harf),
+    ("t_baynakum_l3_role_not_jazm", t_baynakum_l3_role_not_jazm),
+    ("t_waliyyuhu_no_lam_prep_peel", t_waliyyuhu_no_lam_prep_peel),
+    ("t_yakuna_no_na_possessive", t_yakuna_no_na_possessive),
+    ("t_alla_an_tagged_harf_nasb_not_prep",
+     t_alla_an_tagged_harf_nasb_not_prep),
+    ("t_patch3_regressions_intact", t_patch3_regressions_intact),
     ("t_target_words_are_real_from_2_282",
      t_target_words_are_real_from_2_282),
 ]
@@ -481,11 +579,16 @@ passed = sum(1 for _, ok, _ in results if ok)
 print(f"Result: {passed}/{len(results)} passed")
 print()
 print("─" * 70)
-print("PATCH 0 + 1 + 2 state (2026-05-26):")
+print("PATCH 0 + 1 + 2 + 3 state (2026-05-26):")
 print("  • PATCH 1: 5 lam-al-amr tests assert CONJ+LAM_AL_AMR+stem")
 print("  • PATCH 2A: ٱلَّذِى atomic (no DET peel)")
 print("  • PATCH 2B: ذَٰلِكُمْ atomic (demonstrative_compounds.csv)")
 print("  • PATCH 2C: تَدَايَنتُم / تَبَايَعْتُمْ — no IMPERF_PREF peel")
 print("  • PATCH 2D: تَدَايَنتُم / تَبَايَعْتُمْ — aspect=PV (past)")
-print("  • PATCH 3 characterizations: still capture current buggy state")
+print("  • PATCH 3A: بَيْنَ removed from PREP set (functional locative noun)")
+print("  • PATCH 3B: وَلِيُّهُۥ — no false-لِ peel (shadda residual guard)")
+print("  • PATCH 3C: يَكُونَا — نَا stays attached after IMPERF_PREF")
+print("  • PATCH 3D: أَلَّا — أن tagged HARF_NASB, not PREP")
+print("  • PATCH 3E: بَيْنَكُمْ L3 — MASAQ-HARF overridden to ISM_MUARAB")
+print("  • PATCH 3 FIXUP: بَيْنَكُمْ / بَّيْنَكُمْ L3 role = ظرف مكان (not اسم مجزوم)")
 print("─" * 70)

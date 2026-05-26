@@ -712,6 +712,18 @@ def _rule_prep_clitic(st: _State) -> _State:
                 if rest_chars_check[k] == ALIF:
                     allowed = False
                     break
+    # PATCH 3B (2026-05-26) — FalseLamPrefixInLexicalStem refusal.
+    # If the residual body's SECOND character is SHADDA, the لِ/بِ/كِ was
+    # part of a lexical stem with internal gemination, not a true clitic.
+    # Targets وَلِيُّهُۥ (lit. وَ + وَلِيّ + هُ): after CONJ-peel of وَ
+    # the body is لِيُّهُۥ; without this check, لِ would be peeled as PREP
+    # leaving stem يُّهُۥ which starts with ي + shadda — structurally
+    # impossible as a fresh stem (shadda must double a non-initial letter).
+    rest_chars_for_shadda = list(rest)
+    if (allowed
+            and len(rest_chars_for_shadda) >= 2
+            and rest_chars_for_shadda[1] == SHADDA):
+        allowed = False
     if allowed:
         # PREP ب/ل + noun (including hamza-initial like بِآيَاتِ، بِأَمْرٍ).
         prefix_form = "".join(chars[:i])
@@ -757,7 +769,12 @@ _MULTI_LETTER_PREPS = (
     "لدى", "لدن", "مع",
     # Locative noun-prepositions (MASAQ consistently splits these + pronoun)
     "تحت", "فوق", "قبل", "بعد", "أمام", "خلف", "وراء",
-    "عند", "بين",
+    "عند",
+    # PATCH 3A (2026-05-26) — بين removed: it is a functional locative
+    # noun (ظَرف), not a HARF JARR. Peeling it as PREP made L3 classify
+    # بَيْنَكُمْ as HARF. After this removal, the pronoun_suffix rule
+    # peels كم/هم/etc., leaving stem=بَيْنَ which the closed-class lexicon
+    # already recognizes correctly.
 )
 
 
@@ -1376,6 +1393,18 @@ def _rule_pronoun_suffix(st: _State) -> _State:
         one_letter_threshold = 2 if has_shadda_assim else 3
         if n_letters == 1 and _count_letters(s) - n_letters < one_letter_threshold:
             continue
+        # PATCH 3C (2026-05-26) — DualVerbSuffixContract.
+        # Refuse peeling نَا as POSS_PRON when:
+        #   (a) IMPERF_PREF was already peeled (we're inside an imperfect verb),
+        #   (b) the residual stem would have < 3 letters (verb body too short).
+        # Target: يَكُونَا (يَ + كُونَا). Without this guard, نَا is peeled
+        # as POSS_PRON leaving stem=كُو (2 letters, semantically invalid).
+        # نَا here is the dual subject marker (after deletion of nūn), not
+        # the 1st-pl possessive pronoun.
+        if (suf == "نا"
+                and has_iv_prefix
+                and _count_letters(s) - n_letters < 3):
+            continue
         # Refuse 1-letter pronoun strip when the last consonant has shadda
         # AND the word ends in a case-marker damma/kasra (النَّبِيُّ).
         if n_letters == 1 and _inflection_shadda:
@@ -1827,11 +1856,22 @@ def segment(text: str, *, normalize_input: bool = True) -> SegmentationResult:
     if assim is not None:
         if len(assim) == 2:
             seg1, seg2 = assim
+            # PATCH 3D (2026-05-26) — AllaCompoundContract.
+            # Per-entry tag map: most 2-segment assimilations are PREP+stem
+            # (e.g., مما = مِن + ما where مِن is HARF_JARR), but أَلَّا
+            # is أَن + لا where أَن is HARF_NASB (subjunctive particle),
+            # NOT a preposition. Tag accordingly.
+            _ASSIM_FIRST_SEG_TAG = {
+                "ألا": "HARF_NASB",  # أَن + لا (subjunctive negation)
+                # All other entries default to PREP (existing behavior)
+            }
+            plain_for_tag = _strip_diacritics(norm)
+            first_tag = _ASSIM_FIRST_SEG_TAG.get(plain_for_tag, "PREP")
             return SegmentationResult(
                 original=text, normalized=norm,
                 prefixes=[seg1], stem=seg2, suffixes=[],
-                prefix_tags=["PREP"], suffix_tags=[],
-                audit=[f"assimilation:{seg1}+{seg2}"],
+                prefix_tags=[first_tag], suffix_tags=[],
+                audit=[f"assimilation:{seg1}+{seg2}:{first_tag}"],
             )
         elif len(assim) == 3:
             seg1, seg2, seg3 = assim
@@ -1958,6 +1998,14 @@ def _rule_pronoun_suffix_multi_only(st: _State) -> None:
             continue
         n_letters = len(suf)
         if _count_letters(s) - n_letters < _MIN_STEM_LETTERS:
+            continue
+        # PATCH 3C (2026-05-26) — DualVerbSuffixContract (phase-2 mirror).
+        # Same guard as in _rule_pronoun_suffix: don't peel نَا as POSS_PRON
+        # when IMPERF_PREF was peeled and residual would be < 3 letters.
+        # يَكُونَا (dual jussive) keeps نَا attached as dual marker.
+        if (suf == "نا"
+                and has_iv_prefix
+                and _count_letters(s) - n_letters < 3):
             continue
         stem, suffix = _split_at_letter_index_from_end(s, n_letters)
         st.body = stem

@@ -51,6 +51,45 @@ def _strip_diac(s: str) -> str:
     return "".join(c for c in (s or "") if c not in DIACRITICS)
 
 
+# PATCH 3 FIXUP (2026-05-26) — FunctionalNounIdafaContract (L3 side).
+# Functional locative/temporal nouns (بَيْنَ، عِندَ، تَحْتَ، فَوْقَ، قَبْلَ،
+# بَعْدَ، ...) are ظُروف — they take case mechanically but their syntactic
+# role is ظَرف (adverbial), NOT the generic case-based fallback "اسم مجزوم"
+# / "اسم منصوب". They almost always head an إِضافَة (بَيْنَكُمْ = بَيْنَ
+# مُضاف + كُمْ مُضاف إِليه). Override the role at L3 to ظَرف مكان (kept as
+# a Certificate) so downstream readers see a linguistically valid role
+# instead of a case-only fallback.
+def _load_functional_locative_stems() -> set:
+    """Plain-text stems of locative/temporal functional nouns.
+    Source: data/contracts/lists/functional_nouns_lexicon.csv. Compare
+    by stripping diacritics (incl. shadda) so بَيْنَ and بَّيْنَ both match.
+    """
+    here = _Path(__file__).resolve().parent.parent
+    path = here / "data" / "contracts" / "lists" / "functional_nouns_lexicon.csv"
+    s: set = set()
+    if not path.is_file():
+        return s
+    import csv as _csv
+    with path.open(encoding="utf-8") as f:
+        for row in _csv.DictReader(f):
+            surf = (row.get("surface") or "").strip()
+            if surf:
+                s.add(_strip_diac(surf))
+    return s
+
+
+_FUNCTIONAL_LOCATIVE_STEMS = _load_functional_locative_stems()
+
+
+def _is_functional_locative_noun(t) -> bool:
+    """True if the token's stem (diacritic-stripped) is a functional
+    locative/temporal noun like بَيْنَ، عِندَ، تَحْتَ، فَوْقَ، قَبْلَ، بَعْدَ.
+    Stems are matched after stripping diacritics so the shadda-elision
+    form بَّيْنَ matches بَيْنَ."""
+    stem = getattr(t, "stem", "") or t.token or ""
+    return _strip_diac(stem) in _FUNCTIONAL_LOCATIVE_STEMS
+
+
 class RoleClassifier:
     """Assign role per token via RoleRulesContract (data-driven)."""
 
@@ -166,6 +205,21 @@ class RoleClassifier:
     def _assign_ism_role(self, t, i: int, tokens, ctx) -> None:
         """Assign role for ISM via RoleRulesContract (data-driven)."""
         prev = tokens[i - 1] if i > 0 else None
+
+        # PATCH 3 FIXUP (2026-05-26) — FunctionalNounIdafaContract.
+        # Fires BEFORE the case-based RoleRulesContract because functional
+        # locative nouns (بَيْنَ، عِندَ، تَحْتَ، ...) must NOT receive the
+        # generic case-only fallback "اسم مجزوم" / "اسم منصوب". They are
+        # ظُروف whose role is ظَرف مَكان مُضاف (adverbial, head of إِضافَة).
+        if _is_functional_locative_noun(t):
+            self._set_role(
+                t,
+                phrase="ظرف مكان",
+                source="functional_noun_locative",
+                kind="Certificate",
+                contract="FunctionalNounIdafaContract:locative",
+            )
+            return
 
         # New path: delegate to RoleRulesContract if available
         if self._role_rules is not None:

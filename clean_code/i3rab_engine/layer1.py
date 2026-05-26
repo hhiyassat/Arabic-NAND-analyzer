@@ -403,7 +403,28 @@ class WordClassClassifier:
             from master_token_lookup import lookup as _mtl_lookup
             _ml = _mtl_lookup(token)
             if _ml and _ml.get("word_class") and _ml["word_class"] != "UNKNOWN":
-                result["word_class"] = _ml["word_class"]
+                # PATCH 3E (2026-05-26) — FunctionalNounIdafaContract.
+                # MASAQ is internally inconsistent for ظُروف + pronoun
+                # forms: it tags بَيْنَكُمْ as word_class=HARF but role=
+                # ADV_PLCE (adverb-of-place — a NOUN function). Treating
+                # word_class as HARF makes L3 say class=HARF which is
+                # linguistically false (ظَرف is an ism, not a particle).
+                # When MASAQ says HARF + locative-noun role, override
+                # word_class to ISM_MUARAB. Keep MASAQ's role/case for
+                # downstream layers.
+                _LOCATIVE_NOUN_ROLES = {
+                    "ADV_PLCE",      # adverb of place (ظَرف مَكان)
+                    "ADV_TIME",      # adverb of time (ظَرف زَمان)
+                }
+                _ml_word_class = _ml["word_class"]
+                _ml_role = _ml.get("role", "")
+                if _ml_word_class == "HARF" and _ml_role in _LOCATIVE_NOUN_ROLES:
+                    _ml_word_class = "ISM_MUARAB"
+                    result.setdefault("proof_blockers", []).append(
+                        f"masaq_harf_overridden_to_ism: role={_ml_role} "
+                        f"(ظَرف is a noun, not a particle)"
+                    )
+                result["word_class"] = _ml_word_class
                 result["source"] = _ml["source"]
                 if _ml.get("root"):
                     result["root"] = _ml["root"]
