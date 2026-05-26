@@ -1,9 +1,0 @@
-rule_id,family,wazn_shape,expansion_kind,note
-RE_DOUBLED_001,doubled,2_placeholder,duplicate_second_radical,رَدَّ → ر د د (تَضْعيف العين-اللام في الوزن ذي علامتي ف-ع)
-RE_DOUBLED_002,doubled,2_placeholder_with_shadda,duplicate_via_shadda,فَعَّ → ف ع ع (الشَّدّة على الأخير)
-RE_HOLLOW_001,hollow,fal_pattern,insert_waw,قَال → ق و ل (الألف في فَال إنّما عن واو أو ياء)
-RE_HOLLOW_002,hollow,faal_pattern,inverse_alif_to_waw,قَالُوا → ق و ل (مع و الجماعة)
-RE_DEFECTIVE_001,defective,faaa_ending,trailing_ya,يَخْشَى → خ ش ي (الناقص اليائي)
-RE_DEFECTIVE_002,defective,faaa_ending,trailing_waw,دَعَا → د ع و (الناقص الواوي)
-RE_DEFECTIVE_003,defective,faiia_ending,trailing_ya,لَقِيَ → ل ق ي
-RE_ASSIMILATED_001,assimilated,wfl_pattern,initial_waw,وَجَد → و ج د (المثال الواوي)

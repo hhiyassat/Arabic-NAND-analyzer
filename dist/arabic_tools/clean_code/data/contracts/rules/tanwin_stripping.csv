@@ -1,6 +1,0 @@
-suffix,strip_chars,kind,note
-ًا,2,tanwin_fath_tanwin_first,تنوين الفتح + ألف (تنوين أوّلًا)
-اً,2,tanwin_fath_alif_first,تنوين الفتح + ألف (ألف أوّلًا)
-ً,1,tanwin_fath,تنوين الفتح بلا ألف (مع ة أو همزة)
-ٌ,1,tanwin_damm,تنوين الضم
-ٍ,1,tanwin_kasr,تنوين الكسر
