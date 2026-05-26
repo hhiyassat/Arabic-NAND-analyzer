@@ -410,6 +410,34 @@ def t_baynakum_l3_role_not_jazm():
         )
 
 
+def t_bikulli_not_locative_zarf():
+    """PATCH 4.5 BINDING: بِكُلِّ must NOT receive role=ظرف مكان.
+    كُلّ is in functional_nouns_lexicon.csv as category=quantifier, NOT
+    locative — so the L3 ظَرف-مَكان override (added in PATCH 3 FIXUP)
+    must not fire for it. Sandbox-skipped (RootPipeline path); runs on
+    user machine. Acceptable roles: مضاف إليه مجرور / اسم مجرور / any
+    case-based role, but specifically NOT ظَرف."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        eng = I3rabEngine()
+    except (PermissionError, OSError, ImportError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+    try:
+        sent = eng.analyze_sentence("بِكُلِّ شَىْءٍ عَلِيمٌ")
+    except (PermissionError, OSError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+    # Find the بِكُلِّ token (it is the first token)
+    assert sent.tokens, "no tokens produced"
+    tok = sent.tokens[0]
+    assert "ظرف" not in tok.role_phrase, (
+        f"PATCH 4.5 FAILURE — بِكُلِّ L3 role={tok.role_phrase!r} contains "
+        f"'ظرف'. كُلّ is a quantifier, not a locative ظَرف. "
+        f"source={tok.role_source!r}, class={tok.word_class!r}."
+    )
+
+
 def t_waliyyuhu_no_lam_prep_peel():
     """PATCH 3B verified: وَلِيُّهُۥ — no لِ(PREP) peel."""
     r = segment("وَلِيُّهُۥ")
@@ -702,6 +730,7 @@ ALL = [
     ("t_bbaynakum_no_prep_peel", t_bbaynakum_no_prep_peel),
     ("t_baynakum_l3_not_harf", t_baynakum_l3_not_harf),
     ("t_baynakum_l3_role_not_jazm", t_baynakum_l3_role_not_jazm),
+    ("t_bikulli_not_locative_zarf", t_bikulli_not_locative_zarf),
     ("t_waliyyuhu_no_lam_prep_peel", t_waliyyuhu_no_lam_prep_peel),
     ("t_yakuna_no_na_possessive", t_yakuna_no_na_possessive),
     ("t_alla_an_tagged_harf_nasb_not_prep",
@@ -749,4 +778,5 @@ print("  • PATCH 3D: أَلَّا — أن tagged HARF_NASB, not PREP")
 print("  • PATCH 3E: بَيْنَكُمْ L3 — MASAQ-HARF overridden to ISM_MUARAB")
 print("  • PATCH 3 FIXUP: بَيْنَكُمْ / بَّيْنَكُمْ L3 role = ظرف مكان (not اسم مجزوم)")
 print("  • PATCH 4: KB.SAM gated by L1 prefix/suffix tags (no overmatch)")
+print("  • PATCH 4.5: L3 ظَرف-مَكان override restricted to category=locative (fix بِكُلِّ regression)")
 print("─" * 70)

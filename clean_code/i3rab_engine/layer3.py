@@ -60,9 +60,16 @@ def _strip_diac(s: str) -> str:
 # a Certificate) so downstream readers see a linguistically valid role
 # instead of a case-only fallback.
 def _load_functional_locative_stems() -> set:
-    """Plain-text stems of locative/temporal functional nouns.
-    Source: data/contracts/lists/functional_nouns_lexicon.csv. Compare
-    by stripping diacritics (incl. shadda) so بَيْنَ and بَّيْنَ both match.
+    """Plain-text stems of LOCATIVE functional nouns only.
+    Source: data/contracts/lists/functional_nouns_lexicon.csv,
+    filtered to rows with category="locative".
+
+    PATCH 4.5 (2026-05-26): the lexicon also contains non-locative
+    categories (quantifier, exception, interrog, similitive, time-adv).
+    The L3 ظَرف-مَكان override must NOT fire for those — e.g. كُلَّ
+    (category=quantifier) was incorrectly getting role=ظرف مكان when
+    appearing in بِكُلِّ. Restrict to category=locative; other categories
+    fall back to the normal RoleRulesContract path.
     """
     here = _Path(__file__).resolve().parent.parent
     path = here / "data" / "contracts" / "lists" / "functional_nouns_lexicon.csv"
@@ -72,6 +79,9 @@ def _load_functional_locative_stems() -> set:
     import csv as _csv
     with path.open(encoding="utf-8") as f:
         for row in _csv.DictReader(f):
+            category = (row.get("category") or "").strip().lower()
+            if category != "locative":
+                continue
             surf = (row.get("surface") or "").strip()
             if surf:
                 s.add(_strip_diac(surf))
@@ -82,10 +92,11 @@ _FUNCTIONAL_LOCATIVE_STEMS = _load_functional_locative_stems()
 
 
 def _is_functional_locative_noun(t) -> bool:
-    """True if the token's stem (diacritic-stripped) is a functional
-    locative/temporal noun like بَيْنَ، عِندَ، تَحْتَ، فَوْقَ، قَبْلَ، بَعْدَ.
-    Stems are matched after stripping diacritics so the shadda-elision
-    form بَّيْنَ matches بَيْنَ."""
+    """True if the token's stem (diacritic-stripped) is a LOCATIVE
+    functional noun like بَيْنَ، عِندَ، تَحْتَ، فَوْقَ. Stems are matched
+    after stripping diacritics so the shadda-elision form بَّيْنَ matches
+    بَيْنَ. Non-locative entries (quantifier, exception, etc.) are
+    excluded by category — see PATCH 4.5."""
     stem = getattr(t, "stem", "") or t.token or ""
     return _strip_diac(stem) in _FUNCTIONAL_LOCATIVE_STEMS
 
