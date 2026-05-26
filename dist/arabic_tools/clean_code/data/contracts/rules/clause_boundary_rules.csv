@@ -1,0 +1,11 @@
+priority,name,kind,marker,action,creates_clause_type,note
+1,explicit_period,punctuation,.,split_after,main,نقطة — نهاية جملة قاطعة
+2,explicit_question,punctuation,?,split_after,main,علامة استفهام
+3,explicit_question_ar,punctuation,؟,split_after,main,علامة استفهام عربية
+4,explicit_exclaim,punctuation,!,split_after,main,علامة تعجّب
+5,arabic_semicolon,punctuation,؛,split_after,main,فاصلة منقوطة عربية
+6,arabic_comma,punctuation,،,soft_split,coordinate,فاصلة عربية — قد تكون فاصلة بين جمل
+7,latin_comma,punctuation,",",soft_split,coordinate,فاصلة لاتينية
+8,colon_ar,punctuation,:,split_after,explanatory,نقطتان — تَبدأ جملة تَفسيريّة أو مَقول قَول
+9,colon_latin,punctuation,:,split_after,explanatory,نقطتان لاتينية
+10,newline_double,whitespace,\n\n,split_after,main,سطر فارغ — فاصل فقرة

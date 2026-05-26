@@ -1,0 +1,57 @@
+{
+  "project": "Quranic Tafsir Text Sources",
+  "description": "ملف موحّد للمصادر النصية الثلاثة: الكشاف، تفسير أبي السعود، والتحرير والتنوير لابن عاشور.",
+  "sources": [
+    {
+      "source_id": "kashaf",
+      "book_ar": "الكشاف عن حقائق غوامض التنزيل وعيون الأقاويل في وجوه التأويل",
+      "short_name_ar": "الكشاف",
+      "author_ar": "أبو القاسم محمود بن عمرو بن أحمد الزمخشري",
+      "shamela_url": "https://shamela.ws/book/23627",
+      "raw_dir": "data/raw/tafsir/kashaf/",
+      "processed_dir": "data/processed/tafsir/kashaf/",
+      "role_in_project_ar": "مصدر بلاغي/نحوي/تفسيري قوي لاستخراج وجوه الإعراب، البلاغة، الإحالة، والأسئلة الجوابية مثل: فإن قلت / قلت."
+    },
+    {
+      "source_id": "abu_alsuud",
+      "book_ar": "إرشاد العقل السليم إلى مزايا الكتاب الكريم",
+      "short_name_ar": "تفسير أبي السعود",
+      "author_ar": "أبو السعود العمادي محمد بن محمد بن مصطفى",
+      "shamela_url": "https://shamela.ws/book/1429",
+      "raw_dir": "data/raw/tafsir/abu_alsuud/",
+      "processed_dir": "data/processed/tafsir/abu_alsuud/",
+      "role_in_project_ar": "مصدر بلاغي تفسيري مختصر ودقيق للمقارنة مع الكشاف واستخراج المعاني السياقية والبلاغية."
+    },
+    {
+      "source_id": "ibn_ashur",
+      "book_ar": "التحرير والتنوير: تحرير المعنى السديد وتنوير العقل الجديد من تفسير الكتاب المجيد",
+      "short_name_ar": "التحرير والتنوير",
+      "author_ar": "محمد الطاهر ابن عاشور",
+      "shamela_url": "https://shamela.ws/book/9776",
+      "raw_dir": "data/raw/tafsir/ibn_ashur/",
+      "processed_dir": "data/processed/tafsir/ibn_ashur/",
+      "role_in_project_ar": "مصدر تحليلي لغوي مقاصدي واسع لاستخراج المعاني، السياق، المقاصد، الفروق التعبيرية، والربط العام للآيات."
+    }
+  ],
+  "unified_output_schema": {
+    "source_id": "kashaf | abu_alsuud | ibn_ashur",
+    "book": "اسم الكتاب",
+    "author": "اسم المؤلف",
+    "surah": "رقم السورة",
+    "ayah": "رقم الآية",
+    "section_id": "SOURCE_XXX_YYY",
+    "raw_text": "النص الخام",
+    "clean_text": "النص المنظف",
+    "claims": [],
+    "confidence": 0.95,
+    "needs_review": false
+  },
+  "pipeline_outputs_per_source": [
+    "raw_pages.jsonl",
+    "clean_sections.jsonl",
+    "ayah_index.jsonl",
+    "tafsir_claims.jsonl",
+    "meaning_cards.jsonl",
+    "extraction_report.md"
+  ]
+}

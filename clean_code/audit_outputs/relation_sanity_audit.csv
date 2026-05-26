@@ -1,0 +1,9 @@
+metric,value,note
+total_sweep_records,6494,from sweep_v*.jsonl
+ayahs_with_event_mismatch,2564,vs MASAQ verbs
+event_over_generation,1033,
+event_under_generation,1531,
+tokens_from_MASAQ_certificate,61637,
+tokens_from_registry_certificate,8901,
+tokens_from_registry_hypothesis,4288,should NOT issue Event/relation Certificate
+tokens_from_heuristics,4,

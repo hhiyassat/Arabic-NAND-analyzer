@@ -1,0 +1,194 @@
+canonical_plain,canonical_vocalized,count,is_foreign,glosses,surface_variants,category
+الله,اللَّهِ,2538,False,(against)-allah | (but)-allah | (by)-allah,اللهِ / اللَّهَ / اللَّهُ / اللَّهِ / بِاللَّهِ,divine_name
+العزيز,الْعَزِيزُ,64,False,(are)-the-all-mighty | (is)-the-all-mighty | (of)-aziz,الْعَزِيزُ / الْعَزِيزِ,divine_name
+الرحمن,الرَّحْمَنِ,48,False,(is)-the-most-gracious | (is)-the-most-gracious; | (of)-the-most-gracious,الرَّحْمَنَ / الرَّحْمَنُ / الرَّحْمَنِ / بِالرَّحْمَنِ,divine_name
+الحكيم,الْحَكِيمُ,40,False,(is)-the-all-wise | [the]-wise | all-wise,الْحَكِيمُ / الْحَكِيمِ,divine_name
+الرحيم,الرَّحِيمُ,34,False,(is)-the-most-merciful | the-most-merciful,الرَّحِيمُ / الرَّحِيمِ,divine_name
+العليم,الْعَلِيمُ,32,False,(are)-the-all-knowing | (is)-the-all-knower | all-knower,الْعَلِيمُ / الْعَلِيمِ,divine_name
+السميع,السَّمِيعُ,19,False,(are)-the-all-hearing | (is)-all-hearer | (is)-all-hearing,السَّمِيعُ,divine_name
+الغفور,الْغَفُورُ,11,False,(is)-the-most-forgiving | (is)-the-oft-forgiving | the-oft-forgiving,الْغَفُورُ,divine_name
+الحميد,الْحَمِيدُ,10,False,(of)-the-praiseworthy | the-praiseworthy,الْحَمِيدُ / الْحَمِيدِ,divine_name
+الغني,الْغَنِيُّ,8,False,(is)-free-of-need | (is)-the-self-sufficient,الْغَنِيُّ,divine_name
+العظيم,الْعَظِيمِ,7,False,the-great | the-most-great,الْعَظِيمُ / الْعَظِيمِ,divine_name
+التواب,التَّوَّابُ,6,False,(is)-the-acceptor-of-repentance | (is)-the-oft-returning-(to-mercy) | (is)-the-returning,التَّوَّابُ,divine_name
+العلي,الْعَلِيُّ,6,False,(is)-the-most-high | the-most-high,الْعَلِيُّ / الْعَلِيِّ,divine_name
+القهار,الْقَهَّارُ,6,False,the-irresistible,الْقَهَّارُ / الْقَهَّارِ,divine_name
+اللهم,اللَّهُمَّ,5,False,o-allah,اللَّهُمَّ,divine_name
+البصير,الْبَصِيرُ,4,False,the-all-seer,الْبَصِيرُ,divine_name
+الحي,الْحَيُّ,4,False,(is)-the-ever-living; | the-ever-living,الْحَيُّ / الْحَيِّ,divine_name
+الملك,الْمَلِكُ,4,False,the-king | the-sovereign,الْمَلِكُ / الْمَلِكِ,divine_name
+السلام,السَّلَامِ,3,False,(of)-[the]-peace | (of)-the-peace | the-giver-of-peace,السَّلَامُ / السَّلَامِ,divine_name
+الغفار,الْغَفَّارُ,3,False,the-oft-forgiving,الْغَفَّارُ / الْغَفَّارِ,divine_name
+القيوم,الْقَيُّومُ,3,False,the-self-subsisting | the-sustainer-of-all-that-exists,الْقَيُّومُ / الْقَيُّومِ,divine_name
+الوهاب,الْوَهَّابُ,3,False,(are)-the-bestower | the-bestower,الْوَهَّابُ / الْوَهَّابِ,divine_name
+القدوس,الْقُدُّوسُ,2,False,the-holy | the-holy-one,الْقُدُّوسُ / الْقُدُّوسِ,divine_name
+الكريم,الْكَرِيمُ,2,False,the-most-noble | the-noble,الْكَرِيمُ / الْكَرِيمِ,divine_name
+اللطيف,اللَّطِيفُ,2,False,(is)-the-subtle | the-all-subtle,اللَّطِيفُ,divine_name
+البارئ,الْبَارِئُ,1,False,the-inventor,الْبَارِئُ,divine_name
+الجبار,الْجَبَّارُ,1,False,the-irresistible,الْجَبَّارُ,divine_name
+الحليم,الْحَلِيمُ,1,False,(are)-the-forbearing,الْحَلِيمُ,divine_name
+الرزاق,الرَّزَّاقُ,1,False,(is)-the-all-provider,الرَّزَّاقُ,divine_name
+الصمد,الصَّمَدُ,1,False,the-eternal-the-absolute,الصَّمَدُ,divine_name
+الظاهر,وَالظَّاهِرُ,1,False,and-the-apparent,وَالظَّاهِرُ,divine_name
+الفتاح,الْفَتَّاحُ,1,False,(is)-the-judge,الْفَتَّاحُ,divine_name
+المؤمن,الْمُؤْمِنُ,1,False,the-giver-of-security,الْمُؤْمِنُ,divine_name
+المهيمن,الْمُهَيْمِنُ,1,False,the-guardian,الْمُهَيْمِنُ,divine_name
+مالك,يَامَالِكُ,1,False,o-malik,يَامَالِكُ,divine_name
+رعون,فِرْعَوْنَ,67,True,(of)-firaun | (of)-people-of-firaun | (the)-command-of-firaun,فِرْعَوْنَ / فِرْعَوْنُ / يَافِرْعَوْنُ,foreign_proper
+مريم,مَرْيَمَ,34,True,(of)-maryam | and-maryam | maryam,مَرْيَمَ / وَمَرْيَمَ / يَامَرْيَمُ,foreign_proper
+التوراة,التَّوْرَاةِ,18,True,(by)-the-taurat | (with)-the-taurat | and-the-taurat,التَّوْرَاةَ / التَّوْرَاةُ / التَّوْرَاةِ / بِالتَّوْرَاةِ / وَالتَّوْرَاةَ,foreign_proper
+الإنجيل,وَالْإِنْجِيلَ,12,True,(of)-the-injeel | and-the-injeel | and-the-injeel;,الْإِنْجِيلَ / الْإِنْجِيلِ / وَالْإِنْجِيلَ / وَالْإِنْجِيلُ / وَالْإِنْجِيلِ,foreign_proper
+إبليس,إِبْلِيسَ,11,True,(of)-iblis | iblees | iblis,إِبْلِيسَ / إِبْلِيسُ / يَاإِبْلِيسُ,foreign_proper
+نوحا,نُوحَاً,10,True,and-nuh | nuh,نُوحَاً / وَنُوحَاً,foreign_proper
+لوطا,وَلُوطَاً,6,True,and-(to)-lut | and-lut,وَلُوطَاً,foreign_proper
+هودا,هُودَاً,6,True,(a)-jew[s] | hud | jews,هُودَاً,foreign_proper
+عادا,عَادَاً,4,True,aad | and-aad | and-ad,عَادَاً / وَعَادَاً,foreign_proper
+جالوت,بِجَالُوتَ,3,True,against-jalut | jalut | to-(face)-jalut,بِجَالُوتَ / جَالُوتَ / لِجَالُوتَ,foreign_proper
+جبريل,لِجِبْرِيلَ,3,True,and-jibreel | to-jibreel,لِجِبْرِيلَ / وَجِبْرِيلَ / وَجِبْرِيلُ,foreign_proper
+إلياس,وَإِلْيَاسَ,2,True,and-ilyas | ilyas,إِلْيَاسَ / وَإِلْيَاسَ,foreign_proper
+الفردوس,الْفِرْدَوْسِ,2,True,(of)-the-paradise | the-paradise,الْفِرْدَوْسَ / الْفِرْدَوْسِ,foreign_proper
+اليسع,وَالْيَسَعَ,2,True,and-al-yasa | and-al-yasaa,وَالْيَسَعَ,foreign_proper
+طالوت,طَالُوتَ,2,True,talut,طَالُوتَ / طَالُوتُ,foreign_proper
+لسليمان,وَلِسُلَيْمَانَ,2,True,and-to-sulaiman,وَلِسُلَيْمَانَ,foreign_proper
+مأجوج,وَمَأْجُوجَ,2,True,and-majuj,وَمَأْجُوجَ / وَمَأْجُوجُ,foreign_proper
+يأجوج,يَأْجُوجَ,2,True,(for)-the-yajuj | yajuj,يَأْجُوجَ / يَأْجُوجُ,foreign_proper
+آزر,آزَرَ,1,True,aazar,آزَرَ,foreign_proper
+الأخدود,الْأُخْدُودِ,1,True,(of)-the-pit,الْأُخْدُودِ,foreign_proper
+الجودي,الْجُودِيِّ,1,True,the-judi,الْجُودِيِّ,foreign_proper
+اللات,اللَّاتَ,1,True,the,اللَّاتَ,foreign_proper
+زبر,زُبُرِ,1,True,(the)-scriptures,زُبُرِ,foreign_proper
+سامري,يَاسَامِرِيُّ,1,True,o-samiri,يَاسَامِرِيُّ,foreign_proper
+عزير,عُزَيْرٌ,1,True,uzair,عُزَيْرٌ,foreign_proper
+ماروت,وَمَارُوتَ,1,True,and-marut,وَمَارُوتَ,foreign_proper
+ميكال,وَمِيكَالَ,1,True,and-meekael,وَمِيكَالَ,foreign_proper
+هاروت,هَارُوتَ,1,True,harut,هَارُوتَ,foreign_proper
+ياسين,إِلْيَاسيْنَ,1,True,ilyas,إِلْيَاسيْنَ,foreign_proper
+يقطين,يَقْطِينٍ,1,True,gourd,يَقْطِينٍ,foreign_proper
+لله,لِلَّهِ,149,False,(are)-for-allah | (be)-to-allah | (belongs)-to-allah,فَلِلَّهِ / لِلَّهِ / وَلِلَّهِ,divine_name
+القيامة,الْقِيَامَةِ,70,False,(of)-[the]-judgment | (of)-[the]-resurrection | (of)-resurrection,الْقِيَامَةِ,other
+الحرام,الْحَرَامِ,23,False,(of)-al-masjid-al-haraam | (to)-the-sacred-house | [the]-sacred,الْحَرَامَ / الْحَرَامُ / الْحَرَامِ,other
+علي,عَلَيَّ,16,False,(is)-easy-for-me | (is)-for-me | (is)-most-high,عَلَيَّ / عَلِيٌّ,other
+عدن,عَدْنٍ,11,False,(of)-eden | (of)-eternity | (of)-everlasting-bliss,عَدْنٍ,other
+تالله,تَاللَّهِ,9,False,and-by-allah | by-allah,تَاللَّهِ / وَتَاللَّهِ,divine_name
+قرآنا,قُرْآنَاً,9,False,(as)-a-quran-in-arabic | (the)-quran | a-quran,قُرْآنَاً,other
+لرحمن,لِلرَّحْمَنِ,9,False,for-the-most-gracious | the-most-gracious | to-the-most-gracious,لِلرَّحْمَنِ,divine_name
+شعيبا,شُعَيْبَاً,7,False,shuaib,شُعَيْبَاً,other
+نصر,نَصْرُ,7,False,(the)-help | (to)-help | [will]-(the)-help,نَصْرٌ / نَصْرَ / نَصْرُ,other
+الفرقان,الْفُرْقَانَ,6,False,(of)-the-criterion | and-the-criterion | the-criterion,الْفُرْقَانَ / الْفُرْقَانِ / وَالْفُرْقَانَ / وَالْفُرْقَانِ,other
+السبت,السَّبْتِ,5,False,(of)-the-sabbath | the-(matter-of)-sabbath | the-sabbath,السَّبْتُ / السَّبْتِ,other
+القمر,الْقَمَرَ,5,False,the-moon,الْقَمَرَ / الْقَمَرُ,other
+المغرب,وَالْمَغْرِبِ,5,False,and-the-west | and-the-west;,وَالْمَغْرِبُ / وَالْمَغْرِبِ,other
+البحرين,الْبَحْرَيْنِ,4,False,(of)-the-two-seas | the-two-seas,الْبَحْرَيْنِ,other
+القدس,الْقُدُسِ,4,False,[the]-holy | the-holy-spirit | with-the-holy-spirit,الْقُدُسِ,other
+سقر,سَقَرَ,4,False,(into)-hell | (is)-hell | (of)-hell,سَقَرَ / سَقَرُ,other
+وطا,لُوطَاً,4,False,(is)-lut | (to)-lut | lut,لُوطَاً,other
+الحاقة,الْحَاقَّةُ,3,False,(is)-the-inevitable-reality | the-inevitable-reality,الْحَاقَّةُ,other
+القارعة,الْقَارِعَةُ,3,False,(is)-the-striking-calamity | the-striking-calamity,الْقَارِعَةُ,other
+القدر,الْقَدْرِ,3,False,(of)-power | (of)-power-(is),الْقَدْرِ,other
+المولى,الْمَوْلَى,3,False,(is)-the-protector | [the]-protector | protector,الْمَوْلَى,other
+عمران,عِمْرَانَ,3,False,(of)-imran,عِمْرَانَ,other
+آلله,آللَّهُ,2,False,has-allah | is-allah,آللَّهُ,other
+الآزفة,الْآزِفَةِ,2,False,the-approaching | the-approaching-day,الْآزِفَةُ / الْآزِفَةِ,other
+الجمع,الْجَمْعِ,2,False,(of)-assembly | (of)-the-assembly,الْجَمْعِ,other
+الحطمة,الْحُطَمَةِ,2,False,the-crusher | the-crusher-(is),الْحُطَمَةُ / الْحُطَمَةِ,other
+الخطاب,الْخِطَابِ,2,False,[the]-speech | speech,الْخِطَابِ,other
+الرس,الرَّسِّ,2,False,(of),الرَّسِّ,other
+الزبر,وَالزُّبُرِ,2,False,and-the-books | and-the-scriptures,وَالزُّبُرِ,other
+الزقوم,الزَّقُّومِ,2,False,(of) | (of)-,الزَّقُّومِ,other
+السامري,السَّامِرِيُّ,2,False,the-samiri,السَّامِرِيُّ,other
+القاهر,الْقَاهِرُ,2,False,(is)-the-subjugator,الْقَاهِرُ,other
+جحيم,جَحِيمٍ,2,False,(in)-hellfire | hellfire,جَحِيمٍ,other
+زبورا,زَبُورَاً,2,False,the-zaboor | zaboor,زَبُورَاً,other
+سبإ,سَبَإٍ,2,False,for-saba | saba,سَبَإٍ / لِسَبَإٍ,other
+سجين,سِجِّينٍ,2,False,(is)-sijjin | sijjin,سِجِّينٌ / سِجِّينٍ,other
+طور,طُورِ,2,False,and-(the)-mount | mount-sinai,طُورِ / وَطُورِ,other
+طوى,طُوَىً,2,False,(of) | (of)-tuwa,طُوَىً,other
+قرآنه,وَقُرْآنَهُ,2,False,and-its-recitation | its-recitation,قُرْآنَهُ / وَقُرْآنَهُ,other
+قمان,لُقْمَانَ,2,False,luqman,لُقْمَانَ / لُقْمَانُ,other
+لشمس,لِلشَّمْسِ,2,False,to-the-sun,لِلشَّمْسِ,other
+أبالله,أَبِاللَّهِ,1,False,is-it-allah,أَبِاللَّهِ,other
+أحمد,أَحْمَدُ,1,False,ahmad,أَحْمَدُ,other
+البشير,الْبَشِيرُ,1,False,the-bearer-of-glad-tidings,الْبَشِيرُ,other
+التلاق,التَّلَاقِ,1,False,(of)-the-meeting,التَّلَاقِ,other
+التناد,التَّنَادِ,1,False,(of)-calling,التَّنَادِ,other
+الجمعة,الْجُمُعَةِ,1,False,(of)-friday,الْجُمُعَةِ,other
+الحسرة,الْحَسْرَةِ,1,False,(of)-the-regret,الْحَسْرَةِ,other
+الخرطوم,الْخُرْطُومِ,1,False,the-snout,الْخُرْطُومِ,other
+الزبور,الزَّبُورِ,1,False,the-scripture,الزَّبُورِ,other
+السدرة,السِّدْرَةَ,1,False,the-lote-tree,السِّدْرَةَ,other
+السوأى,السُّوأَى,1,False,the-evil,السُّوأَى,other
+الشتاء,الشِّتَاءِ,1,False,(of)-winter,الشِّتَاءِ,other
+الشعرى,الشِّعْرَى,1,False,(of)-the,الشِّعْرَى,other
+الصاخة,الصَّاخَّةُ,1,False,the-deafening-blast,الصَّاخَّةُ,other
+الصفا,الصَّفَا,1,False,the,الصَّفَا,other
+الصيف,وَالصَّيْفِ,1,False,and-summer,وَالصَّيْفِ,other
+الطامة,الطَّامَّةُ,1,False,the-overwhelming-calamity,الطَّامَّةُ,other
+العزى,وَالْعُزَّى,1,False,and-the,وَالْعُزَّى,other
+العشاء,الْعِشَاءِ,1,False,(of)-night,الْعِشَاءِ,other
+الغاشية,الْغَاشِيَةِ,1,False,(of)-the-overwhelming,الْغَاشِيَةِ,other
+الفجر,وَالْفَجْرِ,1,False,by-the-dawn,وَالْفَجْرِ,other
+القدير,الْقَدِيرُ,1,False,the-all-powerful,الْقَدِيرُ,other
+الكوثر,الْكَوْثَرَ,1,False,al-kauthar,الْكَوْثَرَ,other
+المتعال,الْمُتَعَالِ,1,False,the-most-high,الْمُتَعَالِ,other
+المروة,وَالْمَرْوَةَ,1,False,and-the,وَالْمَرْوَةَ,other
+النون,النُّونِ,1,False,and-dhun-nun,النُّونِ,other
+الوسواس,الْوَسْوَاسِ,1,False,(of)-the-whisperer,الْوَسْوَاسِ,other
+الوعيد,الْوَعِيدِ,1,False,(of)-the-warning,الْوَعِيدِ,other
+بالزبر,وَبِالزُّبُرِ,1,False,and-with-scriptures,وَبِالزُّبُرِ,other
+تسنيم,تَسْنِيمٍ,1,False,tasneem,تَسْنِيمٍ,other
+دا,وَدَّاً,1,False,wadd,وَدَّاً,other
+رمضان,رَمَضَانَ,1,False,(of)-ramadhaan,رَمَضَانَ,other
+زيد,زَيْدٌ,1,False,zaid,زَيْدٌ,other
+سبتهم,سَبْتِهِمْ,1,False,(of)-their-sabbath,سَبْتِهِمْ,other
+سواعا,سُوَاعَاً,1,False,suwa,سُوَاعَاً,other
+شاكر,شَاكِرٌ,1,False,(is)-all-appreciative,شَاكِرٌ,other
+عرفات,عَرَفَاتٍ,1,False,(mount)-arafat,عَرَفَاتٍ,other
+عليون,عِلِّيُّونَ,1,False,(is)-illiyun,عِلِّيُّونَ,other
+لساعة,لِلسَّاعَةِ,1,False,of-the-hour,لِلسَّاعَةِ,other
+مناة,وَمَنَاةَ,1,False,and,وَمَنَاةَ,other
+نسرا,وَنَسْرَاً,1,False,and-nasr,وَنَسْرَاً,other
+يعوق,وَيَعُوقَ,1,False,and-yauq,وَيَعُوقَ,other
+يغوث,يَغُوثَ,1,False,yaguth,يَغُوثَ,other
+ثمود,وَثَمُودَ,26,True,and-thamud | thamud | the-thamud,ثَمُودَ / ثَمُودُ / لِثَمُودَ / وَثَمُودَ / وَثَمُودُ,place
+عاد,عَادٍ,20,False,(of) | (of)-aad | (the-people)-of-aad,بِعَادٍ / عَادٌ / عَادٍ / لِعَادٍ / وَعَادٌ,place
+مدين,مَدْيَنَ,10,False,(of)-madyan | madyan | with-madyan,لِمَدْيَنَ / مَدْيَنَ,place
+مصر,مِصْرَ,4,False,(of)-egypt | egypt | in-egypt,بِمِصْرَ / مِصْرَ,place
+تبع,تُبَّعٍ,2,False,(of)-tubba,تُبَّعٍ,place
+إرم,إِرَمَ,1,False,iram,إِرَمَ,place
+الأقصى,الْأَقْصَى,1,False,al-masjid-al-aqsa,الْأَقْصَى,place
+الحرم,الْحُرُمُ,1,False,the-sacred-months,الْحُرُمُ,place
+الطور,وَالطُّورِ,1,False,by-the-mount,وَالطُّورِ,place
+بابل,بِبَابِلَ,1,True,in-babylon,بِبَابِلَ,place
+بدر,بِبَدْرٍ,1,False,in-badr,بِبَدْرٍ,place
+بكة,بِبَكَّةَ,1,False,(is)-at-bakkah,بِبَكَّةَ,place
+حنين,حُنَيْنٍ,1,False,(of)-hunain,حُنَيْنٍ,place
+سيناء,سَيْنَاءَ,1,True,mount-sinai,سَيْنَاءَ,place
+مكة,مَكَّةَ,1,False,makkah,مَكَّةَ,place
+يثرب,يَثْرِبَ,1,True,(of)-yathrib,يَثْرِبَ,place
+موسى,مُوسَى,136,True,(for)-musa | (of)-musa | (of)-musa;,بِمُوسَى / لِمُوسَى / مُوسَى / وَمُوسَى / يَامُوسَى,prophet
+إبراهيم,إِبْرَاهِيمَ,69,True,(by)-ibrahim | (of)-ibrahim | (to)-ibrahim,إِبْرَاهِيمَ / إِبْرَاهِيمُ / بِإِبْرَاهِيمَ / لَإِبْرَاهِيمَ / لِإِبْرَاهِيمَ,prophet
+نوح,نُوحٍ,33,True,(of)-nuh | (the)-people-of-nuh | and-nuh-called,نُوحٌ / نُوحٍ / يَانُوحُ,prophet
+يوسف,يُوسُفَ,27,True,(of)-yusuf | [to]-yusuf | and-yusuf,بِيُوسُفَ / لَيُوسُفُ / لِيُوسُفَ / وَيُوسُفَ / يُوسُفَ,prophet
+آدم,آدَمَ,25,True,(of)-adam | (the)-children-of-adam | adam,آدَمَ / آدَمُ / لِآدَمَ / وَيَاآدَمُ / يَاآدَمُ,prophet
+عيسى,عِيسَى,25,True,(of)-isa | (was)-isa | and-isa,بِعِيسَى / عِيسَى / وَعِيسَى / يَاعِيسَى,prophet
+هارون,هَارُونَ,20,True,(of)-harun | and-harun | harun,هَارُونَ / هَارُونُ / وَهَارُونَ / يَاهَارُونُ,prophet
+إسحاق,وَإِسْحَاقَ,17,True,and-ishaq | ishaq | of-ishaq,إِسْحَاقَ / بِإِسْحَاقَ / وَإِسْحَاقَ,prophet
+لوط,لُوطٍ,17,False,(are-the)-people-of-lut | (of)-lut | lut,لُوطٌ / لُوطٍ / يَالُوطُ,prophet
+داوود,دَاوُودَ,16,True,(of)-dawood | (to)-dawood | and-dawud,دَاوُودَ / دَاوُودُ / لِدَاوُودَ / وَدَاوُودَ / يَادَاوُودُ,prophet
+يعقوب,وَيَعْقُوبَ,16,True,(of)-yaqub | and-ayyub | and-yaqub,وَيَعْقُوبَ / وَيَعْقُوبُ / يَعْقُوبَ,prophet
+سليمان,سُلَيْمَانَ,15,True,(of)-sulaiman | (to)-sulaiman | and-sulaiman,سُلَيْمَانَ / سُلَيْمَانُ / لِسُلَيْمَانَ / وَسُلَيْمَانَ,prophet
+إسماعيل,وَإِسْمَاعِيلَ,12,True,and-ismail | ismail,إِسْمَاعِيلَ / وَإِسْمَاعِيلَ / وَإِسْمَاعِيلُ,prophet
+زكريا,زَكَرِيَّا,7,True,(of)-zakariya | and-zakariya | o-zakariya,زَكَرِيَّا / وَزَكَرِيَّا / يَازَكَرِيَّا,prophet
+يحيى,يَحْيَى,6,True,(will-be)-yahya | and-yahya | live,بِيَحْيَى / وَيَحْيَى / يَايَحْيَى / يَحْيَى,prophet
+صالح,يَاصَالِحُ,5,False,and-(the)-righteous | o-salih | people-of-salih,صَالِحٌ / صَالِحٍ / وَصَالِحُ / يَاصَالِحُ,prophet
+أيوب,وَأَيُّوبَ,4,True,and-ayub | and-ayyub | ayyub,أَيُّوبَ / وَأَيُّوبَ,prophet
+شعيب,يَاشُعَيْبُ,4,False,o-shuaib | shuaib,شُعَيْبٌ / يَاشُعَيْبُ,prophet
+محمد,مُحَمَّدٌ,4,False,(is)-muhammad | muhammad,مُحَمَّدٌ / مُحَمَّدٍ,prophet
+هود,هُودٍ,4,True,(of)-hud | (the)-people-of-hud | hud,هُودٌ / هُودٍ / يَاهُودُ,prophet
+يونس,وَيُونُسَ,4,True,(of)-yunus | and-yunus | yunus,وَيُونُسَ / يُونُسَ,prophet
+إدريس,إِدْرِيسَ,2,True,and-idris | idris,إِدْرِيسَ / وَإِدْرِيسَ,prophet
+إسرائيل,إِسْرَائِيلَ,43,True,(of)-israel | (the)-children-of-israel | and-israel,إِسْرَائِيلَ / إِسْرَائِيلُ / وَإِسْرَائِيلَ,tribe_or_people
+فرعون,وَفِرْعَوْنَ,7,True,and-firaun | to-firaun,لِفِرْعَوْنَ / وَفِرْعَوْنَ / وَفِرْعَوْنُ,tribe_or_people
+هامان,وَهَامَانَ,6,True,and-haman | haman | o-haman,وَهَامَانَ / يَا هَامَانُ / يَاهَامَانُ,tribe_or_people
+قارون,وَقَارُونَ,4,True,(to)-qarun | and-qarun | qarun,قَارُونَ / قَارُونُ / وَقَارُونَ,tribe_or_people
+قريش,قُرَيْشٍ,1,False,(of-the)-quraish,قُرَيْشٍ,tribe_or_people

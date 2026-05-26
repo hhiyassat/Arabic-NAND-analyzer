@@ -1,0 +1,10 @@
+priority,prefix,kind,restore_strategy,note
+1,و,coordinating,direct_or_alif_wasl,واو العَطف
+2,ف,coordinating,direct_or_alif_wasl,فاء العَطف/الِاستئناف
+3,ل,prepositional,alif_lam_assimilation,لام الجَرّ — تُدغَم في لام ال
+4,ب,prepositional,direct_or_alif_wasl,باء الجَرّ
+5,ك,prepositional,direct_or_alif_wasl,كاف التَّشبيه
+6,ول,compound,alif_lam_assimilation,واو + لام
+7,فل,compound,alif_lam_assimilation,فاء + لام
+8,وب,compound,direct_or_alif_wasl,واو + باء
+9,فب,compound,direct_or_alif_wasl,فاء + باء

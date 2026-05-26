@@ -1,0 +1,13 @@
+priority,name,harf_plain,harf_surfaces,relation_kind,creates_relation,note
+1,in_location,في,"في، فيه، فيها، فيهم، فيهن",locative,in_location,ظَرف مَكان أَو زَمان
+2,direction_to,إلى,"إلى، إليه، إليها، إليك، إليهم",goal,direction_to,اتِّجاه أَو غاية
+3,from_source,من,"من، منه، منها، منهم، منكم",source,from_source,مَصدَر أَو ابتداء
+4,on_surface,على,"على، عليه، عليها، عليك، عليهم",locative,on_surface,سَطح أَو علاقة استعلاء
+5,about_topic,عن,"عن، عنه، عنها، عنكم، عنهم",topic,about_topic,عَن مَوضوع أَو ابتعاد
+6,with_companion,مع,"مع، معه، معها، معكم، معهم",accompaniment,with_companion,مَعَ كَ مُصاحَبَة
+7,for_benefit,ل,"له، لها، لهم، لكم، لي، لنا، لِ",benefactive,for_benefit,لِـ مِلكِيَّة أَو فائِدَة
+8,with_instrument,ب,"به، بها، بهم، بكم، بي، بنا، بِ",instrumental,with_instrument,بِـ آلَة أَو سَبَب
+9,like_simile,ك,"كه، كها، كهم، كي، كِ",manner,like_simile,كَـ تَشبيه
+10,by_oath,و,"والله",oath,by_oath,و-ال قَسَم
+11,until,حتى,"حتى",temporal,until_temporal,غاية زَمانيَّة
+12,since,منذ,"منذ، مذ",temporal,since_temporal,ابتداء زَمانيّ

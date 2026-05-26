@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>RelationGraph — inline_text</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Tahoma", Arial, sans-serif;
+         background: #fafafa; margin: 0; padding: 24px; }
+  h1 { color: #1f2937; font-size: 22px; margin: 0 0 8px; }
+  .subtitle { color: #6b7280; margin-bottom: 16px; font-size: 14px; }
+  .source { background: #fff; padding: 12px 18px; border-radius: 8px;
+             border: 1px solid #e5e7eb; margin-bottom: 16px; font-size: 18px;
+             line-height: 1.8; }
+  #graph { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+            margin-bottom: 18px; }
+  .node circle { stroke: #fff; stroke-width: 2px; cursor: pointer; }
+  .node text { fill: #111827; font-size: 13px; pointer-events: none; }
+  .link { stroke: #9ca3af; stroke-opacity: 0.7; fill: none; }
+  .link.dashed { stroke-dasharray: 4 3; stroke: #dc2626; }
+  .link-label { font-size: 11px; fill: #374151; }
+  table { border-collapse: collapse; width: 100%; background: #fff;
+           border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 16px; }
+  th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #f3f4f6; }
+  th { background: #f9fafb; color: #374151; font-weight: 600; }
+  h2 { font-size: 16px; color: #374151; margin: 18px 0 8px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; font-size: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+
+<h1>تَحليل العَلاقات (RelationGraph) — Phase C</h1>
+<div class="subtitle">المَصدَر: inline_text · العَقد: TextGraphAssembler:v1</div>
+
+<div class="source">كَتَبَ الْوَلَدُ كِتَابًا. وَقَرَأَهُ أَخُوهُ</div>
+
+<div class="legend">
+  <span><i style="background:#d97706"></i> فِعل (FIIL)</span>
+  <span><i style="background:#2563eb"></i> اسم مُعرَب</span>
+  <span><i style="background:#7c3aed"></i> اسم مَبني</span>
+  <span><i style="background:#6b7280"></i> حَرف</span>
+  <span><i style="background:#059669"></i> عَلَم</span>
+  <span><i style="background:#0891b2"></i> جامِد</span>
+  <span><i style="background:#dc2626"></i> لَفظ مُنفَرِد</span>
+</div>
+
+<svg id="graph" width="100%" height="500"></svg>
+
+<h2>الجُمَل (2)</h2>
+<table>
+  <tr><th style="width:60px">#</th><th>النَّصّ</th></tr>
+  <tr><td>0</td><td>كَتَبَ الْوَلَدُ كِتَابًا.</td></tr><tr><td>1</td><td>وَقَرَأَهُ أَخُوهُ</td></tr>
+</table>
+
+<h2>عَلاقات بَين الجُمَل (1)</h2>
+<table>
+  <tr><th>الِاسم</th><th>النَّوع</th><th>المُحَفِّز</th><th>الِاتِّجاه</th></tr>
+  <tr><td>sequence</td><td>coordinate</td><td>«و»</td><td>الجُملة 1 ← الجُملة 0</td></tr>
+</table>
+
+<h2>إِحالات الضَّمائر (2)</h2>
+<table>
+  <tr><th>الضَّمير</th><th>المُضيف</th><th>المُحَلّ</th><th>الجِنس/العَدد/الشَّخص</th></tr>
+  <tr><td>«ه»</td><td>وَقَرَأَهُ</td><td>—</td><td>M/SG/3</td></tr><tr><td>«ه»</td><td>أَخُوهُ</td><td>وَقَرَأَهُ</td><td>M/SG/3</td></tr>
+</table>
+
+<script>
+const data = {"nodes": [{"id": "c0_t0", "surface": "كَتَبَ", "root": "كتب", "wazn": "فَعَل", "word_class": "FIIL", "role_phrase": "فعل ماضٍ", "color": "#d97706", "is_singular_term": false}, {"id": "c0_t1", "surface": "الْوَلَدُ", "root": "ولد", "wazn": "فَعَل", "word_class": "ISM_MUARAB", "role_phrase": "فاعل مرفوع", "color": "#2563eb", "is_singular_term": false}, {"id": "c0_t2", "surface": "كِتَابًا.", "root": "—", "wazn": "—", "word_class": "ISM_MUARAB", "role_phrase": "مفعول به منصوب", "color": "#2563eb", "is_singular_term": false}, {"id": "c1_t0", "surface": "وَقَرَأَهُ", "root": "قرو", "wazn": "فَعَاهُ", "word_class": "ISM_MUARAB", "role_phrase": "مبتدأ مرفوع", "color": "#2563eb", "is_singular_term": false}, {"id": "c1_t1", "surface": "أَخُوهُ", "root": "خوه", "wazn": "أَفعَل", "word_class": "FIIL", "role_phrase": "فعل مضارع", "color": "#d97706", "is_singular_term": false}], "links": [{"source": "c0_t1", "target": "c0_t0", "name": "agent_of", "kind_type": "subj_pred", "operator": null, "source_of_claim": "clause[0]:role:فاعل + last_verb_idx:0 + relation_types:agent_of"}, {"source": "c0_t2", "target": "c0_t0", "name": "patient_of", "kind_type": "subj_pred", "operator": null, "source_of_claim": "clause[0]:role:مفعول_به + last_verb_idx:0 + relation_types:patient_of"}, {"source": "c1_t1", "target": "c1_t0", "name": "ضَمير «ه»", "kind_type": "pronoun_ref", "operator": null, "source_of_claim": "host:أَخُوهُ ends with clitic:«ه» (ha_third_masc_sing); referent=nearest_prior_noun_at_idx=0", "dashed": true}]};
+
+const width = document.getElementById('graph').clientWidth;
+const height = 500;
+const svg = d3.select("#graph");
+
+const sim = d3.forceSimulation(data.nodes)
+  .force("link", d3.forceLink(data.links).id(d => d.id).distance(110))
+  .force("charge", d3.forceManyBody().strength(-380))
+  .force("center", d3.forceCenter(width / 2, height / 2))
+  .force("collide", d3.forceCollide(40));
+
+// Arrow markers
+svg.append("defs").selectAll("marker")
+  .data(["end"])
+  .enter().append("marker")
+    .attr("id", "arrow")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 28)
+    .attr("refY", 0)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 8)
+    .attr("orient", "auto")
+  .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .attr("fill", "#9ca3af");
+
+const link = svg.append("g")
+  .selectAll("path")
+  .data(data.links)
+  .enter().append("path")
+    .attr("class", d => "link" + (d.dashed ? " dashed" : ""))
+    .attr("marker-end", "url(#arrow)");
+
+const linkLabel = svg.append("g")
+  .selectAll("text")
+  .data(data.links)
+  .enter().append("text")
+    .attr("class", "link-label")
+    .attr("text-anchor", "middle")
+    .text(d => d.name);
+
+const node = svg.append("g")
+  .selectAll("g")
+  .data(data.nodes)
+  .enter().append("g")
+    .attr("class", "node")
+    .call(d3.drag()
+      .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on("drag",  (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on("end",   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+node.append("circle")
+  .attr("r", 22)
+  .attr("fill", d => d.color);
+
+node.append("text")
+  .attr("dy", 4)
+  .attr("text-anchor", "middle")
+  .text(d => d.surface);
+
+node.append("title")
+  .text(d => `${d.surface}\n${d.word_class} · root=${d.root} · wazn=${d.wazn}\nرول: ${d.role_phrase}`);
+
+sim.on("tick", () => {
+  link.attr("d", d => {
+    const x1 = d.source.x, y1 = d.source.y, x2 = d.target.x, y2 = d.target.y;
+    return `M${x1},${y1} L${x2},${y2}`;
+  });
+  linkLabel
+    .attr("x", d => (d.source.x + d.target.x) / 2)
+    .attr("y", d => (d.source.y + d.target.y) / 2 - 4);
+  node.attr("transform", d => `translate(${d.x},${d.y})`);
+});
+</script>
+
+</body>
+</html>

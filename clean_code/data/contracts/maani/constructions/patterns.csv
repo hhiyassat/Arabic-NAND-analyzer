@@ -1,0 +1,3 @@
+construction_id,trigger_topic,next_word_condition,fires_meaning_id,pattern_description_ar,priority,source_part,source_page
+TAQDIM_AL_MA3MOOL_LI_IKHTISAS,PRONOUN_MUNFASIL_NASB,NOT_STARTS_WITH_WAW,TAQDIM_AL_MA3MOOL_LI_IKHTISAS,ضَمير مُنفَصِل مَنصوب «{trigger}» + فِعل «{next}»,1,4,150
+TAHZHEER_BASIC,PRONOUN_MUNFASIL_NASB,STARTS_WITH_WAW,TAHZHEER_BASIC,إِيَّا «{trigger}» + واو+اسم «{next}» (تَحذير),1,2,109

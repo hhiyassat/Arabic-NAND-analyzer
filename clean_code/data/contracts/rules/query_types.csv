@@ -1,0 +1,32 @@
+priority,trigger_word,query_type,in_scope,answer_strategy,description
+1,لِماذا,why,partial,find_explicit_cause,لماذا — يقبل لو سبب صريح فقط
+2,لماذا,why,partial,find_explicit_cause,لماذا — يقبل لو سبب صريح فقط
+3,بسبب_ماذا,why,partial,find_explicit_cause,لماذا
+4,مَتَى,when,true,find_time,زمن الحدث
+5,متى,when,true,find_time,زمن الحدث
+6,أَيْنَ,where,true,find_location,مكان الحدث
+7,اين,where,true,find_location,مكان الحدث
+8,أين,where,true,find_location,مكان الحدث
+9,كَيْفَ,how,true,find_manner,كيفية الحدث
+10,كيف,how,true,find_manner,كيفية الحدث
+11,كَم,how_many,true,find_quantity,الكمية
+12,كم,how_many,true,find_quantity,الكمية
+13,بِمَ,how_instrument,true,find_instrument,بأي أداة
+14,تفسير,interpretation,false,reject,تفسير قرآني — خارج النطاق
+15,معنى_باطن,interpretation,false,reject,معنى باطن — اجتهاد
+16,حُكم,judgment,false,reject,حكم فقهي/أخلاقي
+17,بلاغة,aesthetic,false,reject,تقييم بلاغي
+18,إعجاز,aesthetic,false,reject,تقييم الإعجاز
+19,نية,motivation,false,reject,تقدير النية الباطنة
+20,هَل,exists,true,check_existence,هل الكيان موجود
+21,هل,exists,true,check_existence,هل الكيان موجود
+22,مَن,who,true,find_agent,من فعل الفعل
+23,من,who,true,find_agent,من فعل الفعل
+24,ماذا,what,true,find_patient,ما المفعول
+25,ما,what,true,find_patient_or_predicate,ما الذي/ما هو
+26,تَسَلسُل,sequence,true,find_sequence,ماذا حدث ثم ماذا
+27,تسلسل,sequence,true,find_sequence,ماذا حدث ثم ماذا
+28,تَحَوَّلَ,transformation,true,find_transformation,التحول
+29,تحول,transformation,true,find_transformation,التحول
+30,صار_إلى,transformation,true,find_transformation,صار إلى
+

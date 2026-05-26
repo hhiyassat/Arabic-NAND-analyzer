@@ -1,0 +1,340 @@
+surface,lemma,aspect,note
+قُلْ,قال,CV,imperative — say
+قُلِ,قال,CV,imperative + kasra
+قُولُوا,قال,CV,imperative pl
+قُلْنَا,قال,PV,we said
+قَالَ,قال,PV,he said
+قَالُوا,قال,PV,they said
+قَالَتْ,قال,PV,she said
+قِيلَ,قال,PV,passive — was said
+خُذْ,أخذ,CV,imperative — take
+خُذُوهُ,أخذ,CV,take him
+كُلْ,أكل,CV,imperative — eat
+كُلُوا,أكل,CV,imperative pl
+كُلَا,أكل,CV,dual imperative
+أَكَلَ,أكل,PV,he ate
+ائْتِ,أتى,CV,imperative — come
+ٱئْتِ,أتى,CV,imperative — Quranic
+ائْتُونِي,أتى,CV,bring me
+ٱئْتِنَا,أتى,CV,come to us
+ائْتِنَا,أتى,CV,come to us
+أَتَىٰ,أتى,PV,came
+أَتَىٰهُ,أتى,PV,came to him
+جَآءَ,جاء,PV,came
+جَآءَهُمْ,جاء,PV,came to them
+جَآءَكَ,جاء,PV,came to you
+جَآءَكُمْ,جاء,PV,came to you pl
+جَآءَنَا,جاء,PV,came to us
+جَآءُوا,جاء,PV,they came
+جَآءُوكَ,جاء,PV,they came to you
+شَآءَ,شاء,PV,willed
+شَآءَ ٱللَّهُ,شاء,PV,God willed (literal)
+هَدَىٰ,هدى,PV,guided
+هَدَىٰكَ,هدى,PV,he guided you
+هَدَىٰهُ,هدى,PV,he guided him
+هَدَىٰنَا,هدى,PV,he guided us
+هَدَىٰهُمْ,هدى,PV,he guided them
+حَقَّ,حق,PV,became true (defective doubled)
+ضَلَّ,ضل,PV,went astray
+ضَلُّوا,ضل,PV,they went astray
+مَدَّ,مد,PV,extended
+مَرَّ,مر,PV,passed
+رَدَّ,رد,PV,returned
+عَدَّ,عد,PV,counted
+سَنَّ,سن,PV,prescribed
+عَزَّ,عز,PV,became mighty
+هَمَّ,هم,PV,intended
+دَلَّ,دل,PV,pointed
+كَفَّ,كف,PV,withheld
+صَدَّ,صد,PV,turned away
+رَأَىٰ,رأى,PV,saw
+رَأَيْتَ,رأى,PV,you saw
+رَأَيْتُمْ,رأى,PV,you pl saw
+رَأَيْنَا,رأى,PV,we saw
+رَأَوْا,رأى,PV,they saw
+رَءَا,رأى,PV,saw (Quranic)
+رَءَاهُ,رأى,PV,he saw it
+خَلَا,خلا,PV,passed/was empty
+بَدَا,بدا,PV,appeared
+رَمَى,رمى,PV,threw
+رَمَىٰ,رمى,PV,threw (Quranic)
+رَمَيْتَ,رمى,PV,you threw
+دَعَا,دعا,PV,called/invoked
+دَعَوْا,دعا,PV,they called
+دَعَوْتُ,دعا,PV,I called
+عَفَا,عفا,PV,pardoned
+عَفَوْنَا,عفا,PV,we pardoned
+صَفَا,صفا,PV,was pure
+نَجَا,نجا,PV,was saved
+نَجَّى,نجى,PV,saved
+نَجَّيْنَاهُمْ,نجى,PV,we saved them
+عَصَى,عصى,PV,disobeyed
+أَبَى,أبى,PV,refused
+نَهَىٰ,نهى,PV,forbade
+نَسِيَ,نسي,PV,forgot
+نَسُوا,نسي,PV,they forgot
+نَسِينَا,نسي,PV,we forgot
+بَقِيَ,بقي,PV,remained
+لَقِيَ,لقي,PV,met
+عَلَّمَ,علم,PV,taught
+عَلَّمَهُۥ,علم,PV,he taught him
+آتَى,أتى,PV,gave (form IV)
+ءَاتَىٰ,أتى,PV,gave (Quranic)
+ءَاتَيْنَا,أتى,PV,we gave
+ءَاتَيْنَاهُمْ,أتى,PV,we gave them
+آتَيْنَاكَ,أتى,PV,we gave you
+آمَنَ,أمن,PV,believed
+ءَامَنَ,أمن,PV,believed (Quranic)
+ءَامَنُوا,أمن,PV,they believed
+ءَامَنَّا,أمن,PV,we believed
+بَايَعَ,بايع,PV,pledged
+بَايَعُوكَ,بايع,PV,they pledged you
+أَرَىٰ,رأى,PV,showed (form IV)
+أَرَىٰكَ,رأى,PV,showed you
+أَرَىٰنَا,رأى,PV,showed us
+زَكَّى,زكى,PV,purified
+سَجَدُوا,سجد,PV,they prostrated
+سَجَدَ,سجد,PV,prostrated
+رَكَعَ,ركع,PV,bowed
+رَكَعُوا,ركع,PV,they bowed
+عَبَدَ,عبد,PV,worshipped
+عَبَدْتُمْ,عبد,PV,you pl worshipped
+عَبَدُوا,عبد,PV,they worshipped
+أَطَاعَ,طوع,PV,obeyed
+أَطَاعُوا,طوع,PV,they obeyed
+أَطَاعُوهُ,طوع,PV,they obeyed him
+أَمَرَ,أمر,PV,commanded
+أَمَرَكُمْ,أمر,PV,commanded you pl
+نَهَيْنَاهُمْ,نهي,PV,we forbade them
+دَخَلَ,دخل,PV,entered
+دَخَلُوا,دخل,PV,they entered
+خَرَجَ,خرج,PV,exited
+خَرَجُوا,خرج,PV,they exited
+أَخَذَ,أخذ,PV,took
+أَخَذَهُۥ,أخذ,PV,he took him
+أَخَذُوهُ,أخذ,PV,they took him
+أُخِذَ,أخذ,PV,was taken (passive)
+أَنزَلَ,نزل,PV,sent down
+أَنزَلْنَا,نزل,PV,we sent down
+نَزَلَ,نزل,PV,descended
+نَزَلَتْ,نزل,PV,descended (fem)
+أَرْسَلَ,رسل,PV,sent
+أَرْسَلْنَا,رسل,PV,we sent
+أَرْسَلْنَاكَ,رسل,PV,we sent you
+أَرْسَلْنَاهُۥ,رسل,PV,we sent him
+خَلَقَ,خلق,PV,created
+خَلَقَكُمْ,خلق,PV,he created you pl
+خَلَقَنَا,خلق,PV,he created us
+خَلَقَهُۥ,خلق,PV,he created him
+جَعَلَ,جعل,PV,made
+جَعَلْنَا,جعل,PV,we made
+جَعَلَ ٱللَّهُ,جعل,PV,God made
+وَهَبَ,وهب,PV,gave
+وَهَبَ لَهُۥ,وهب,PV,he gave him
+كَتَبَ,كتب,PV,wrote
+كَتَبَ ٱللَّهُ,كتب,PV,God wrote/decreed
+كَتَبْنَا,كتب,PV,we wrote
+سَأَلَ,سأل,PV,asked
+سَأَلَكَ,سأل,PV,he asked you
+ضَرَبَ,ضرب,PV,struck/cited (parable)
+ضَرَبَ ٱللَّهُ,ضرب,PV,God set forth
+سَمِعَ,سمع,PV,heard
+سَمِعَ ٱللَّهُ,سمع,PV,God heard
+سَمِعْنَا,سمع,PV,we heard
+سَمِعُوهُ,سمع,PV,they heard him
+عَلِمَ,علم,PV,knew
+عَلِمَ ٱللَّهُ,علم,PV,God knew
+عَلِمْتُمْ,علم,PV,you pl knew
+عَلِمْنَا,علم,PV,we knew
+وَجَدَ,وجد,PV,found
+وَجَدْنَا,وجد,PV,we found
+وَجَدُوا,وجد,PV,they found
+أَرَادَ,رود,PV,wanted
+أَرَدْنَا,رود,PV,we wanted
+أَرَادَ ٱللَّهُ,رود,PV,God wanted
+ذَكَرَ,ذكر,PV,mentioned
+ذَكَرْتُمْ,ذكر,PV,you pl mentioned
+ذَكَرُوا,ذكر,PV,they mentioned
+نَسِيَ ٱللَّهُ,نسي,PV,God forgot (rhetorical)
+رَزَقَ,رزق,PV,provided
+رَزَقْنَا,رزق,PV,we provided
+رَزَقَنَا,رزق,PV,he provided us
+رَزَقَكُمْ,رزق,PV,he provided you
+شَهِدَ,شهد,PV,witnessed
+شَهِدَ ٱللَّهُ,شهد,PV,God witnessed
+شَهِدْنَا,شهد,PV,we witnessed
+شَكَرَ,شكر,PV,thanked
+شَكَرْتُمْ,شكر,PV,you thanked
+كَفَرَ,كفر,PV,disbelieved
+كَفَرُوا,كفر,PV,they disbelieved
+كَفَرْتُمْ,كفر,PV,you pl disbelieved
+يَدْعُو,دعا,IV,calls
+يَدْعُوا,دعا,IV,calls (Quranic)
+يَأْتِي,أتى,IV,comes
+يَأْتِىٓ,أتى,IV,comes (Quranic)
+يَأْتِكُم,أتى,IV,comes to you pl
+نَأْتِي,أتى,IV,we come
+يَهْدِي,هدى,IV,guides
+يَهْدِىٓ,هدى,IV,guides (Quranic)
+يَهْدِي ٱللَّهُ,هدى,IV,God guides
+يَهْدِيكُمْ,هدى,IV,he guides you pl
+نَهْدِي,هدى,IV,we guide
+يَرَىٰ,رأى,IV,sees
+يَرَوْنَ,رأى,IV,they see
+نَرَىٰ,رأى,IV,we see
+تَرَىٰ,رأى,IV,you see
+يُحْيِ,حيي,IV,gives life
+يُحْىِ,حيي,IV,gives life (Quranic)
+يُحْيِي,حيي,IV,gives life
+يُمِيتُ,موت,IV,causes death
+يَسْتَطِيعُ,طوع,IV,is able
+يَسْتَطِيعُونَ,طوع,IV,they are able
+يَسْمَعُ,سمع,IV,hears
+يَسْمَعُونَ,سمع,IV,they hear
+يَعْلَمُ,علم,IV,knows
+يَعْلَمُونَ,علم,IV,they know
+نَعْلَمُ,علم,IV,we know
+تَعْلَمُونَ,علم,IV,you pl know
+يَخَافُونَ,خوف,IV,they fear
+يَخْشَوْنَ,خشي,IV,they fear (rev)
+يَرْجُونَ,رجو,IV,they hope
+يَدْخُلُونَ,دخل,IV,they enter
+يَخْرُجُونَ,خرج,IV,they exit
+يَأْكُلُونَ,أكل,IV,they eat
+يَشْرَبُونَ,شرب,IV,they drink
+لَيْتَ,ليت,PARTICLE,particle (already in functions)
+أُوتُوا,أتى,PV,passive — were given
+أُوتُوهُ,أتى,PV,passive + هـ
+أُوتِىَ,أتى,PV,passive — was given
+أُوتِىَ ٱلْكِتَٰبَ,أتى,PV,was given the book
+دُعِىَ,دعا,PV,passive — was called
+أُمِرْنَا,أمر,PV,passive — we were commanded
+أُمِرْتُ,أمر,PV,passive — I was commanded
+أُمِرُوا,أمر,PV,passive — they were commanded
+أُمِرَ,أمر,PV,passive — was commanded
+أُنزِلَ,نزل,PV,passive — was sent down
+أُنزِلَتْ,نزل,PV,passive feminine
+أُنزِلْنَا,نزل,PV,was sent down upon us
+خُلِقَ,خلق,PV,passive — was created
+خُلِقْنَا,خلق,PV,passive
+خُلِقَتْ,خلق,PV,passive feminine
+كُتِبَ,كتب,PV,passive — was written/decreed
+ضُرِبَ,ضرب,PV,passive — was struck
+ضُرِبَتْ,ضرب,PV,passive feminine
+قُتِلَ,قتل,PV,passive — was killed
+قُتِلُوا,قتل,PV,passive plural
+نُودِىَ,نادى,PV,passive — was called
+نُودُوا,نادى,PV,passive plural
+أُخْرِجَ,خرج,PV,passive — was expelled
+أُخْرِجُوا,خرج,PV,passive plural
+أُخِذَ,أخذ,PV,was taken
+أُخِذُوا,أخذ,PV,were taken
+رُفِعَ,رفع,PV,was raised
+رُفِعَتْ,رفع,PV,was raised feminine
+بُعِثَ,بعث,PV,was sent
+بُعِثُوا,بعث,PV,were sent
+بَعَثَ,بعث,PV,sent
+بَعَثَكُمْ,بعث,PV,he sent you pl
+بَعَثَهُۥ,بعث,PV,he sent him
+بَعَثْنَا,بعث,PV,we sent
+بَعَثْنَٰهُ,بعث,PV,we sent him
+بَعَثْنَٰهَا,بعث,PV,we sent her/it
+بَعَثْنَٰكُم,بعث,PV,we sent you pl
+بَعَثْنَٰكُمْ,بعث,PV,we sent you pl
+بَعَثَهُمْ,بعث,PV,he sent them
+ٱبْيَضَّتْ,بيض,PV,past feminine — became white
+ٱسْوَدَّتْ,سود,PV,past feminine — became black
+ٱحْمَرَّتْ,حمر,PV,past feminine — became red
+ٱخْضَرَّتْ,خضر,PV,past feminine — became green
+ٱصْفَرَّتْ,صفر,PV,past feminine — became yellow
+ٱحْمَارَّتْ,حمر,PV,past form IX
+ٱبْيَضَّ,بيض,PV,became white
+ٱسْوَدَّ,سود,PV,became black
+وَجَدَتْ,وجد,PV,she found
+وَجَدُوا,وجد,PV,they found
+وَجَدُوهُ,وجد,PV,they found him
+خَلَقَتْ,خلق,PV,she/it created
+سَمِعْتُ,سمع,PV,I heard
+سَمِعْتُمْ,سمع,PV,you pl heard
+عَلِمْتُ,علم,PV,I knew
+كُنْتُ,كان,PV,I was
+كُنْتُمْ,كان,PV,you pl were
+كُنَّا,كان,PV,we were
+كَانُوا۟,كان,PV,they were
+أَتَىٰهُمْ,أتى,PV,came to them
+أَتَوْا,أتى,PV,they came
+ضَلَّتْ,ضل,PV,she/it went astray
+هَدَىٰكُمْ,هدى,PV,he guided you pl
+رَأَوْكَ,رأى,PV,they saw you
+شَآءَهَا,شاء,PV,willed it
+شَآءَ ٱلَّذِينَ,شاء,PV,those who willed
+عَلَىٰهَا,علا,PV,rose over her
+حَقَّتْ,حق,PV,came true (feminine)
+كَفَى,كفى,PV,sufficed
+كَفَىٰ,كفى,PV,sufficed (Quranic)
+كَفَىٰ بِٱللَّهِ,كفى,PV,suffice God
+أَمَاتَ,موت,PV,caused to die
+أَمَاتَهُۥ,موت,PV,caused him to die
+أَحْيَا,حيي,PV,gave life
+أَحْيَاكُمْ,حيي,PV,he gave you pl life
+خُذُوا,أخذ,CV,take pl imperative
+سَلْ,سأل,CV,ask imperative
+سَلُوهُمْ,سأل,CV,ask them
+رُدُّوهُ,رد,CV,return him
+فَأْتُوا,أتى,CV,then bring
+فَأْتُوهُنَّ,أتى,CV,then come to them
+ٱذْكُرُوا,ذكر,CV,remember pl
+ٱذْكُرْ,ذكر,CV,remember
+ٱذْكُرُوهُ,ذكر,CV,remember him
+ٱدْعُ,دعا,CV,call
+ٱدْعُوا,دعا,CV,call pl
+ٱدْعُوهُ,دعا,CV,call him
+ٱرْجِعُوا,رجع,CV,return pl
+ٱرْجِعْنَ,رجع,CV,return fem pl
+ٱمْشُوا,مشي,CV,walk pl
+أَطِيعُوا,طوع,CV,obey pl
+أَطِعِ,طوع,CV,obey
+أَنفِقُوا,نفق,CV,spend pl
+أَنفِقْ,نفق,CV,spend
+ٱنفِرُوا,نفر,CV,march pl
+ٱحْذَرُوا,حذر,CV,beware pl
+أَوْفُوا,وفي,CV,fulfill pl
+ٱجْتَنِبُوا,جنب,CV,avoid pl
+
+جَآءَهُۥ,جاء,PV,came to him
+جَآءَهَا,جاء,PV,came to her/it
+جَآءَهُۥٓ,جاء,PV,came to him (with madda)
+جَآءَنِى,جاء,PV,came to me
+جَآءَهُن,جاء,PV,came to them fem
+شَآءَهُم,شاء,PV,wished them
+شَآءُوا,شاء,PV,they wished
+أَتَىٰكُم,أتى,PV,came to you pl
+أَتَىٰكَ,أتى,PV,came to you
+أَتَىٰهُم,أتى,PV,came to them
+هَدَىٰهُم,هدى,PV,he guided them
+أَحْيَىٰهُمْ,أحيا,PV,he gave them life
+أَحْيَٰهُمْ,أحيا,PV,he gave them life
+أَبْلَغْتُكُمْ,بلغ,PV,I delivered to you pl
+أَبْلَغْتُكُم,بلغ,PV,I delivered to you pl
+أَبْلَغْتُ,بلغ,PV,I delivered
+أَلْقَىٰهَآ,لقي,PV,he threw it
+أَلْقَىٰهَا,لقي,PV,he threw it
+أَلْقَى,لقي,PV,he threw
+أَلْقَىٰ,لقي,PV,he threw
+أَلْقَىٰهُ,لقي,PV,he threw him
+أَلْقَوْا,لقي,PV,they threw
+أَحْيَاهَا,حيي,PV,he gave it life
+أَحْيَىٰهَا,حيي,PV,he gave it life
+أَحْيَاهَآ,حيي,PV,he gave it life
+أَشْهَدُ,شهد,IV,I bear witness (1st sg)
+أَشْهَدُهُمْ,شهد,IV,I make them witness
+أَعْبُدُ,عبد,IV,I worship (1st sg)
+أَدْعُو,دعو,IV,I call (1st sg)
+أَخْلُقُ,خلق,IV,I create (1st sg)
+أَكْتُبُ,كتب,IV,I write (1st sg)
+أَعْلَمُ,علم,IV,I know (1st sg) — also tafdeel; verb in context
+أَتَوَكَّلُ,وكل,IV,I rely on
+أَسْـَٔلُكُمْ,سأل,IV,I ask you pl
+أَسْـَٔلُكُم,سأل,IV,I ask you pl
+أَسْأَلُكُمْ,سأل,IV,I ask you pl
+أَبْتَغِى,بغي,IV,I seek

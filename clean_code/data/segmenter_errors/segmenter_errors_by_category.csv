@@ -1,0 +1,4 @@
+category,count,pct_of_total_errors
+too_few_segments,3801,54.7%
+too_many_segments,1718,24.7%
+wrong_content,1425,20.5%

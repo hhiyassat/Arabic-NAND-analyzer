@@ -1,0 +1,21 @@
+priority,name,pattern,gender,confidence,note
+1,ta_marbuta_suffix,ends_with:ة,F,0.85,تاء مَربوطَة (يَحتاج فَحص استثناءات حَمزَة/طَلحَة)
+2,sound_feminine_plural,ends_with:ات,F,0.95,جَمع مُؤَنَّث سالِم
+3,sound_masculine_plural_nominative,ends_with:ون,M,0.9,جَمع مُذَكَّر سالِم في الرَّفع (لَيس مُثَنّى)
+4,sound_masculine_plural_oblique,ends_with:ين,M,0.5,جَمع مُذَكَّر سالِم في النَّصب/الجَرّ — أَو مُثَنّى! يَحتاج case
+5,dual_nominative,ends_with:ان,M_or_F,0.6,مُثَنّى في الرَّفع — جِنسُه مِن المُفرَد
+6,dual_oblique,ends_with:ين,M_or_F,0.5,مُثَنّى نَصب/جَرّ — تَعارُض مَع جَمع مُذَكَّر سالِم
+7,alif_maqsura_feminine,ends_with:ى,F,0.7,أَلِف مَقصورَة (يَحتاج استثناءات: مُصطَفى مُذَكَّر)
+8,alif_mamdoda_feminine,ends_with:اء,F,0.7,أَلِف مَمدودَة (استثناءات: ماء/دَواء)
+9,fa3laa_feminine,wazn_match:فَعلاء,F,0.95,صَحراء، حَمراء، عَذراء، خَضراء، صَفراء (مُؤَنَّث صِفَة)
+10,fa3laan_masculine,wazn_match:فَعلان,M,0.7,عَطشان، جَوعان (لَكِنّ سَكران F: سَكرى)
+11,fu3laa_feminine,wazn_match:فُعلى,F,0.9,كُبرى، صُغرى، حُسنى (مُؤَنَّث تَفضيل)
+12,af3al_tafdeel_masculine,wazn_match:أَفعَل,M,0.85,أَكبَر، أَصغَر، أَحسَن (مُذَكَّر تَفضيل)
+13,maf3ulah_feminine,wazn_match:مَفعولَة,F,0.95,مَكتوبَة، مَفعولَة
+14,maf3ul_masculine,wazn_match:مَفعول,M,0.9,مَكتوب، مَفعول
+15,faa3ilah_feminine,wazn_match:فَاعِلَة,F,0.95,كاتِبَة، فاعِلَة
+16,faa3il_masculine,wazn_match:فَاعِل,M,0.9,كاتِب، فاعِل
+17,fa3eel_masculine,wazn_match:فَعِيل,M,0.6,كَريم، عَزيز — قَد يَكون لِلمُؤَنَّث (صَبور، رَؤوف) لَكِنّ غالِبًا M
+18,fa3eelah_feminine,wazn_match:فَعِيلَة,F,0.95,كَريمَة، طَويلَة
+19,taf3ila_feminine,wazn_match:تَفعِلَة,F,0.95,تَكفِئَة، تَجزِئَة
+20,taf3eel_masculine,wazn_match:تَفعيل,M,0.8,تَكفير، تَدمير

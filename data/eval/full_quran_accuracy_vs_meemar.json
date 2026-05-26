@@ -1,0 +1,328 @@
+{
+  "n_meemar_entries": 77411,
+  "n_verses": 6236,
+  "n_words_compared": 77410,
+  "root": {
+    "meemar_has_root": 21491,
+    "correct": 7049,
+    "accuracy_pct": 32.8
+  },
+  "wazn": {
+    "meemar_has_wazn": 47018,
+    "correct": 4730,
+    "accuracy_pct": 10.06
+  },
+  "invariable_vs_declinable": {
+    "comparable": 41089,
+    "correct": 25992,
+    "accuracy_pct": 63.26
+  },
+  "top_root_mismatches": [
+    {
+      "our": "—",
+      "meemar": "ءله",
+      "count": 2711
+    },
+    {
+      "our": "—",
+      "meemar": "كون",
+      "count": 459
+    },
+    {
+      "our": "—",
+      "meemar": "ءرض",
+      "count": 442
+    },
+    {
+      "our": "—",
+      "meemar": "نوس",
+      "count": 239
+    },
+    {
+      "our": "عذاب",
+      "meemar": "عذب",
+      "count": 234
+    },
+    {
+      "our": "(none)",
+      "meemar": "قلل",
+      "count": 216
+    },
+    {
+      "our": "شىء",
+      "meemar": "شيء",
+      "count": 197
+    },
+    {
+      "our": "—",
+      "meemar": "قول",
+      "count": 167
+    },
+    {
+      "our": "—",
+      "meemar": "ربب",
+      "count": 146
+    },
+    {
+      "our": "—",
+      "meemar": "نور",
+      "count": 131
+    },
+    {
+      "our": "هدى",
+      "meemar": "هدي",
+      "count": 123
+    },
+    {
+      "our": "يشء",
+      "meemar": "شيء",
+      "count": 115
+    },
+    {
+      "our": "—",
+      "meemar": "حقق",
+      "count": 109
+    },
+    {
+      "our": "—",
+      "meemar": "كيف",
+      "count": 83
+    },
+    {
+      "our": "—",
+      "meemar": "كلل",
+      "count": 82
+    },
+    {
+      "our": "مبي",
+      "meemar": "بين",
+      "count": 80
+    },
+    {
+      "our": "أمر",
+      "meemar": "ءمر",
+      "count": 77
+    },
+    {
+      "our": "(none)",
+      "meemar": "صحب",
+      "count": 76
+    },
+    {
+      "our": "قل",
+      "meemar": "قلل",
+      "count": 74
+    },
+    {
+      "our": "—",
+      "meemar": "قوم",
+      "count": 72
+    },
+    {
+      "our": "—",
+      "meemar": "مثل",
+      "count": 71
+    },
+    {
+      "our": "—",
+      "meemar": "ئذذ",
+      "count": 71
+    },
+    {
+      "our": "إنس",
+      "meemar": "ءنس",
+      "count": 64
+    },
+    {
+      "our": "—",
+      "meemar": "جعل",
+      "count": 61
+    },
+    {
+      "our": "—",
+      "meemar": "ئنن",
+      "count": 61
+    },
+    {
+      "our": "—",
+      "meemar": "غير",
+      "count": 59
+    },
+    {
+      "our": "(none)",
+      "meemar": "ليل",
+      "count": 59
+    },
+    {
+      "our": "جرى",
+      "meemar": "جري",
+      "count": 55
+    },
+    {
+      "our": "—",
+      "meemar": "علم",
+      "count": 54
+    },
+    {
+      "our": "—",
+      "meemar": "غفر",
+      "count": 48
+    }
+  ],
+  "top_wazn_mismatches": [
+    {
+      "our": "—",
+      "meemar": "فعل",
+      "count": 5500
+    },
+    {
+      "our": "—",
+      "meemar": "حرف جر",
+      "count": 4879
+    },
+    {
+      "our": "—",
+      "meemar": "ضمير متصل",
+      "count": 4451
+    },
+    {
+      "our": "—",
+      "meemar": "حرف نفي",
+      "count": 3881
+    },
+    {
+      "our": "—",
+      "meemar": "لفظ الجلالة",
+      "count": 2636
+    },
+    {
+      "our": "—",
+      "meemar": "حرف توكيد",
+      "count": 1437
+    },
+    {
+      "our": "فِل",
+      "meemar": "حرف جر",
+      "count": 1169
+    },
+    {
+      "our": "—",
+      "meemar": "اسم موصول",
+      "count": 1087
+    },
+    {
+      "our": "—",
+      "meemar": "ضمير منفصل",
+      "count": 852
+    },
+    {
+      "our": "—",
+      "meemar": "اسم إشارة",
+      "count": 782
+    },
+    {
+      "our": "(none)",
+      "meemar": "فعل",
+      "count": 782
+    },
+    {
+      "our": "—",
+      "meemar": "حرف عطف",
+      "count": 750
+    },
+    {
+      "our": "—",
+      "meemar": "حرف توكيد/مصدري",
+      "count": 723
+    },
+    {
+      "our": "—",
+      "meemar": "حرف استثناء",
+      "count": 664
+    },
+    {
+      "our": "—",
+      "meemar": "حرف نفي/جزم",
+      "count": 568
+    },
+    {
+      "our": "—",
+      "meemar": "ظرف زمان",
+      "count": 513
+    },
+    {
+      "our": "فَالَ",
+      "meemar": "فعل",
+      "count": 505
+    },
+    {
+      "our": "—",
+      "meemar": "ظرف/شرط",
+      "count": 429
+    },
+    {
+      "our": "—",
+      "meemar": "حرف تحقيق",
+      "count": 352
+    },
+    {
+      "our": "فِل",
+      "meemar": "اسم موصول",
+      "count": 322
+    },
+    {
+      "our": "فَعِيل",
+      "meemar": "فعل",
+      "count": 272
+    },
+    {
+      "our": "أَفْعَل",
+      "meemar": "فعل",
+      "count": 270
+    },
+    {
+      "our": "(none)",
+      "meemar": "إفعال",
+      "count": 263
+    },
+    {
+      "our": "فَعْل",
+      "meemar": "ضمير متصل",
+      "count": 262
+    },
+    {
+      "our": "فِعل",
+      "meemar": "فعال",
+      "count": 251
+    },
+    {
+      "our": "فَفَعُل",
+      "meemar": "فعال",
+      "count": 229
+    },
+    {
+      "our": "—",
+      "meemar": "فعال",
+      "count": 223
+    },
+    {
+      "our": "—",
+      "meemar": "حرف شرط",
+      "count": 192
+    },
+    {
+      "our": "فَعُول",
+      "meemar": "فعل",
+      "count": 188
+    },
+    {
+      "our": "فَعْلَان",
+      "meemar": "فعل",
+      "count": 157
+    }
+  ],
+  "invariable_confusion": {
+    "our=False_meemar=True": 28,
+    "our=True_meemar=False": 569
+  }
+}

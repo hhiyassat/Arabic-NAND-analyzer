@@ -1,0 +1,208 @@
+"""eval_clause_segmenter_on_pause_marks.py — قياس M1.A مقابل علامات الوقف.
+
+الإدخال: data/quran-uthmani-with-pause-mark.txt (سطر لكل آية: surah|ayah|text)
+المُخرَج: data/eval/m1a_pause_eval.json + ملخّص stdout
+
+المقاييس:
+  1. إجمالي الآيات
+  2. إجمالي pause marks (Certificate + Hypothesis)
+  3. إجمالي anti-boundaries
+  4. عَدد clauses يُنتجها ClauseSegmenter
+  5. نسبة الـ pause marks التي تَتطابق مع حدود الـ segmenter (precision)
+  6. أَنواع التَّوزيع (pause_lazim, pause_awla_waqf, …)
+  7. آيات بِأكثر من 5 pauses (الأطول)
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import sys
+from collections import Counter
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "clean_code"))
+
+from clause_segmenter import ClauseSegmenter
+
+QURAN_PATH = ROOT / "data" / "quran-uthmani-with-pause-mark.txt"
+OUT_PATH = ROOT / "data" / "eval" / "m1a_pause_eval.json"
+
+PAUSE_CERTIFICATE = {"ۘ", "ۖ"}  # lazim, awla
+PAUSE_HYPOTHESIS = {"ۚ", "ۛ", "ۜ"}  # jawaz, muanaqa, mujawwaz
+PAUSE_ANTI = {"ۗ", "ۙ"}  # qila, mamnoo
+ALL_PAUSE = PAUSE_CERTIFICATE | PAUSE_HYPOTHESIS | PAUSE_ANTI
+
+
+def main() -> None:
+    if not QURAN_PATH.is_file():
+        print(f"FATAL: {QURAN_PATH} not found", file=sys.stderr)
+        sys.exit(1)
+
+    seg = ClauseSegmenter()
+    print(f"contract: {seg.source()}  boundary rules: {len(seg._boundary_rules)}")
+
+    stats = {
+        "total_ayahs": 0,
+        "total_chars": 0,
+        "ayahs_with_any_pause": 0,
+        "total_pause_certificate": 0,
+        "total_pause_hypothesis": 0,
+        "total_pause_anti": 0,
+        "pause_by_type": Counter(),
+        "total_clauses_produced": 0,
+        "clauses_per_ayah_dist": Counter(),
+        # how many produced clause boundaries align with actual pause marks
+        "boundary_hits": 0,
+        "boundary_misses": 0,  # produced boundary at non-pause position
+        "pause_hits": 0,       # pause that became a boundary
+        "pause_misses": 0,     # pause that did NOT become a boundary
+        "long_ayahs_5plus_pauses": [],
+    }
+
+    samples_with_alignment = []
+    n_lines = 0
+
+    with QURAN_PATH.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or "|" not in line:
+                continue
+            parts = line.split("|", 2)
+            if len(parts) != 3:
+                continue
+            surah, ayah, text = parts
+            n_lines += 1
+            stats["total_ayahs"] += 1
+            stats["total_chars"] += len(text)
+
+            # Count pauses
+            n_cert = sum(1 for c in text if c in PAUSE_CERTIFICATE)
+            n_hyp = sum(1 for c in text if c in PAUSE_HYPOTHESIS)
+            n_anti = sum(1 for c in text if c in PAUSE_ANTI)
+            stats["total_pause_certificate"] += n_cert
+            stats["total_pause_hypothesis"] += n_hyp
+            stats["total_pause_anti"] += n_anti
+            for c in text:
+                if c in ALL_PAUSE:
+                    stats["pause_by_type"][c] += 1
+            if n_cert + n_hyp + n_anti > 0:
+                stats["ayahs_with_any_pause"] += 1
+            if n_cert + n_hyp >= 5:
+                stats["long_ayahs_5plus_pauses"].append({
+                    "surah": int(surah), "ayah": int(ayah),
+                    "n_certificate": n_cert, "n_hypothesis": n_hyp,
+                })
+
+            # Run segmenter
+            try:
+                clauses = seg.segment(text)
+            except Exception as e:
+                print(f"  ERROR on {surah}:{ayah}: {e}", file=sys.stderr)
+                continue
+
+            stats["total_clauses_produced"] += len(clauses)
+            stats["clauses_per_ayah_dist"][len(clauses)] += 1
+
+            # Find pause positions in text and clause boundaries
+            pause_positions = [(i, c) for i, c in enumerate(text)
+                               if c in (PAUSE_CERTIFICATE | PAUSE_HYPOTHESIS)]
+            # boundary_positions = end_idx of each non-final clause
+            boundary_positions = [c.end_idx for c in clauses[:-1]]
+
+            # For each pause: is there a boundary near it (within 2 chars)?
+            for pos, pc in pause_positions:
+                hit = any(abs(bp - pos - 1) <= 3 for bp in boundary_positions)
+                if hit:
+                    stats["pause_hits"] += 1
+                else:
+                    stats["pause_misses"] += 1
+
+            # For each produced boundary: is there a pause near it?
+            for bp in boundary_positions:
+                # Was this boundary triggered by a pause or punctuation?
+                # If clause source contains "pause", count as hit; otherwise miss vs pause-corpus
+                # (this is asymmetric — we count pause-driven boundaries as hits)
+                # Look at the clause whose end_idx equals bp
+                clause = next((c for c in clauses if c.end_idx == bp), None)
+                if clause and "pause" in clause.source_of_claim:
+                    stats["boundary_hits"] += 1
+                else:
+                    stats["boundary_misses"] += 1
+
+            # Save first 30 examples with alignment for review
+            if len(samples_with_alignment) < 30 and len(clauses) >= 2:
+                samples_with_alignment.append({
+                    "surah": int(surah), "ayah": int(ayah),
+                    "text": text,
+                    "n_pause_cert": n_cert, "n_pause_hyp": n_hyp, "n_anti": n_anti,
+                    "n_clauses": len(clauses),
+                    "clauses": [{
+                        "text": c.text, "kind": c.kind, "source": c.source_of_claim,
+                    } for c in clauses],
+                })
+
+    # Compute derived metrics
+    total_pauses = stats["total_pause_certificate"] + stats["total_pause_hypothesis"]
+    recall_pause = stats["pause_hits"] / max(total_pauses, 1)
+    precision_pause = stats["boundary_hits"] / max(
+        stats["boundary_hits"] + stats["boundary_misses"], 1
+    )
+
+    print()
+    print("=" * 70)
+    print("نتائج قياس ClauseSegmenter مقابل علامات الوقف القرآنيّة")
+    print("=" * 70)
+    print(f"إجمالي الآيات:                   {stats['total_ayahs']:>8}")
+    print(f"إجمالي المحارف:                  {stats['total_chars']:>8}")
+    print(f"آيات تَحوي pause مَّا:            {stats['ayahs_with_any_pause']:>8} ({100*stats['ayahs_with_any_pause']/max(stats['total_ayahs'],1):.1f}%)")
+    print()
+    print(f"إجمالي pause Certificate:        {stats['total_pause_certificate']:>8}")
+    print(f"  منها لازم (ۘ):                  {stats['pause_by_type'].get(chr(0x06D8),0):>8}")
+    print(f"  منها أَولى الوقف (ۖ):            {stats['pause_by_type'].get(chr(0x06D6),0):>8}")
+    print(f"إجمالي pause Hypothesis:         {stats['total_pause_hypothesis']:>8}")
+    print(f"  منها جواز (ۚ):                  {stats['pause_by_type'].get(chr(0x06DA),0):>8}")
+    print(f"  منها معانقة (ۛ):                {stats['pause_by_type'].get(chr(0x06DB),0):>8}")
+    print(f"إجمالي pause Anti (لا تَقف):       {stats['total_pause_anti']:>8}")
+    print(f"  منها قلى (ۗ):                   {stats['pause_by_type'].get(chr(0x06D7),0):>8}")
+    print(f"  منها ممنوع (ۙ):                 {stats['pause_by_type'].get(chr(0x06D9),0):>8}")
+    print()
+    print(f"إجمالي clauses أُنتِجت:           {stats['total_clauses_produced']:>8}")
+    print(f"متوسّط clauses/آية:               {stats['total_clauses_produced']/max(stats['total_ayahs'],1):.2f}")
+    print()
+    print(f"=== المُحاذاة (Alignment) ===")
+    print(f"pause hits (pause → boundary):    {stats['pause_hits']:>8}")
+    print(f"pause misses (pause لا boundary): {stats['pause_misses']:>8}")
+    print(f"Recall على pauses:                {100*recall_pause:.1f}%")
+    print()
+    print(f"boundaries مَدفوعة بِالـ pause:    {stats['boundary_hits']:>8}")
+    print(f"boundaries من مصدر آخر:          {stats['boundary_misses']:>8}")
+    print(f"Precision (pause-driven boundary):{100*precision_pause:.1f}%")
+    print()
+    print(f"=== توزيع clauses/آية ===")
+    for n, cnt in sorted(stats["clauses_per_ayah_dist"].items()):
+        print(f"  {n:>2} clause(s): {cnt:>5}")
+    print()
+    print(f"آيات بِـ ≥5 pauses: {len(stats['long_ayahs_5plus_pauses'])}")
+
+    # Save full results
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    out_obj = {
+        "stats": {k: dict(v) if isinstance(v, Counter) else v
+                  for k, v in stats.items()},
+        "metrics": {
+            "recall_on_pauses": recall_pause,
+            "precision_of_pause_driven_boundaries": precision_pause,
+            "f1_pause_alignment": 2 * recall_pause * precision_pause /
+                                  max(recall_pause + precision_pause, 1e-9),
+        },
+        "samples": samples_with_alignment,
+    }
+    with OUT_PATH.open("w", encoding="utf-8") as f:
+        json.dump(out_obj, f, ensure_ascii=False, indent=2)
+    print(f"\nتفاصيل في: {OUT_PATH}")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,131 @@
+{
+  "field_name_ar": "المهن والوظائف",
+  "field_name_en": "Professions",
+  "members": [
+    {
+      "word": "طَبِيب",
+      "plain": "طبيب",
+      "domain": "health"
+    },
+    {
+      "word": "مُهَنْدِس",
+      "plain": "مهندس",
+      "domain": "engineering"
+    },
+    {
+      "word": "مُعَلِّم",
+      "plain": "معلم",
+      "domain": "education"
+    },
+    {
+      "word": "أُسْتَاذ",
+      "plain": "استاذ",
+      "domain": "education"
+    },
+    {
+      "word": "كَاتِب",
+      "plain": "كاتب",
+      "domain": "scholarly"
+    },
+    {
+      "word": "شَاعِر",
+      "plain": "شاعر",
+      "domain": "literary"
+    },
+    {
+      "word": "تَاجِر",
+      "plain": "تاجر",
+      "domain": "trade"
+    },
+    {
+      "word": "بَائِع",
+      "plain": "بائع",
+      "domain": "trade"
+    },
+    {
+      "word": "نَجَّار",
+      "plain": "نجار",
+      "domain": "craft"
+    },
+    {
+      "word": "حَدَّاد",
+      "plain": "حداد",
+      "domain": "craft"
+    },
+    {
+      "word": "خَيَّاط",
+      "plain": "خياط",
+      "domain": "craft"
+    },
+    {
+      "word": "خَبَّاز",
+      "plain": "خباز",
+      "domain": "food"
+    },
+    {
+      "word": "طَبَّاخ",
+      "plain": "طباخ",
+      "domain": "food"
+    },
+    {
+      "word": "فَلَّاح",
+      "plain": "فلاح",
+      "domain": "agriculture"
+    },
+    {
+      "word": "رَاعٍ",
+      "plain": "راع",
+      "domain": "agriculture"
+    },
+    {
+      "word": "صَيَّاد",
+      "plain": "صياد",
+      "domain": "hunting"
+    },
+    {
+      "word": "جُنْدِيّ",
+      "plain": "جندي",
+      "domain": "military"
+    },
+    {
+      "word": "قَائِد",
+      "plain": "قائد",
+      "domain": "military"
+    },
+    {
+      "word": "قَاضٍ",
+      "plain": "قاض",
+      "domain": "judicial"
+    },
+    {
+      "word": "إِمَام",
+      "plain": "امام",
+      "domain": "religious"
+    },
+    {
+      "word": "خَطِيب",
+      "plain": "خطيب",
+      "domain": "religious"
+    },
+    {
+      "word": "مُؤَذِّن",
+      "plain": "مؤذن",
+      "domain": "religious"
+    },
+    {
+      "word": "مُلْك",
+      "plain": "ملك",
+      "domain": "royalty"
+    },
+    {
+      "word": "مَلِك",
+      "plain": "ملك",
+      "domain": "royalty"
+    },
+    {
+      "word": "أَمِير",
+      "plain": "امير",
+      "domain": "royalty"
+    }
+  ]
+}

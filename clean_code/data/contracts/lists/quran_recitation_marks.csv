@@ -1,0 +1,20 @@
+priority,name,codepoint,mark,kind,note
+1,small_meem_iqlab,U+06E2,ۢ,recitation,صَوت إِقلاب (مِيم صَغيرَة)
+2,small_high_madda,U+06E4,ۤ,recitation,مَدَّة صَغيرَة عُلويَّة
+3,small_waw,U+06E5,ۥ,recitation,واو صَغيرَة (ضَمير الهاء المَمدودَة)
+4,small_ya,U+06E6,ۦ,recitation,ياء صَغيرَة
+5,small_high_ya,U+06E7,ۧ,recitation,ياء صَغيرَة عُلويَّة
+6,small_high_noon,U+06E8,ۨ,recitation,نون صَغيرَة عُلويَّة
+7,small_low_meem,U+06ED,ۭ,recitation,ميم صَغيرَة سُفليَّة
+8,small_high_rounded_zero,U+06DF,۟,recitation,صِفر مُدَوَّر عُلويّ — رَسم عُثمانيّ يَدُلّ على عَدَم نُطق الأَلِف بَعدَ واو الجَماعَة
+9,arabic_small_high_seen,U+06D6,ۖ,pause,علامة وَقف لازِم (صَلى) — تُفصَل لا تُحَلَّل كَ كَلِمَة
+10,arabic_small_high_three_dots,U+06D7,ۗ,pause,علامة وَقف جائِز (قلى) — تُفصَل
+11,arabic_small_high_rounded_zero,U+06D8,ۘ,pause,علامة وَقف مَمنوع (لا) — تُفصَل
+12,arabic_small_high_upright_rectangle,U+06D9,ۙ,pause,علامة وَقف الأَنبياء — تُفصَل
+13,arabic_small_high_dotless_head_of_khah,U+06DA,ۚ,pause,علامة جواز الوَقف (ج) — تُفصَل لا تُحَلَّل
+14,arabic_small_high_thah,U+06DB,ۛ,pause,علامة المُعانَقَة — تُفصَل
+15,arabic_small_high_seen2,U+06DC,ۜ,pause,علامة وَقف ثانٍ — تُفصَل
+16,arabic_small_high_madda2,U+06E0,۠,pause,علامة وَقف ثالِث — تُفصَل
+17,arabic_small_high_yeh,U+06E1,ۡ,pause,علامة سُكون قُرآنيّ — تُفصَل
+</content>
+</invoke>

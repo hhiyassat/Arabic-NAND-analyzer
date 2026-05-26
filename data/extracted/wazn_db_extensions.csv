@@ -1,0 +1,76 @@
+category,wazn,example,notes
+# Sound triliteral broken plurals (جموع تكسير القياسية)
+جمع تكسير,أَفْعَال,أَوْلَاد,plural of فَعْل/فِعْل/فُعْل
+جمع تكسير,فُعُول,عُلُوم,plural of فَعْل
+جمع تكسير,فِعَال,رِجَال,plural of فَعْل/فُعْل/فَعَل
+جمع تكسير,فُعَل,قُرَى,plural of فُعْلَة
+جمع تكسير,فِعَل,حِجَج,plural of فِعْلَة
+جمع تكسير,فُعَلَاء,عُلَمَاء,plural of فَعِيل
+جمع تكسير,أَفْعِلَاء,أَصْدِقَاء,plural of فَعِيل (irregular)
+جمع تكسير,أَفْعُل,أَنْفُس,plural of فَعْل (qillah)
+جمع تكسير,فِعَلَة,قِرَدَة,plural of فَاعِل (animate)
+جمع تكسير,أَفْعِلَة,أَئِمَّة,plural of فِعَال
+# Mufaa3il broken plurals
+جمع تكسير,مَفَاعِل,مَدَارِس,plural of مَفْعَل
+جمع تكسير,مَفَاعِيل,مَفَاتِيح,plural of مِفْعَال
+# Faw3aaa3il / Fa3aaa3il broken plurals
+جمع تكسير,فَوَاعِل,فَوَاكِه,plural of فَاعِلَة
+جمع تكسير,فَوَاعِيل,طَوَاحِين,plural of فَاعُول
+جمع تكسير,فَعَائِل,رَسَائِل,plural of فَعِيلَة
+جمع تكسير,فَعَالَى,حَبَالَى,plural of فَعْلَى
+جمع تكسير,أَفَاعِيل,أَحَادِيث,plural of أُفْعُولَة (rare singular)
+جمع تكسير,أَفَاعِل,أَكَابِر,plural of أَفْعَل (تفضيل)
+# Quadriliteral patterns and their plurals (للأوزان الرباعية)
+رباعي,فَعْلَل,بَرْزَخ,quadriliteral noun
+رباعي,فَعْلَال,قِنْطَار,quadriliteral noun
+رباعي,فُعْلُل,سُنْدُس,quadriliteral noun
+رباعي,فُعْلُول,بُرْهَان,quadriliteral noun
+رباعي,فِعْلِيل,قِنْدِيل,quadriliteral noun
+رباعي,فَعَالِل,دَرَاهِم,plural of رباعي
+رباعي,فَعَالِيل,قَنَادِيل,plural of فِعْلِيل/فُعْلُول
+رباعي,تَفَعْلَل,تَدَحْرَجَ,form for quadriliteral verb
+رباعي,مُفَعْلَل,مُذَبْذَب,passive participle of quadriliteral
+رباعي,مُفَعْلِل,مُتَرْجِم,active participle of quadriliteral
+# Less common but well-attested
+شاذ,فَاعَال,آثَار,when alif madda merges with prefix أَ
+شاذ,فِيعَال,مِيعَاد,سماعي pattern
+شاذ,فَيْعَل,صَيْرَف,سماعي pattern
+شاذ,فَعَّال,شَدَّاد,already covered as صيغة مبالغة but allow plain form
+شاذ,فُعَّل,سُجَّد,plural of فاعل (active participle in some cases)
+شاذ,فُعَّال,حُجَّاج,plural of فَاعِل (animate plural)
+شاذ,فَعَائِلَة,مَلَائِكَة,rare plural with ة (ملائكة-style)
+شاذ,فَوَاعِلَة,قَوَافِلَة,rare plural with ة (rare)
+شاذ,فُعُولَة,رُجُولَة,abstract masdar
+شاذ,فُعْلَى,كُبْرَى,فعلى feminine form
+شاذ,فَعْلَى,قَتْلَى,فعلى plural
+شاذ,فُعَالَى,أُسَارَى,plural with ى
+شاذ,فِعْلِيَّة,حَرْبِيَّة,abstract feminine with shadda
+شاذ,فُعْلِيَّة,قُدْسِيَّة,abstract feminine with shadda
+شاذ,فَعَلَة,كَتَبَة,plural of فاعل (animate)
+شاذ,فُعَلَة,بُغَاة,small plural
+# Verb form X (استفعل) mudaari' personal forms — for Form X verb analysis
+verb_form_X,يَسْتَفْعِلُ,يَسْتَخْرِجُ,form X mudaari 3sg-m / 3pl-m
+verb_form_X,تَسْتَفْعِلُ,تَسْتَخْرِجُ,form X mudaari 2sg or 3sg-f
+verb_form_X,نَسْتَفْعِلُ,نَسْتَخْرِجُ,form X mudaari 1pl
+verb_form_X,أَسْتَفْعِلُ,أَسْتَخْرِجُ,form X mudaari 1sg
+verb_form_X,يَسْتَفْعِل,—,form X mudaari (jussive)
+verb_form_X,تَسْتَفْعِل,—,form X mudaari 2sg
+verb_form_X,نَسْتَفْعِل,—,form X mudaari 1pl
+verb_form_X,اِسْتَفْعَل,اِسْتَخْرَجَ,form X past (already in canonical as استفعل)
+# Verb form VIII (افتعل) mudaari'
+verb_form_VIII,يَفْتَعِل,يَكْتَسِب,form VIII mudaari
+verb_form_VIII,تَفْتَعِل,تَكْتَسِب,form VIII mudaari
+verb_form_VIII,نَفْتَعِل,نَكْتَسِب,form VIII mudaari
+# Verb form IV mudaari'
+verb_form_IV,يُفْعِلُ,يُكْرِمُ,form IV mudaari
+verb_form_IV,تُفْعِلُ,تُكْرِمُ,form IV mudaari
+verb_form_IV,نُفْعِلُ,نُكْرِمُ,form IV mudaari
+verb_form_IV,أُفْعِلُ,أُكْرِمُ,form IV mudaari 1sg
+# Verb form I past — single-vowel patterns
+verb_form_I,فَعَلَ,كَتَبَ,form I past
+verb_form_I,فَعِلَ,شَرِبَ,form I past
+verb_form_I,فَعُلَ,حَسُنَ,form I past
+# Form I mudaari'
+verb_form_I,يَفْعَلُ,يَكْتُبُ,form I mudaari
+verb_form_I,يَفْعُلُ,يَنْصُرُ,form I mudaari
+verb_form_I,يَفْعِلُ,يَجْلِسُ,form I mudaari

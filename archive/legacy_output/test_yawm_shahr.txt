@@ -1,0 +1,176 @@
+========================================================================
+Architecture Test
+اختبار تطبيقي للمعمار
+========================================================================
+ID        : architecture_test_input
+Reference : Quran 2:185
+Text      : ﴿شَهْرُ رَمَضَانَ الَّذِي أُنْزِلَ فِيهِ الْقُرْءَنُ﴾
+Tokens    : 6
+
+────────────────────────────────────────────────────────────────────────
+STEP −1 — Normalize (new_arabic_analyzer/normalize.py)
+────────────────────────────────────────────────────────────────────────
+  Source : /sessions/nice-epic-cannon/mnt/new_arabic_analyzer/src/standalone_segmenter/normalize.py
+  Avail. : True
+  Input  : شَهْرُ رَمَضَانَ الَّذِي أُنْزِلَ فِيهِ الْقُرْآنُ
+  Output : شَهْرُ رَمَضَانَ الَّذِي أُنْزِلَ فِيهِ الْقُرْءَنُ  (changed)
+
+────────────────────────────────────────────────────────────────────────
+STEP 0a — Segmenter (salehan/segmenter.py)
+────────────────────────────────────────────────────────────────────────
+  Source : /sessions/nice-epic-cannon/mnt/salehan/Salehan19-6-67/src/analyzer/segmentation/segmenter.py
+  Avail. : True
+  Counts : segmented=4, unchanged=2
+  ○ شَهْرُ  →  (unchanged)
+  ✓ رَمَضَانَ  →  prefixes=[—]  stem=رَمَضَا  suffixes=[نَ]
+  ✓ الَّذِي  →  prefixes=[الَّ]  stem=ذِي  suffixes=[—]
+  ○ أُنْزِلَ  →  (unchanged)
+  ✓ فِيهِ  →  prefixes=[فِ]  stem=يهِ  suffixes=[—]
+  ✓ الْقُرْءَنُ  →  prefixes=[الْ]  stem=قُرْءَنُ  suffixes=[—]
+
+────────────────────────────────────────────────────────────────────────
+Tokens (surface hints)
+────────────────────────────────────────────────────────────────────────
+  [0] شَهْرُ  (unknown, rafa)  huruf=—  wazn=فَعْل root=شهر
+  [1] رَمَضَانَ  (unknown, nasb)  huruf=—  wazn=فَعَلَان root=رمض  [verbal?]
+  [2] الَّذِي  (definite, unknown)  huruf=—  wazn=(NO_WAZN)  [al-]
+  [3] أُنْزِلَ  (unknown, nasb)  huruf=—  wazn=(NO_WAZN)  [verbal?]
+  [4] فِيهِ  (unknown, kasra)  huruf=—  wazn=(NO_WAZN)
+  [5] الْقُرْءَنُ  (definite, rafa)  huruf=—  wazn=(NO_WAZN)  [al-]
+
+────────────────────────────────────────────────────────────────────────
+STEP 0b — analyze_word.py (Mushtaqat wazn + root)
+────────────────────────────────────────────────────────────────────────
+  Module  : /sessions/nice-epic-cannon/mnt/alasmaa/analyze_word.py
+  Weights : /sessions/nice-epic-cannon/mnt/alasmaa/Mushtaqat_Weights_Final_Corrected_With_Fa3ll.csv (80 rows)
+  Status  : MATCHED=2, NO_WAZN=4
+  ✓ شَهْرُ → فَعْل (الصفة المشبهة) root=شهر [without_final_irab]
+  ✓ رَمَضَانَ → فَعَلَان (المصدر الأصلي) root=رمض [without_final_irab]
+  ✗ الَّذِي → NO_WAZN
+  ✗ أُنْزِلَ → NO_WAZN
+  ✗ فِيهِ → NO_WAZN
+  ✗ الْقُرْءَنُ → NO_WAZN
+
+────────────────────────────────────────────────────────────────────────
+STEP 1 — Meaning Flow (03)
+────────────────────────────────────────────────────────────────────────
+Path: sign → attention → initial_conception → possibility_space → evidence_gathering → relation_building → weighing → designation → meaning_construction → inference → understanding
+
+Sign → Attention:
+  • Lexical sequence (6 units): شهر • رمضان • الذي • أنزل • فيه • القرءن
+  • Verbal morphology detected: رَمَضَانَ, أُنْزِلَ
+
+Initial conception: Clause with verbal nucleus — event-bearing structure possible
+
+Possibility space:
+  ? (no major structural ambiguities flagged heuristically)
+
+Evidence:
+  • شَهْرُ: surface case hint = rafa
+  • رَمَضَانَ: surface case hint = nasb
+  • الَّذِي: definite (al-) — often genus or known referent
+  • أُنْزِلَ: surface case hint = nasb
+  • فِيهِ: surface case hint = kasra
+  • الْقُرْءَنُ: definite (al-) — often genus or known referent
+  • الْقُرْءَنُ: surface case hint = rafa
+
+Relations:
+  • الَّذِي → lexical bearer (definiteness=definite)
+  • الْقُرْءَنُ → lexical bearer (definiteness=definite)
+
+Weighing: Weighted reading follows surface order and morphology on: شهر • رمضان • الذي • أنزل • فيه • القرءن. No external context supplied.
+
+Meaning: Compositional meaning built from operators + bearers in input order (no tafsir beyond structural linguistics)
+
+Understanding: Structural understanding of input (6 units): mixed / verbal clause
+
+────────────────────────────────────────────────────────────────────────
+STEP 2 — Layer-Centric Decomposition (01)
+────────────────────────────────────────────────────────────────────────
+  ● Sign: 6 vocalized units + diacritics/marks as present in input
+  ● Perception: Nasikh vs plain; definite vs indefinite; operator vs bearer (heuristic from surface)
+  ● Relation: inter-token order preserved
+  ● Event_Transformation: ACTIVE — verbal morphology detected
+  ● Context: (none supplied)
+  ● Resolution: Definite/indefinite and case hints mapped per token
+  ● Time: Verbal input may carry tense; otherwise timeless/rule-like
+  ● Identity: Identity layer weakly triggered
+  ● Reasoning: Limited cross-token reasoning
+
+Note: Verbal nucleus activates Event/Transformation
+
+────────────────────────────────────────────────────────────────────────
+STEP 3 — Huruf dataset matching
+────────────────────────────────────────────────────────────────────────
+  ✗ شَهْرُ — NOT in dataset
+  ✗ رَمَضَانَ — NOT in dataset
+  ✗ الَّذِي — NOT in dataset
+  ✗ ال (in الَّذِي) — NOT in dataset
+      definiteness marker; not a standalone huruf row
+  ✗ أُنْزِلَ — NOT in dataset
+  ✗ فِيهِ — NOT in dataset
+  ✗ الْقُرْءَنُ — NOT in dataset
+  ✗ ال (in الْقُرْءَنُ) — NOT in dataset
+      definiteness marker; not a standalone huruf row
+
+8 surface factor(s) outside huruf dataset (0 huruf hit(s) on 6 token(s)) — catalog is classical huruf, not all quasi-harf operators
+
+────────────────────────────────────────────────────────────────────────
+STEP 3.5 — Word classification (اسم وفعل وحرف) + wazn/root
+────────────────────────────────────────────────────────────────────────
+  verb: 2  |  jamid: 2  |  mushtaq_pattern_only: 1  |  unknown: 1
+  coverage: 83.3% of tokens classified
+  شَهْرُ → jamid  [wazn=فَعْل root=شهر (الصفة المشبهة), jamid:اسم زمان جامد]
+  رَمَضَانَ → verb  [wazn=فَعَلَان root=رمض (المصدر الأصلي)]
+  الَّذِي → jamid  [jamid:اسم موصول]
+  أُنْزِلَ → verb
+  فِيهِ → mushtaq_pattern_only  [pattern-only:الصفة المشبهة/المصدر الأصلي/صيغة مبالغة]
+  الْقُرْءَنُ → unknown
+  jamid categories: اسم زمان جامد, اسم موصول
+  mushtaq babs: الصفة المشبهة, المصدر الأصلي, صيغة مبالغة
+  Computational classification (per 11_Abstraction_Levels.md). Serves linguistic level; does not replace philosophical Entity definition. Wazn + root extraction via alasmaa/analyze_word.py.
+
+────────────────────────────────────────────────────────────────────────
+STEP 4 — Five state patterns (Q2)
+────────────────────────────────────────────────────────────────────────
+  Event-Residue: no
+      No clear event-residue morphology (passive participle etc.) detected
+  Event-Continuation: YES
+      Verbal nucleus suggests ongoing or event-bearing clause
+  Identity-Pattern: PARTIAL
+      Nominal bearers may carry kind-identity readings
+  Pure Attribute: no
+      No dedicated adjectival predicate pattern detected heuristically
+  Structural-Condition Inducer: no
+      No nasikh detected
+
+Dominant: Event-Continuation
+Discovery: Not all five patterns expected in every text — record what appears
+
+────────────────────────────────────────────────────────────────────────
+STEP 5 — Resolution & probability (07)
+────────────────────────────────────────────────────────────────────────
+  شَهْرُ: underdetermined (sparse surface markers)
+  رَمَضَانَ: underdetermined (sparse surface markers)
+  الَّذِي: genus_or_referent (definite al-)
+  أُنْزِلَ: underdetermined (sparse surface markers)
+  فِيهِ: underdetermined (sparse surface markers)
+  الْقُرْءَنُ: genus_or_referent (definite al-)
+
+Definite tokens: 2, indefinite: 0 — Resolution + Identity layers scale with these markers
+
+────────────────────────────────────────────────────────────────────────
+STEP 6 — Verdict: held / gaps
+────────────────────────────────────────────────────────────────────────
+Held:
+  + Layer-centric decomposition applied to input tokens without manual retrofit
+  + Meaning flow path (03) executed on supplied text
+  + Huruf dataset consulted per token surface
+  + Five Q2 patterns scored from surface heuristics
+  + Resolution recorded per token
+
+Gaps:
+  ! [medium] huruf_dataset_coverage: 8 surface factor(s) outside huruf dataset (0 huruf hit(s) on 6 token(s)) — catalog is classical huruf, not all quasi-harf operators
+
+Overall: Architecture pipeline completed on input; gaps recorded explicitly (no constitutional expansion)
+========================================================================

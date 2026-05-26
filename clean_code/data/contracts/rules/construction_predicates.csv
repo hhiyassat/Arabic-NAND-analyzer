@@ -1,0 +1,4 @@
+predicate_name,predicate_type,target,operation,operand,description
+STARTS_WITH_WAW,startswith_any,next_word,startswith,"و,وَ",الكَلِمَة التَّاليَة تَبدَأ بِواو
+NOT_STARTS_WITH_WAW,not_startswith_any,next_word,startswith,"و,وَ",الكَلِمَة التَّاليَة لا تَبدَأ بِواو
+ANY,always_true,next_word,always,,دائِمًا صَحيح

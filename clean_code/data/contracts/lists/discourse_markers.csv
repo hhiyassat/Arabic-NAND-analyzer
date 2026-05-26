@@ -1,0 +1,29 @@
+priority,form,plain,kind,person,gender,number,note
+1,لَهُ,له,addressee_prep,3,M,SG,قال له — جار+مَجرور المُخاطَب
+2,لَهَا,لها,addressee_prep,3,F,SG,قال لها
+3,لَهُمْ,لهم,addressee_prep,3,M,PL,قال لهم
+4,لَهُنَّ,لهن,addressee_prep,3,F,PL,قال لهن
+5,لَهُمَا,لهما,addressee_prep,3,X,DU,قال لهما
+6,لَكَ,لك,addressee_prep,2,M,SG,قال لك
+7,لَكِ,لك,addressee_prep,2,F,SG,قال لكِ
+8,لَكُمْ,لكم,addressee_prep,2,M,PL,قال لكم
+9,لَكُنَّ,لكن,addressee_prep,2,F,PL,قال لكن
+10,لَكُمَا,لكما,addressee_prep,2,X,DU,قال لكما
+11,لِي,لي,addressee_prep,1,X,SG,قال لي
+12,لَنَا,لنا,addressee_prep,1,X,PL,قال لنا
+13,لِقَوْمِهِ,لقومه,addressee_prep,3,M,PL,قال لقومه
+14,لِقَوْمِكَ,لقومك,addressee_prep,2,M,PL,قال لقومك
+15,أَنتَ,أنت,addressee_pronoun,2,M,SG,ضَمير المُخاطَب
+16,أَنتِ,أنت,addressee_pronoun,2,F,SG,
+17,أَنتُمَا,أنتما,addressee_pronoun,2,X,DU,
+18,أَنتُمْ,أنتم,addressee_pronoun,2,M,PL,
+19,أَنتُنَّ,أنتن,addressee_pronoun,2,F,PL,
+20,إِيَّاكَ,إياك,addressee_pronoun,2,M,SG,ضَمير المُخاطَب المُنفَصِل لِلنَّصب
+21,إِيَّاكُمْ,إياكم,addressee_pronoun,2,M,PL,
+22,إِيَّاكِ,إياك,addressee_pronoun,2,F,SG,
+23,إِيَّاكُمَا,إياكما,addressee_pronoun,2,X,DU,
+24,إِيَّاكُنَّ,إياكن,addressee_pronoun,2,F,PL,
+30,أَنَا,أنا,speaker_pronoun,1,X,SG,ضَمير المُتَكَلِّم
+31,نَحْنُ,نحن,speaker_pronoun,1,X,PL,ضَمير المُتَكَلِّمين
+32,إِيَّايَ,إياي,speaker_pronoun,1,X,SG,ضَمير المُتَكَلِّم المُنفَصِل لِلنَّصب
+33,إِيَّانَا,إيانا,speaker_pronoun,1,X,PL,

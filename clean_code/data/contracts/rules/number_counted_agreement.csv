@@ -1,0 +1,10 @@
+priority,name,number_class,agreement_rule,counted_form,counted_case,note
+1,unit_1_2_agree,unit_1_2,agree,SG_or_DU,nominative_after_noun,«رَجُل واحد»، «امرَأَتان اثنَتان» — العَدَد يَتبَع
+2,unit_3_10_oppose,unit_3_10,oppose,PL,genitive_idafa,«ثَلاثَة رِجال»، «ثَلاث نِساء» — العَدَد يُخالِف
+3,teens_11_12_agree,teens_11_12,agree,SG,accusative_tamyiz,«أَحَد عَشَر رَجُلًا»
+4,teens_13_19_mixed,teens_13_19,mixed,SG,accusative_tamyiz,الآحاد تُخالِف، عَشر تُوافِق
+5,tens_invariable,tens,invariable,SG,accusative_tamyiz,«عِشرون رَجُلًا/امرَأَةً»
+6,compound_21_22,compound_21_22,unit_agrees,SG,accusative_tamyiz,الآحاد تُوافِق، العَقد لا يَتَغَيَّر
+7,compound_23_99,compound_23_99,unit_opposes,SG,accusative_tamyiz,الآحاد تُخالِف، العَقد لا يَتَغَيَّر
+8,hundred_thousand,hundred_or_thousand,no_gender_relation,SG,genitive_idafa,«مِئَة رَجُل»، «أَلف امرَأَة»
+9,hierarchical_thousand,thousand_plural,hierarchical,PL,genitive_idafa,«ثَلاثَة آلاف رَجُل» — ثَلاثَة تَعُدّ آلاف لا الرَّجُل

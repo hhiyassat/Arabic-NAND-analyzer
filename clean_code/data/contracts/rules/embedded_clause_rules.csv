@@ -1,0 +1,21 @@
+priority,name,verb_stripped,verb_kind,creates_embedded,note
+1,verb_qal,قال,speech,direct_quote,قَالَ — أكثر أفعال القول شيوعًا
+2,verb_qalaa_qaloo,قالوا,speech,direct_quote,جمع
+3,verb_qalat,قالت,speech,direct_quote,مؤنث
+4,verb_yaqul,يقول,speech,direct_quote,مضارع
+5,verb_yaqulun,يقولون,speech,direct_quote,جمع مضارع
+6,verb_taqul,تقول,speech,direct_quote,مؤنث/مخاطب مضارع
+7,verb_qul,قل,speech,direct_quote,أمر
+8,verb_qulu,قولوا,speech,direct_quote,أمر جمع
+9,verb_saala,سأل,speech,indirect_question,سأل
+10,verb_ajaba,أجاب,speech,indirect_response,أجاب
+11,verb_zaama,زعم,speech,direct_quote,زعم (شك)
+12,verb_haka,حكى,speech,direct_quote,حكى
+13,verb_rawaa,روى,speech,direct_quote,روى (حديث)
+14,verb_nadaa,نادى,speech,direct_quote,نادى
+15,verb_dhakara,ذكر,speech,direct_quote,ذكر (قول)
+16,verb_aalama,علم,cognition,that_clause,علم — إدراك (يَتلوها أنّ)
+17,verb_zhanna,ظنّ,cognition,that_clause,ظنّ — كان وأخواتها
+18,verb_aamana,آمن,cognition,that_clause,آمن
+19,verb_kataba,كتب,writing,direct_quote,كتب — كتابة قول
+20,verb_amara,أمر,speech,indirect_command,أمر — قول أمر

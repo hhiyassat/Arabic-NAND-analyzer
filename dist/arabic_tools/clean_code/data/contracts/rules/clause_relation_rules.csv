@@ -1,0 +1,17 @@
+priority,name,kind,marker,creates_clause_type,note
+1,waw_aatif,connective,و,coordinate,حرف عطف للترتيب أو الجمع
+2,faa_aatif,connective,ف,coordinate,حرف عطف للترتيب مع التعقيب
+3,thumma_aatif,connective,ثم,coordinate,حرف عطف للترتيب مع التراخي
+4,bal_aatif,connective,بل,coordinate,حرف عطف للإضراب
+5,lakin_aatif,connective,لكن,coordinate,حرف عطف للاستدراك
+6,aw_aatif,connective,أو,coordinate,حرف عطف للتخيير
+7,am_aatif,connective,أم,coordinate,حرف عطف للتسوية أو الإضراب
+8,ithaa_shart,conditional,إذا,conditional_protasis,أداة شرط — يَتلوها فِعل ثم جواب
+9,in_shart,conditional,إن,conditional_protasis,أداة شرط جازمة
+10,law_shart,conditional,لو,conditional_protasis,أداة شرط امتناعية
+11,kullamaa_shart,conditional,كلما,conditional_protasis,أداة شرط للتكرار
+12,lammaa_shart,conditional,لما,conditional_protasis,أداة شرط للحينية
+13,mata_shart,conditional,متى,conditional_protasis,أداة شرط زمانية
+14,aynamaa_shart,conditional,أينما,conditional_protasis,أداة شرط مكانية
+15,man_shart,conditional,من,conditional_protasis,اسم شرط للعاقل
+16,maa_shart,conditional,ما,conditional_protasis,اسم شرط لغير العاقل

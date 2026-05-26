@@ -1,0 +1,1071 @@
+{
+  "contract": "RelationExtractor:v1_eval",
+  "n_verses": 31,
+  "n_tokens_total": 191,
+  "n_relations_total": 94,
+  "avg_relations_per_verse": 3.03,
+  "avg_relations_per_token": 0.492,
+  "token_coverage": {
+    "with_relation": 111,
+    "without_relation": 80,
+    "coverage_pct": 0.5812
+  },
+  "relation_name_distribution": {
+    "attribute_of": 30,
+    "verb_in_clause": 29,
+    "harf_jarr_of": 8,
+    "from_source": 8,
+    "topic_anchor": 7,
+    "agent_of": 6,
+    "patient_of": 3,
+    "possessor_of": 2,
+    "comment_of": 1
+  },
+  "relation_kind_distribution": {
+    "clause_anchor": 36,
+    "attribute": 30,
+    "subj_pred": 9,
+    "prep_phrase": 8,
+    "source": 8,
+    "possession": 2,
+    "topic_comment": 1
+  },
+  "proof_kind_distribution": {
+    "Hypothesis": 55,
+    "Certificate": 39
+  },
+  "note": "هذا قِياس بِنيويّ — لا ground-truth يَدَويّة. الأَرقام تُبَيِّن تَوزيع العَلاقات وتَغطيَة الـ tokens، لا الدِّقَّة. الدِّقَّة تَحتاج 50-100 آية مُصَنَّفة يَدَويًّا — مَفتوح كَ task لاحِق.",
+  "per_verse": [
+    {
+      "ref": "1:1",
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+      "n_tokens": 4,
+      "n_relations": 1,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "1:2",
+      "text": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
+      "n_tokens": 4,
+      "n_relations": 4,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t0",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "possessor_of",
+          "kind_type": "possession",
+          "source": "t1",
+          "target": "t0",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "1:3",
+      "text": "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+      "n_tokens": 2,
+      "n_relations": 1,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t1",
+          "target": "t0",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "1:4",
+      "text": "مَٰلِكِ يَوْمِ ٱلدِّينِ",
+      "n_tokens": 3,
+      "n_relations": 1,
+      "tokens_with_relation": 1,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "1:5",
+      "text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "n_tokens": 4,
+      "n_relations": 2,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t3",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "1:6",
+      "text": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+      "n_tokens": 3,
+      "n_relations": 1,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "1:7",
+      "text": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+      "n_tokens": 9,
+      "n_relations": 3,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t0",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t2",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t5",
+          "target": "t4",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "112:1",
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+      "n_tokens": 8,
+      "n_relations": 2,
+      "tokens_with_relation": 3,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t7",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "112:2",
+      "text": "ٱللَّهُ ٱلصَّمَدُ",
+      "n_tokens": 2,
+      "n_relations": 1,
+      "tokens_with_relation": 1,
+      "relations": [
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "112:3",
+      "text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+      "n_tokens": 4,
+      "n_relations": 2,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t3",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "112:4",
+      "text": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+      "n_tokens": 5,
+      "n_relations": 4,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "agent_of",
+          "kind_type": "subj_pred",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "patient_of",
+          "kind_type": "subj_pred",
+          "source": "t3",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t4",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "109:1",
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ يَٰٓأَيُّهَا ٱلْكَٰفِرُونَ",
+      "n_tokens": 7,
+      "n_relations": 3,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t5",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "agent_of",
+          "kind_type": "subj_pred",
+          "source": "t6",
+          "target": "t5",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "109:2",
+      "text": "لَآ أَعْبُدُ مَا تَعْبُدُونَ",
+      "n_tokens": 4,
+      "n_relations": 2,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t3",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "109:3",
+      "text": "وَلَآ أَنتُمْ عَٰبِدُونَ مَآ أَعْبُدُ",
+      "n_tokens": 5,
+      "n_relations": 2,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t2",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t4",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "109:4",
+      "text": "وَلَآ أَنَا۠ عَابِدٌ مَّا عَبَدتُّمْ",
+      "n_tokens": 5,
+      "n_relations": 3,
+      "tokens_with_relation": 3,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "agent_of",
+          "kind_type": "subj_pred",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t4",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "109:5",
+      "text": "وَلَآ أَنتُمْ عَٰبِدُونَ مَآ أَعْبُدُ",
+      "n_tokens": 5,
+      "n_relations": 2,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t2",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t4",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "109:6",
+      "text": "لَكُمْ دِينُكُمْ وَلِىَ دِينِ",
+      "n_tokens": 4,
+      "n_relations": 1,
+      "tokens_with_relation": 1,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t2",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "114:1",
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ",
+      "n_tokens": 8,
+      "n_relations": 3,
+      "tokens_with_relation": 5,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t5",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t7",
+          "target": "t6",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "114:2",
+      "text": "مَلِكِ ٱلنَّاسِ",
+      "n_tokens": 2,
+      "n_relations": 1,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t1",
+          "target": "t0",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "114:3",
+      "text": "إِلَٰهِ ٱلنَّاسِ",
+      "n_tokens": 2,
+      "n_relations": 1,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t1",
+          "target": "t0",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "114:4",
+      "text": "مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ",
+      "n_tokens": 4,
+      "n_relations": 4,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t1",
+          "target": "t0",
+          "operator": "مِن",
+          "kind": "Certificate"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t1",
+          "target": "t0",
+          "operator": "مِن",
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "114:5",
+      "text": "ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ",
+      "n_tokens": 5,
+      "n_relations": 3,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t4",
+          "target": "t3",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "114:6",
+      "text": "مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ",
+      "n_tokens": 3,
+      "n_relations": 3,
+      "tokens_with_relation": 3,
+      "relations": [
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t1",
+          "target": "t0",
+          "operator": "مِنَ",
+          "kind": "Certificate"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t1",
+          "target": "t0",
+          "operator": "مِنَ",
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "113:1",
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ",
+      "n_tokens": 8,
+      "n_relations": 3,
+      "tokens_with_relation": 5,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t5",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t7",
+          "target": "t6",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "113:2",
+      "text": "مِن شَرِّ مَا خَلَقَ",
+      "n_tokens": 4,
+      "n_relations": 3,
+      "tokens_with_relation": 3,
+      "relations": [
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t1",
+          "target": "t0",
+          "operator": "مِن",
+          "kind": "Certificate"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t1",
+          "target": "t0",
+          "operator": "مِن",
+          "kind": "Certificate"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t3",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "113:3",
+      "text": "وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+      "n_tokens": 5,
+      "n_relations": 2,
+      "tokens_with_relation": 3,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t4",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "113:4",
+      "text": "وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ",
+      "n_tokens": 5,
+      "n_relations": 3,
+      "tokens_with_relation": 4,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t4",
+          "target": "t3",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "113:5",
+      "text": "وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+      "n_tokens": 5,
+      "n_relations": 2,
+      "tokens_with_relation": 3,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t2",
+          "target": "t1",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t4",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        }
+      ]
+    },
+    {
+      "ref": "2:255",
+      "text": "ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ  لَا تَأْخُذُهُۥ سِنَةٌ وَلَا نَوْمٌ  لَّهُۥ مَا فِى ٱلسَّمَٰوَٰتِ وَمَا فِى ٱلْأَرْضِ  مَن ذَا ٱلَّذِى يَشْفَعُ عِندَهُۥٓ إِلَّا بِإِذْنِهِۦ  يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ  وَلَا يُحِيطُونَ بِشَىْءٍ مِّنْ عِلْمِهِۦٓ إِلَّا بِمَا شَآءَ  وَسِعَ كُرْسِيُّهُ ٱلسَّمَٰوَٰتِ وَٱلْأَرْضَ  وَلَا يَـُٔودُهُۥ حِفْظُهُمَا  وَهُوَ ٱلْعَلِىُّ ٱلْعَظِيمُ",
+      "n_tokens": 50,
+      "n_relations": 29,
+      "tokens_with_relation": 29,
+      "relations": [
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t5",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "comment_of",
+          "kind_type": "topic_comment",
+          "source": "t6",
+          "target": "t5",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t8",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "agent_of",
+          "kind_type": "subj_pred",
+          "source": "t9",
+          "target": "t8",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t12",
+          "target": "t11",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t15",
+          "target": "t14",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t18",
+          "target": "t17",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t20",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Certificate"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t20",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Certificate"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t21",
+          "target": "t20",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t22",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t25",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t25",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t26",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t28",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t28",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t33",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t34",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t34",
+          "target": "t19",
+          "operator": "مَن",
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "harf_jarr_of",
+          "kind_type": "prep_phrase",
+          "source": "t36",
+          "target": "t35",
+          "operator": "مِّنْ",
+          "kind": "Certificate"
+        },
+        {
+          "name": "from_source",
+          "kind_type": "source",
+          "source": "t36",
+          "target": "t35",
+          "operator": "مِّنْ",
+          "kind": "Certificate"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t40",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "agent_of",
+          "kind_type": "subj_pred",
+          "source": "t41",
+          "target": "t40",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "possessor_of",
+          "kind_type": "possession",
+          "source": "t42",
+          "target": "t41",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "patient_of",
+          "kind_type": "subj_pred",
+          "source": "t43",
+          "target": "t40",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "verb_in_clause",
+          "kind_type": "clause_anchor",
+          "source": "t45",
+          "target": "—",
+          "operator": null,
+          "kind": "Certificate"
+        },
+        {
+          "name": "patient_of",
+          "kind_type": "subj_pred",
+          "source": "t46",
+          "target": "t45",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "agent_of",
+          "kind_type": "subj_pred",
+          "source": "t48",
+          "target": "t45",
+          "operator": null,
+          "kind": "Hypothesis"
+        },
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t49",
+          "target": "t48",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "2:1",
+      "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ الٓمٓ",
+      "n_tokens": 5,
+      "n_relations": 1,
+      "tokens_with_relation": 2,
+      "relations": [
+        {
+          "name": "attribute_of",
+          "kind_type": "attribute",
+          "source": "t3",
+          "target": "t2",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    },
+    {
+      "ref": "2:2",
+      "text": "ذَٰلِكَ ٱلْكِتَٰبُ لَا رَيْبَ  فِيهِ  هُدًى لِّلْمُتَّقِينَ",
+      "n_tokens": 7,
+      "n_relations": 1,
+      "tokens_with_relation": 1,
+      "relations": [
+        {
+          "name": "topic_anchor",
+          "kind_type": "clause_anchor",
+          "source": "t1",
+          "target": "—",
+          "operator": null,
+          "kind": "Hypothesis"
+        }
+      ]
+    }
+  ]
+}

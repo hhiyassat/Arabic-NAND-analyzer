@@ -1,0 +1,1056 @@
+{
+  "stats": {
+    "total_ayahs": 22,
+    "total_clauses": 22,
+    "act_types": {
+      "assertion": 19,
+      "question": 3
+    },
+    "with_negation": 4,
+    "with_modal": 0,
+    "with_embedding": 3,
+    "conditional_clauses": 3,
+    "certificate_speech_acts": 0,
+    "hypothesis_speech_acts": 22
+  },
+  "samples": [
+    {
+      "surah": "الفاتحة",
+      "ayah": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+      "result": {
+        "input_text": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+              "start_idx": 0,
+              "end_idx": 37,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفاتحة",
+      "ayah": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      "result": {
+        "input_text": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+              "start_idx": 0,
+              "end_idx": 37,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفاتحة",
+      "ayah": "الرَّحْمَنِ الرَّحِيمِ",
+      "result": {
+        "input_text": "الرَّحْمَنِ الرَّحِيمِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "الرَّحْمَنِ الرَّحِيمِ",
+              "start_idx": 0,
+              "end_idx": 22,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفاتحة",
+      "ayah": "مَالِكِ يَوْمِ الدِّينِ",
+      "result": {
+        "input_text": "مَالِكِ يَوْمِ الدِّينِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "مَالِكِ يَوْمِ الدِّينِ",
+              "start_idx": 0,
+              "end_idx": 23,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفاتحة",
+      "ayah": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "result": {
+        "input_text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+              "start_idx": 0,
+              "end_idx": 40,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفاتحة",
+      "ayah": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+      "result": {
+        "input_text": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+              "start_idx": 0,
+              "end_idx": 34,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفاتحة",
+      "ayah": "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+      "result": {
+        "input_text": "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+              "start_idx": 0,
+              "end_idx": 89,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [
+              {
+                "marker": "غَيْرِ",
+                "marker_position": 4,
+                "scope_target": "next_noun",
+                "polarity_effect": "negate_attribute",
+                "scope_words": [
+                  "الْمَغْضُوبِ",
+                  "عَلَيْهِمْ"
+                ],
+                "kind": "Hypothesis",
+                "source_of_claim": "nafy_ghayr",
+                "contract": "NegationDetector:v1",
+                "alternatives": []
+              },
+              {
+                "marker": "وَلَا",
+                "marker_position": 7,
+                "scope_target": "next_verb_iv",
+                "polarity_effect": "negate_event",
+                "scope_words": [
+                  "الضَّالِّينَ"
+                ],
+                "kind": "Hypothesis",
+                "source_of_claim": "nafy_laa_nahy",
+                "contract": "NegationDetector:v1",
+                "alternatives": [
+                  {
+                    "rule": "nafy_laa_nafy",
+                    "polarity_effect": "negate_event",
+                    "confidence": "Hypothesis"
+                  }
+                ]
+              }
+            ],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الإخلاص",
+      "ayah": "قُلْ هُوَ اللَّهُ أَحَدٌ",
+      "result": {
+        "input_text": "قُلْ هُوَ اللَّهُ أَحَدٌ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "قُلْ هُوَ اللَّهُ أَحَدٌ",
+              "start_idx": 0,
+              "end_idx": 24,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": {
+              "priority": "7",
+              "name": "verb_qul",
+              "verb_stripped": "قل",
+              "verb_kind": "speech",
+              "creates_embedded": "direct_quote",
+              "note": "أمر"
+            },
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الإخلاص",
+      "ayah": "اللَّهُ الصَّمَدُ",
+      "result": {
+        "input_text": "اللَّهُ الصَّمَدُ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "اللَّهُ الصَّمَدُ",
+              "start_idx": 0,
+              "end_idx": 17,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الإخلاص",
+      "ayah": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+      "result": {
+        "input_text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+              "start_idx": 0,
+              "end_idx": 26,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [
+              {
+                "marker": "لَمْ",
+                "marker_position": 0,
+                "scope_target": "next_verb_iv",
+                "polarity_effect": "negate_event",
+                "scope_words": [
+                  "يَلِدْ",
+                  "وَلَمْ",
+                  "يُولَدْ"
+                ],
+                "kind": "Certificate",
+                "source_of_claim": "nafy_lam",
+                "contract": "NegationDetector:v1",
+                "alternatives": []
+              },
+              {
+                "marker": "وَلَمْ",
+                "marker_position": 2,
+                "scope_target": "next_verb_iv",
+                "polarity_effect": "negate_event",
+                "scope_words": [
+                  "يُولَدْ"
+                ],
+                "kind": "Certificate",
+                "source_of_claim": "nafy_lam",
+                "contract": "NegationDetector:v1",
+                "alternatives": []
+              }
+            ],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الإخلاص",
+      "ayah": "وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+      "result": {
+        "input_text": "وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ",
+              "start_idx": 0,
+              "end_idx": 33,
+              "type": "coordinate",
+              "connective": "و",
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + waw_aatif",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [
+              {
+                "marker": "وَلَمْ",
+                "marker_position": 0,
+                "scope_target": "next_verb_iv",
+                "polarity_effect": "negate_event",
+                "scope_words": [
+                  "يَكُنْ",
+                  "لَهُ",
+                  "كُفُوًا"
+                ],
+                "kind": "Certificate",
+                "source_of_claim": "nafy_lam",
+                "contract": "NegationDetector:v1",
+                "alternatives": []
+              }
+            ],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفلق",
+      "ayah": "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ",
+      "result": {
+        "input_text": "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ",
+              "start_idx": 0,
+              "end_idx": 30,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": {
+              "priority": "7",
+              "name": "verb_qul",
+              "verb_stripped": "قل",
+              "verb_kind": "speech",
+              "creates_embedded": "direct_quote",
+              "note": "أمر"
+            },
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفلق",
+      "ayah": "مِنْ شَرِّ مَا خَلَقَ",
+      "result": {
+        "input_text": "مِنْ شَرِّ مَا خَلَقَ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "مِنْ شَرِّ مَا خَلَقَ",
+              "start_idx": 0,
+              "end_idx": 21,
+              "type": "conditional_protasis",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + man_shart",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "question",
+              "markers": [
+                {
+                  "rule": "interrogative_man",
+                  "marker": "من"
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "interrogative_man",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [
+              {
+                "marker": "مَا",
+                "marker_position": 2,
+                "scope_target": "next_verb_pv",
+                "polarity_effect": "negate_event",
+                "scope_words": [
+                  "خَلَقَ"
+                ],
+                "kind": "Hypothesis",
+                "source_of_claim": "nafy_maa",
+                "contract": "NegationDetector:v1",
+                "alternatives": []
+              }
+            ],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفلق",
+      "ayah": "وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+      "result": {
+        "input_text": "وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ",
+              "start_idx": 0,
+              "end_idx": 33,
+              "type": "coordinate",
+              "connective": "و",
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + waw_aatif",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفلق",
+      "ayah": "وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ",
+      "result": {
+        "input_text": "وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ",
+              "start_idx": 0,
+              "end_idx": 41,
+              "type": "coordinate",
+              "connective": "و",
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + waw_aatif",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الفلق",
+      "ayah": "وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+      "result": {
+        "input_text": "وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ",
+              "start_idx": 0,
+              "end_idx": 33,
+              "type": "coordinate",
+              "connective": "و",
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + waw_aatif",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الناس",
+      "ayah": "قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
+      "result": {
+        "input_text": "قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "قُلْ أَعُوذُ بِرَبِّ النَّاسِ",
+              "start_idx": 0,
+              "end_idx": 29,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": {
+              "priority": "7",
+              "name": "verb_qul",
+              "verb_stripped": "قل",
+              "verb_kind": "speech",
+              "creates_embedded": "direct_quote",
+              "note": "أمر"
+            },
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الناس",
+      "ayah": "مَلِكِ النَّاسِ",
+      "result": {
+        "input_text": "مَلِكِ النَّاسِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "مَلِكِ النَّاسِ",
+              "start_idx": 0,
+              "end_idx": 15,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الناس",
+      "ayah": "إِلَهِ النَّاسِ",
+      "result": {
+        "input_text": "إِلَهِ النَّاسِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "إِلَهِ النَّاسِ",
+              "start_idx": 0,
+              "end_idx": 15,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الناس",
+      "ayah": "مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ",
+      "result": {
+        "input_text": "مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ",
+              "start_idx": 0,
+              "end_idx": 35,
+              "type": "conditional_protasis",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + man_shart",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "question",
+              "markers": [
+                {
+                  "rule": "interrogative_man",
+                  "marker": "من"
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "interrogative_man",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الناس",
+      "ayah": "الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ",
+      "result": {
+        "input_text": "الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ",
+              "start_idx": 0,
+              "end_idx": 39,
+              "type": "main",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "assertion",
+              "markers": [
+                {
+                  "rule": "default_assertion",
+                  "marker": ""
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "default_assertion",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    },
+    {
+      "surah": "الناس",
+      "ayah": "مِنَ الْجِنَّةِ وَالنَّاسِ",
+      "result": {
+        "input_text": "مِنَ الْجِنَّةِ وَالنَّاسِ",
+        "n_clauses": 1,
+        "clauses": [
+          {
+            "clause": {
+              "text": "مِنَ الْجِنَّةِ وَالنَّاسِ",
+              "start_idx": 0,
+              "end_idx": 26,
+              "type": "conditional_protasis",
+              "connective": null,
+              "parent_clause_id": null,
+              "kind": "Certificate",
+              "source_of_claim": "end_of_text + man_shart",
+              "contract": "ClauseSegmenter:v1",
+              "alternatives": []
+            },
+            "speech_act": {
+              "act_type": "question",
+              "markers": [
+                {
+                  "rule": "interrogative_man",
+                  "marker": "من"
+                }
+              ],
+              "kind": "Hypothesis",
+              "source_of_claim": "interrogative_man",
+              "contract": "SpeechActDetector:v1",
+              "alternatives": []
+            },
+            "embedding": null,
+            "negations": [],
+            "modals": [],
+            "contract": "M1Pipeline:v1"
+          }
+        ],
+        "contract": "M1Pipeline:v1"
+      }
+    }
+  ]
+}

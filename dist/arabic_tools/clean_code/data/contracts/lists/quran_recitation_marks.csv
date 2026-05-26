@@ -1,0 +1,8 @@
+priority,name,codepoint,mark,kind,note
+1,small_meem_iqlab,U+06E2,ۢ,recitation,صَوت إِقلاب (مِيم صَغيرَة)
+2,small_high_madda,U+06E4,ۤ,recitation,مَدَّة صَغيرَة عُلويَّة
+3,small_waw,U+06E5,ۥ,recitation,واو صَغيرَة (ضَمير الهاء المَمدودَة)
+4,small_ya,U+06E6,ۦ,recitation,ياء صَغيرَة
+5,small_high_ya,U+06E7,ۧ,recitation,ياء صَغيرَة عُلويَّة
+6,small_high_noon,U+06E8,ۨ,recitation,نون صَغيرَة عُلويَّة
+7,small_low_meem,U+06ED,ۭ,recitation,ميم صَغيرَة سُفليَّة

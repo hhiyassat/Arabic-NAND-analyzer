@@ -1,0 +1,16 @@
+masaq_tag,expected_engine_class,test_scenario,description
+PREP,closed_class,closed_class_positive,حَرف جَرّ
+CONJ,closed_class,closed_class_positive,حَرف عَطف
+DET,closed_class,closed_class_positive,أَل التَّعريف
+REL_PRON,closed_class,closed_class_positive,اسم مَوصول
+SUBJ_PRON,closed_class,closed_class_positive,ضَمير فاعِل
+POSS_PRON,closed_class,closed_class_positive,ضَمير مَلَكيّ
+OBJ_PRON,closed_class,closed_class_positive,ضَمير مَفعول
+DEM,closed_class,closed_class_positive,اسم إِشارَة
+PART,closed_class,closed_class_positive,حَرف
+INTERROG,closed_class,closed_class_positive,حَرف استِفهام
+NEG,closed_class,closed_class_positive,حَرف نَفي
+NOUN_CONCRETE,jamid,jamid_positive,اسم مَحسوس جامِد
+PV,verb,verb_negative,فِعل ماضٍ — يَجِب أَلّا يَكون closed/jamid
+IV,verb,verb_negative,فِعل مُضارِع — يَجِب أَلّا يَكون closed/jamid
+CV,verb,verb_negative,فِعل أَمر — يَجِب أَلّا يَكون closed/jamid

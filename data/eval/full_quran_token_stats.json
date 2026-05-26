@@ -1,0 +1,26 @@
+{
+  "n_verses": 6236,
+  "n_failed": 0,
+  "tokens": {
+    "total": 77881,
+    "by_status": {
+      "closed_class": 33755,
+      "open_class": 32053,
+      "no_match": 5978,
+      "jamid": 3291,
+      "singular_term": 2804
+    },
+    "by_kind": {
+      "Certificate": 39850,
+      "Hypothesis": 32053,
+      "Zero": 5978
+    }
+  },
+  "n_clauses_total": 23803,
+  "n_relations_total": 32403,
+  "pronouns": {
+    "total": 12441,
+    "resolved": 9477,
+    "resolution_rate": 0.7618
+  }
+}

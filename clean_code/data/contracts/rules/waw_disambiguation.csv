@@ -1,0 +1,5 @@
+priority,rule_id,context_check,preferred_topic_id,preferred_meaning_ar,description
+1,waw_atf_same_pattern,prev_is_verb_pattern_match,WAW_ATAF,واو العَطف — تُشرِك الثَّاني في إِعراب الأَوَّل,إذا تكرّر نَمَط (مفعول+فعل) قبل وبعد الواو → عَطف بدون قَسَم/رُبَّ
+2,waw_atf_after_clause,prev_clause_complete,WAW_ATAF,واو العَطف — تَعطِف جُملَة عَلى جُملَة,إذا الجملة قبل الواو مكتملة (فعل+فاعل+مفعول) → عَطف
+3,waw_qasam_at_start,is_sentence_start_with_majroor,QASAM_PARTICLES,واو القَسَم — حَرف جَرّ لِلقَسَم,إذا الواو في بداية النص وما بعدها مجرور (والله، والشمس) → قَسَم
+4,waw_haal_after_verb_pronoun,prev_is_verb_next_pronoun,WAW_HAAL,واو الحال — تَدخُل عَلى جُملَة الحال,إذا الواو بعد فعل ومتبوعة بضمير منفصل → حال

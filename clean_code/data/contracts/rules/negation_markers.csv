@@ -1,0 +1,11 @@
+priority,name,marker,scope_target,polarity_effect,confidence,note
+1,nafy_laa_nahy,لا,next_verb_iv,negate_event,Hypothesis,لا الناهية — جزم المضارع
+2,nafy_laa_nafy,لا,next_verb_iv,negate_event,Hypothesis,لا النافية — نفي المضارع
+3,nafy_maa,ما,next_verb_pv,negate_event,Hypothesis,ما النافية — نفي الماضي
+4,nafy_lam,لم,next_verb_iv,negate_event,Certificate,لم — نفي الماضي بصيغة المضارع
+5,nafy_lan,لن,next_verb_iv,negate_event,Certificate,لن — نفي المستقبل
+6,nafy_laysa,ليس,next_noun_or_khabar,negate_attribute,Certificate,ليس — نفي اسمي
+7,nafy_lammaa,لما,next_verb_iv,negate_event,Hypothesis,لمّا الجازمة — نفي مستمر
+8,nafy_inna,إن,whole_clause,negate_event,Hypothesis,إن النافية (نادرة)
+9,nafy_ghayr,غير,next_noun,negate_attribute,Hypothesis,غير — نفي على الاسم
+10,nafy_bila,بلا,next_noun,negate_existence,Certificate,بلا — نفي وجود

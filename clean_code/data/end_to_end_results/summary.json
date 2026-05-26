@@ -1,0 +1,58 @@
+{
+  "quran": {
+    "verses": 6236,
+    "words": 82245,
+    "matched": 82245,
+    "coverage_pct": 100.0,
+    "claims": 238110,
+    "constructions": 19,
+    "kind_distribution": {
+      "Hypothesis": 149384,
+      "Zero": 45789,
+      "Certificate": 42937
+    },
+    "match_distribution": {
+      "prefix_as_operator": 130125,
+      "no_match": 45789,
+      "exact_vocalized": 40945,
+      "context_disambiguated": 1992,
+      "prefix_stripped": 19259
+    },
+    "construction_distribution": {
+      "TAQDIM_AL_MA3MOOL_LI_IKHTISAS": 18,
+      "TAHZHEER_BASIC": 1
+    },
+    "elapsed_sec": 2.260963201522827
+  },
+  "audited": {
+    "total": 1174,
+    "exact_pct": 0.0,
+    "any_match_pct": 0.0,
+    "status_distribution": {
+      "root_mismatch": 1174
+    },
+    "issue_distribution": {
+      "engine_no_root": 1113,
+      "hamza_normalization_error": 61
+    },
+    "elapsed_sec": 1.5582478046417236
+  },
+  "masaq_compliance": {
+    "sample_size": 5000,
+    "closed_class": {
+      "total": 1991,
+      "correct": 868,
+      "pct": 43.59618282270216
+    },
+    "jamid": {
+      "total": 222,
+      "correct": 222,
+      "pct": 100.0
+    },
+    "verb_negative": {
+      "total": 614,
+      "correct": 579,
+      "pct": 94.29967426710097
+    }
+  }
+}

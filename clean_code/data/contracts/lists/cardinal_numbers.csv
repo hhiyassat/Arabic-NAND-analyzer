@@ -1,0 +1,58 @@
+priority,form,plain,value,class,gender_form,note
+1,واحد,واحد,1,unit_1_2,M,
+2,واحدة,واحدة,1,unit_1_2,F,
+3,اثنان,اثنان,2,unit_1_2,M,رَفع
+4,اثنين,اثنين,2,unit_1_2,M,نَصب/جَرّ
+5,اثنتان,اثنتان,2,unit_1_2,F,رَفع
+6,اثنتين,اثنتين,2,unit_1_2,F,نَصب/جَرّ
+7,ثلاثة,ثلاثة,3,unit_3_10,M_with_ta,لِلمَعدود المُذَكَّر (مُخالَفَة)
+8,ثلاث,ثلاث,3,unit_3_10,F_without_ta,لِلمَعدود المُؤَنَّث
+9,أربعة,اربعة,4,unit_3_10,M_with_ta,
+10,أربع,اربع,4,unit_3_10,F_without_ta,
+11,خمسة,خمسة,5,unit_3_10,M_with_ta,
+12,خمس,خمس,5,unit_3_10,F_without_ta,
+13,ستة,ستة,6,unit_3_10,M_with_ta,
+14,ست,ست,6,unit_3_10,F_without_ta,
+15,سبعة,سبعة,7,unit_3_10,M_with_ta,
+16,سبع,سبع,7,unit_3_10,F_without_ta,
+17,ثمانية,ثمانية,8,unit_3_10,M_with_ta,
+18,ثماني,ثماني,8,unit_3_10,F_without_ta,
+19,ثمان,ثمان,8,unit_3_10,F_without_ta,
+20,تسعة,تسعة,9,unit_3_10,M_with_ta,
+21,تسع,تسع,9,unit_3_10,F_without_ta,
+22,عشرة,عشرة,10,unit_3_10,M_with_ta,
+23,عشر,عشر,10,unit_3_10,F_without_ta,
+24,أحد,احد,11,teens_11_12,M,
+25,إحدى,احدى,11,teens_11_12,F,
+26,اثنا,اثنا,12,teens_11_12,M,رَفع
+27,اثني,اثني,12,teens_11_12,M,نَصب/جَرّ
+28,اثنتا,اثنتا,12,teens_11_12,F,رَفع
+29,اثنتي,اثنتي,12,teens_11_12,F,نَصب/جَرّ
+30,عشرون,عشرون,20,tens,invariable,لا يَتَغَيَّر مَع الجِنس
+31,عشرين,عشرين,20,tens,invariable,نَصب/جَرّ
+32,ثلاثون,ثلاثون,30,tens,invariable,
+33,ثلاثين,ثلاثين,30,tens,invariable,
+34,أربعون,اربعون,40,tens,invariable,
+35,أربعين,اربعين,40,tens,invariable,
+36,خمسون,خمسون,50,tens,invariable,
+37,خمسين,خمسين,50,tens,invariable,
+38,ستون,ستون,60,tens,invariable,
+39,ستين,ستين,60,tens,invariable,
+40,سبعون,سبعون,70,tens,invariable,
+41,سبعين,سبعين,70,tens,invariable,
+42,ثمانون,ثمانون,80,tens,invariable,
+43,ثمانين,ثمانين,80,tens,invariable,
+44,تسعون,تسعون,90,tens,invariable,
+45,تسعين,تسعين,90,tens,invariable,
+46,مئة,مئة,100,hundred,invariable,
+47,مائة,مائة,100,hundred,invariable,صيغَة قُرآنيَّة
+48,مئتان,مئتان,200,hundred,invariable,
+49,مئتين,مئتين,200,hundred,invariable,
+50,ألف,الف,1000,thousand,invariable,
+51,ألفان,الفان,2000,thousand,invariable,
+52,ألفين,الفين,2000,thousand,invariable,
+53,آلاف,الاف,1000,thousand_plural,M_plural,جَمع ألف (3-10 آلاف)
+54,ملايين,ملايين,1000000,million_plural,M_plural,
+55,بضع,بضع,3_to_9,vague_count,M_with_ta,بِضع لِلمُذَكَّر
+56,بضعة,بضعة,3_to_9,vague_count,M_with_ta,
+57,بضعا,بضعا,3_to_9,vague_count,M,نَصب

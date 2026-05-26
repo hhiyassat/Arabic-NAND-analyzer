@@ -1,0 +1,107 @@
+priority,form,canonical,gender,kind,note
+1,أرض,ارض,F,inherent_feminine,مُؤَنَّث سَماعيّ بِلا عَلامَة
+2,شمس,شمس,F,inherent_feminine,
+3,نار,نار,F,inherent_feminine,
+4,حرب,حرب,F,inherent_feminine,
+5,دار,دار,F,inherent_feminine,
+6,نفس,نفس,F,inherent_feminine,
+7,ريح,ريح,F,inherent_feminine,
+8,سماء,سماء,F,inherent_feminine,
+9,عين,عين,F,inherent_feminine,
+10,يد,يد,F,inherent_feminine,
+11,أذن,اذن,F,inherent_feminine,
+13,روح,روح,F,inherent_feminine,
+14,فأس,فاس,F,inherent_feminine,
+15,عصا,عصا,F,inherent_feminine,
+16,كأس,كاس,F,inherent_feminine,
+17,بئر,بير,F,inherent_feminine,
+18,ساق,ساق,F,inherent_feminine,
+19,قدم,قدم,F,inherent_feminine,
+20,فخذ,فخذ,F,inherent_feminine,
+21,حنجرة,حنجرة,F,inherent_feminine,
+22,حية,حية,F,inherent_feminine,
+23,أم,ام,F,inherent_feminine,
+24,بنت,بنت,F,inherent_feminine,
+25,أخت,اخت,F,inherent_feminine,
+26,امرأة,امراة,F,inherent_feminine,
+27,نساء,نساء,F,broken_plural_feminine,جَمع تَكسير لِامرأَة
+28,حياة,حياة,F,inherent_feminine,
+29,موت,موت,M,inherent_masculine,
+30,آخرة,اخرة,F,inherent_feminine,
+31,جنة,جنة,F,inherent_feminine,
+32,نعمة,نعمة,F,inherent_feminine,
+33,رحمة,رحمة,F,inherent_feminine,
+34,تجارة,تجارة,F,inherent_feminine,
+35,صلاة,صلاة,F,inherent_feminine,
+36,زكاة,زكاة,F,inherent_feminine,
+37,آية,اية,F,inherent_feminine,
+38,سورة,سورة,F,inherent_feminine,
+39,قرية,قرية,F,inherent_feminine,
+40,مدينة,مدينة,F,inherent_feminine,
+41,بلد,بلد,M,inherent_masculine,
+42,قمر,قمر,M,inherent_masculine,
+43,نجم,نجم,M,inherent_masculine,
+44,ليل,ليل,M,inherent_masculine,
+45,نهار,نهار,M,inherent_masculine,
+46,صباح,صباح,M,inherent_masculine,
+47,بحر,بحر,M,inherent_masculine,
+48,نهر,نهر,M,inherent_masculine,
+49,جبل,جبل,M,inherent_masculine,
+50,سهل,سهل,M,inherent_masculine,
+51,طير,طير,M,inherent_masculine_collective,
+52,حمزة,حمزة,M,exception_ta_marbuta_male,اسم عَلَم رَجُل بِـ ـة
+53,طلحة,طلحة,M,exception_ta_marbuta_male,
+54,معاوية,معاوية,M,exception_ta_marbuta_male,
+55,أسامة,اسامة,M,exception_ta_marbuta_male,
+56,عبيدة,عبيدة,M,exception_ta_marbuta_male,
+57,حذيفة,حذيفة,M,exception_ta_marbuta_male,
+58,علقمة,علقمة,M,exception_ta_marbuta_male,
+59,خليفة,خليفة,M,exception_ta_marbuta_male,تَأتي صِفَة لِلمُذَكَّر
+60,علامة,علامة,M,exception_ta_marbuta_male,لِلمُبالَغَة (رَجُل علامة)
+61,راوية,راوية,M,exception_ta_marbuta_male,لِلمُبالَغَة
+62,مصطفى,مصطفى,M,exception_alif_maqsura_male,
+63,مرتضى,مرتضى,M,exception_alif_maqsura_male,
+64,موسى,موسى,M,exception_alif_maqsura_male,
+65,عيسى,عيسى,M,exception_alif_maqsura_male,
+66,يحيى,يحيى,M,exception_alif_maqsura_male,
+67,فتى,فتى,M,exception_alif_maqsura_male,
+68,ماء,ماء,M,exception_alif_mamdoda_male,
+69,دواء,دواء,M,exception_alif_mamdoda_male,
+70,داء,داء,M,exception_alif_mamdoda_male,
+71,شتاء,شتاء,M,exception_alif_mamdoda_male,
+72,سماء,سماء,F,inherent_feminine,(مُكَرَّر — هذه F رَغم اء)
+73,بناء,بناء,M,exception_alif_mamdoda_male,
+74,قراء,قراء,M,exception_alif_mamdoda_male,
+75,رجال,رجال,M,broken_plural_masculine,جَمع تَكسير لِرَجُل
+76,قوم,قوم,M,collective_masculine_default,اسم جَمع مُذَكَّر
+77,ناس,ناس,M,collective_masculine_default,
+78,أنبياء,انبياء,M,broken_plural_masculine,
+79,شهداء,شهداء,M,broken_plural_masculine,
+80,علماء,علماء,M,broken_plural_masculine,
+81,خلفاء,خلفاء,M,broken_plural_masculine,
+82,أصحاب,اصحاب,M,broken_plural_masculine,
+83,أيام,ايام,M,broken_plural_masculine_inanimate,جَمع تَكسير لِيَوم — مُذَكَّر؛ لَكِنّ المُطابَقَة قَد تَكون مُفرَد مُؤَنَّث
+84,شهور,شهور,M,broken_plural_masculine_inanimate,
+85,سنوات,سنوات,F,sound_feminine_plural,
+86,آيات,ايات,F,sound_feminine_plural,
+87,كلمات,كلمات,F,sound_feminine_plural,
+88,بيوت,بيوت,M,broken_plural_masculine_inanimate,
+89,قلوب,قلوب,M,broken_plural_masculine_inanimate,
+90,أعمال,اعمال,M,broken_plural_masculine_inanimate,
+91,كتب,كتب,M,broken_plural_masculine_inanimate,جَمع تَكسير لِكِتاب — جَمع غَير العاقِل
+92,بنون,بنون,M,sound_masculine_plural,
+93,بنات,بنات,F,sound_feminine_plural,
+94,أمهات,امهات,F,sound_feminine_plural,
+95,زوجات,زوجات,F,sound_feminine_plural,
+96,أزواج,ازواج,M,broken_plural_masculine,
+97,الذي,الذي,M,relative_pronoun,اسم مَوصول M.SG
+98,التي,التي,F,relative_pronoun,اسم مَوصول F.SG
+99,الذين,الذين,M,relative_pronoun_plural,اسم مَوصول M.PL لِلعاقِل
+100,اللاتي,اللاتي,F,relative_pronoun_plural,اسم مَوصول F.PL
+101,اللائي,اللائي,F,relative_pronoun_plural,اسم مَوصول F.PL
+102,اللواتي,اللواتي,F,relative_pronoun_plural,
+103,اللذان,اللذان,M,relative_pronoun_dual,M.DU
+104,اللتان,اللتان,F,relative_pronoun_dual,F.DU
+105,من,من,X,relative_pronoun_general,اسم مَوصول عامّ (مَن العاقِل)
+106,ما,ما,X,relative_pronoun_general,اسم مَوصول لِغَير العاقِل
+

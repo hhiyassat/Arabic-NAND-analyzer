@@ -1,0 +1,136 @@
+{
+  "field_name_ar": "النباتات",
+  "field_name_en": "Plants",
+  "members": [
+    {
+      "word": "نَخْل",
+      "plain": "نخل",
+      "type": "tree"
+    },
+    {
+      "word": "نَخْلَة",
+      "plain": "نخلة",
+      "type": "tree"
+    },
+    {
+      "word": "زَيْتُون",
+      "plain": "زيتون",
+      "type": "tree"
+    },
+    {
+      "word": "تِين",
+      "plain": "تين",
+      "type": "tree"
+    },
+    {
+      "word": "رُمَّان",
+      "plain": "رمان",
+      "type": "tree"
+    },
+    {
+      "word": "عِنَب",
+      "plain": "عنب",
+      "type": "fruit"
+    },
+    {
+      "word": "تُفَّاح",
+      "plain": "تفاح",
+      "type": "fruit"
+    },
+    {
+      "word": "أُتْرُجّ",
+      "plain": "اترج",
+      "type": "fruit"
+    },
+    {
+      "word": "بُرْتُقَال",
+      "plain": "برتقال",
+      "type": "fruit"
+    },
+    {
+      "word": "لَيْمُون",
+      "plain": "ليمون",
+      "type": "fruit"
+    },
+    {
+      "word": "بَلَح",
+      "plain": "بلح",
+      "type": "fruit"
+    },
+    {
+      "word": "تَمْر",
+      "plain": "تمر",
+      "type": "fruit"
+    },
+    {
+      "word": "حَنْطَة",
+      "plain": "حنطة",
+      "type": "grain"
+    },
+    {
+      "word": "قَمْح",
+      "plain": "قمح",
+      "type": "grain"
+    },
+    {
+      "word": "شَعِير",
+      "plain": "شعير",
+      "type": "grain"
+    },
+    {
+      "word": "أُرْز",
+      "plain": "ارز",
+      "type": "grain"
+    },
+    {
+      "word": "ذُرَة",
+      "plain": "ذرة",
+      "type": "grain"
+    },
+    {
+      "word": "وَرَقَة",
+      "plain": "ورقة",
+      "type": "part"
+    },
+    {
+      "word": "شَجَرَة",
+      "plain": "شجرة",
+      "type": "tree_generic"
+    },
+    {
+      "word": "زَهْرَة",
+      "plain": "زهرة",
+      "type": "flower"
+    },
+    {
+      "word": "وَرْدَة",
+      "plain": "وردة",
+      "type": "flower"
+    },
+    {
+      "word": "عُشْب",
+      "plain": "عشب",
+      "type": "ground"
+    },
+    {
+      "word": "نَبَات",
+      "plain": "نبات",
+      "type": "generic"
+    },
+    {
+      "word": "ثَمَر",
+      "plain": "ثمر",
+      "type": "fruit_generic"
+    },
+    {
+      "word": "جَذْر",
+      "plain": "جذر",
+      "type": "part"
+    },
+    {
+      "word": "غُصْن",
+      "plain": "غصن",
+      "type": "part"
+    }
+  ]
+}

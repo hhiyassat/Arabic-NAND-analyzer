@@ -1,0 +1,53 @@
+surface,category,note
+غَيْرَ,exception,exception/other
+غَيْرُ,exception,exception/other (nom)
+غَيْرِ,exception,exception/other (gen)
+بَعْدَ,time-adv,after
+بَعْدُ,time-adv,after (mabni)
+بَعْدِ,time-adv,after (gen)
+قَبْلَ,time-adv,before
+قَبْلُ,time-adv,before (mabni)
+قَبْلِ,time-adv,before (gen)
+بَيْنَ,locative,between
+دُونِ,locative,below/other than
+دُونَ,locative,below/other than
+عِندَ,locative,with/at
+عِندِ,locative,with/at (gen)
+عِندَهُ,locative,with him
+عِنْدَهُ,locative,with him
+فَوْقَ,locative,above
+فَوْقِ,locative,above (gen)
+تَحْتَ,locative,below
+تَحْتِ,locative,below (gen)
+أَمَامَ,locative,in front
+خَلْفَ,locative,behind
+وَرَآءَ,locative,behind
+حَوْلَ,locative,around
+حَوْلَهُ,locative,around him
+وَسْطَ,locative,middle of
+وَسَطَ,locative,middle
+نَحْوَ,locative,toward
+شَطْرَ,locative,toward
+لَدَى,locative,with (mabni)
+لَدُن,locative,from with (mabni)
+لَدُنْكَ,locative,from with you
+لَدَيْهِ,locative,with him
+مَعَ,locative,with
+مَعَهُ,locative,with him
+مَعَهُمْ,locative,with them
+سِوَىٰ,exception,other than
+سِوَى,exception,other than
+كُلَّ,quantifier,every/all
+كُلُّ,quantifier,every/all (nom)
+كُلِّ,quantifier,every/all (gen)
+بَعْضَ,quantifier,some
+بَعْضُ,quantifier,some (nom)
+بَعْضِ,quantifier,some (gen)
+أَيَّ,interrog,which
+أَيُّ,interrog,which (nom)
+أَيِّ,interrog,which (gen)
+مِثْلَ,similitive,like
+مِثْلُ,similitive,like (nom)
+مِثْلِ,similitive,like (gen)
+مِثْلَهُمْ,similitive,like them
+مِثْلَهُۥ,similitive,like him

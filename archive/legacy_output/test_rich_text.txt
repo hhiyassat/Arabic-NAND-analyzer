@@ -1,0 +1,154 @@
+========================================================================
+Architecture Test
+اختبار تطبيقي للمعمار
+========================================================================
+ID        : architecture_test_input
+Reference : test_rich_text
+Text      : ﴿الْكَاتِبُ يَكْتُبُ كِتَابًا فِي الْمَكْتَبَةِ﴾
+Tokens    : 5
+
+────────────────────────────────────────────────────────────────────────
+Tokens (surface hints)
+────────────────────────────────────────────────────────────────────────
+  [0] الْكَاتِبُ  (definite, rafa)  huruf=—  wazn=فَاعِل root=كتب  [al-]
+  [1] يَكْتُبُ  (unknown, rafa)  huruf=—  wazn=(NO_WAZN)  [verbal?]
+  [2] كِتَابًا  (indefinite, unknown)  huruf=—  wazn=(NO_WAZN)  [tanwin]
+  [3] فِي  (unknown, unknown)  huruf=H116  wazn=(operator skipped)
+  [4] الْمَكْتَبَةِ  (definite, kasra)  huruf=—  wazn=مَفْعَلَة root=كتب  [al-]
+
+────────────────────────────────────────────────────────────────────────
+STEP 0 — analyze_word.py (Mushtaqat wazn, before architecture)
+────────────────────────────────────────────────────────────────────────
+  Module  : /sessions/nice-epic-cannon/mnt/alasmaa/analyze_word.py
+  Weights : /sessions/nice-epic-cannon/mnt/alasmaa/Mushtaqat_Weights_Final_Corrected_With_Fa3ll.csv (80 rows)
+  Status  : MATCHED=2, NO_WAZN=2, OPERATOR_SKIPPED=1
+  ✓ الْكَاتِبُ → فَاعِل (اسم الفاعل) root=كتب [without_al_no_irab]
+  ✗ يَكْتُبُ → NO_WAZN
+  ✗ كِتَابًا → NO_WAZN
+  ○ فِي → operator (no wazn)
+  ✓ الْمَكْتَبَةِ → مَفْعَلَة (اسم المكان) root=كتب [without_al_no_irab]
+
+────────────────────────────────────────────────────────────────────────
+STEP 1 — Meaning Flow (03)
+────────────────────────────────────────────────────────────────────────
+Path: sign → attention → initial_conception → possibility_space → evidence_gathering → relation_building → weighing → designation → meaning_construction → inference → understanding
+
+Sign → Attention:
+  • Lexical sequence (5 units): الكاتب • يكتب • كتابا • في • المكتبة
+  • Definite vs indefinite contrast: الْكَاتِبُ, الْمَكْتَبَةِ vs كِتَابًا
+  • Verbal morphology detected: يَكْتُبُ
+
+Initial conception: Clause with verbal nucleus — event-bearing structure possible
+
+Possibility space:
+  ? Does al- mark genus, deixis, or prior mention?
+  ? Does tanwin mark indefiniteness, type, or multiplicity?
+
+Evidence:
+  • الْكَاتِبُ: definite (al-) — often genus or known referent
+  • الْكَاتِبُ: surface case hint = rafa
+  • يَكْتُبُ: surface case hint = rafa
+  • كِتَابًا: tanwin — indefiniteness / type reading
+  • الْمَكْتَبَةِ: definite (al-) — often genus or known referent
+  • الْمَكْتَبَةِ: surface case hint = kasra
+
+Relations:
+  • الْكَاتِبُ → lexical bearer (definiteness=definite)
+  • الْمَكْتَبَةِ → lexical bearer (definiteness=definite)
+  • كِتَابًا → lexical bearer (definiteness=indefinite)
+
+Weighing: Weighted reading follows surface order and morphology on: الكاتب • يكتب • كتابا • في • المكتبة. No external context supplied.
+
+Meaning: Compositional meaning built from operators + bearers in input order (no tafsir beyond structural linguistics)
+
+Understanding: Structural understanding of input (5 units): mixed / verbal clause
+
+────────────────────────────────────────────────────────────────────────
+STEP 2 — Layer-Centric Decomposition (01)
+────────────────────────────────────────────────────────────────────────
+  ● Sign: 5 vocalized units + diacritics/marks as present in input
+  ● Perception: Nasikh vs plain; definite vs indefinite; operator vs bearer (heuristic from surface)
+  ● Relation: inter-token order preserved
+  ● Event_Transformation: ACTIVE — verbal morphology detected
+  ● Context: (none supplied)
+  ● Resolution: Definite/indefinite and case hints mapped per token
+  ● Time: Verbal input may carry tense; otherwise timeless/rule-like
+  ● Identity: Definite tokens lean genus/referent; indefinite toward type/multiplicity
+  ● Reasoning: Cross-token constraints from operators and def/indef pattern
+
+Note: Verbal nucleus activates Event/Transformation
+
+────────────────────────────────────────────────────────────────────────
+STEP 3 — Huruf dataset matching
+────────────────────────────────────────────────────────────────────────
+  ✗ الْكَاتِبُ — NOT in dataset
+  ✗ ال (in الْكَاتِبُ) — NOT in dataset
+      definiteness marker; not a standalone huruf row
+  ✗ يَكْتُبُ — NOT in dataset
+  ✗ كِتَابًا — NOT in dataset
+  ✗ تنوين (in كِتَابًا) — NOT in dataset
+      indefiniteness / case marking; not in huruf catalog
+  ✓ فِي → H116 (في)
+  ✗ الْمَكْتَبَةِ — NOT in dataset
+  ✗ ال (in الْمَكْتَبَةِ) — NOT in dataset
+      definiteness marker; not a standalone huruf row
+
+7 surface factor(s) outside huruf dataset (1 huruf hit(s) on 5 token(s)) — catalog is classical huruf, not all quasi-harf operators
+
+────────────────────────────────────────────────────────────────────────
+STEP 3.5 — Word classification (اسم وفعل وحرف) + wazn/root
+────────────────────────────────────────────────────────────────────────
+  harf: 1  |  verb: 1  |  mushtaq: 2  |  unknown: 1
+  coverage: 80.0% of tokens classified
+  الْكَاتِبُ → mushtaq  [wazn=فَاعِل root=كتب (اسم الفاعل)]
+  يَكْتُبُ → verb
+  كِتَابًا → unknown
+  فِي → harf  [huruf:H116]
+  الْمَكْتَبَةِ → mushtaq  [wazn=مَفْعَلَة root=كتب (اسم المكان)]
+  roots: كتب
+  mushtaq babs: اسم الفاعل, اسم المكان
+  Computational classification (per 11_Abstraction_Levels.md). Serves linguistic level; does not replace philosophical Entity definition. Wazn + root extraction via alasmaa/analyze_word.py.
+
+────────────────────────────────────────────────────────────────────────
+STEP 4 — Five state patterns (Q2)
+────────────────────────────────────────────────────────────────────────
+  Event-Residue: no
+      No clear event-residue morphology (passive participle etc.) detected
+  Event-Continuation: YES
+      Verbal nucleus suggests ongoing or event-bearing clause
+  Identity-Pattern: PARTIAL
+      Nominal bearers may carry kind-identity readings
+  Pure Attribute: no
+      No dedicated adjectival predicate pattern detected heuristically
+  Structural-Condition Inducer: no
+      No nasikh detected
+
+Dominant: Event-Continuation
+Discovery: Not all five patterns expected in every text — record what appears
+
+────────────────────────────────────────────────────────────────────────
+STEP 5 — Resolution & probability (07)
+────────────────────────────────────────────────────────────────────────
+  الْكَاتِبُ: genus_or_referent (definite al-)
+  يَكْتُبُ: underdetermined (sparse surface markers)
+  كِتَابًا: type_level (tanwin / indefiniteness)
+  فِي: fully_determined (huruf match H116)
+  الْمَكْتَبَةِ: genus_or_referent (definite al-)
+
+Definite tokens: 2, indefinite: 1 — Resolution + Identity layers scale with these markers
+
+────────────────────────────────────────────────────────────────────────
+STEP 6 — Verdict: held / gaps
+────────────────────────────────────────────────────────────────────────
+Held:
+  + Layer-centric decomposition applied to input tokens without manual retrofit
+  + Meaning flow path (03) executed on supplied text
+  + Huruf dataset consulted per token surface
+  + Five Q2 patterns scored from surface heuristics
+  + Resolution recorded per token
+
+Gaps:
+  ! [medium] huruf_dataset_coverage: 7 surface factor(s) outside huruf dataset (1 huruf hit(s) on 5 token(s)) — catalog is classical huruf, not all quasi-harf operators
+
+Overall: Architecture pipeline completed on input; gaps recorded explicitly (no constitutional expansion)
+========================================================================

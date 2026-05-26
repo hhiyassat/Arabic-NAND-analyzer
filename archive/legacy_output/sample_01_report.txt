@@ -1,0 +1,119 @@
+========================================================================
+Architecture Test — Sample 01
+اختبار تطبيقي للمعمار على نص قرآني قصير
+========================================================================
+Reference : Quran 94:6 (الشرح 6)
+Text      : ﴿إِنَّ مَعَ الْعُسْرِ يُسْرًا﴾
+Context   : 94:5 repeats the same sentence
+
+────────────────────────────────────────────────────────────────────────
+STEP 1 — Meaning Flow (03)
+────────────────────────────────────────────────────────────────────────
+Path: sign → attention → initial_conception → possibility_space → evidence_gathering → relation_building → weighing → designation → meaning_construction → inference → understanding
+
+Sign → Attention:
+  • Four lexical units in sequence: إنّ • مع • العسر • يسرًا
+  • Tawkid at onset (إنّ) — not ordinary informative clause
+  • مع signals accompaniment between two entities
+  • Contrast: العسر definite, يسرًا indefinite with tanwin
+
+Initial conception: Nominal construction with إنّ fronted; structural rule, not event narrative
+
+Possibility space:
+  ? Is مع locative, temporal, or preposition?
+  ? Is يسرًا fronted khabar, maf'ul, or tamyiz?
+  ? Why definite العسر vs indefinite يسرًا?
+  ? Is order إنّ + delayed ism + fronted khabar?
+
+Evidence:
+  • إنّ requires mansub ism + marfu' khabar; يسرًا is mansub → not marfu' khabar
+  • Resolution: ism of إنّ = يسرًا (delayed); khabar = PP مع العسر
+  • مع: accompaniment (locative/temporal metaphor)
+  • ال on العسر: genus (jins), not deixis
+  • Tanwin on يسرًا: type / multiplicity of ease
+
+Relations:
+  • إنّ → structural tawkid state on whole clause
+  • مع → accompaniment between العسر and يسر
+  • العسر / يسر → abstract bearers (genus vs type)
+
+Weighing: Preferred: with every hardship (as genus) there is ease (type or types). Prior ayah 94:5 repeats the same form → insistence on rule.
+
+Meaning: Affirmed structural rule: hardship (universal genus) is paired with ease (type/types)
+
+Understanding: Affirmed structural informative rule: hardship–ease coupling (94:6)
+
+────────────────────────────────────────────────────────────────────────
+STEP 2 — Layer-Centric Decomposition (01)
+────────────────────────────────────────────────────────────────────────
+  ● Sign: 4 vocalized units + diacritics/tanwin; no constitutional retrofit
+  ● Perception: Tawkid vs plain statement; definite vs indefinite; adverb vs harf
+  ● Relation: مع → accompaniment; إنّ → tawkid relation on propositional content
+  ○ Event_Transformation: INACTIVE — no finite verb; purely nominal/static composition
+  ● Context: 94:5 repetition strengthens rule-reading; surah theme: taysir
+  ● Resolution: العسر → genus via al-; يسرًا → type/multiplicity via tanwin + nasb
+  ● Time: No explicit tense; rule framed as timeless; مع allows time/place reading
+  ● Identity: العسر as genus-identity; يسر as type-identity
+  ● Reasoning: Hardship is bounded by co-present ease (not unqualified hardship)
+
+Note: Ayah strongly activates static layers; Event/Transformation dormant — discovery, not failure
+
+────────────────────────────────────────────────────────────────────────
+STEP 3 — Huruf dataset matching
+────────────────────────────────────────────────────────────────────────
+  ✓ إِنَّ → H030 (إنّ)
+  ✗ مَعَ — NOT in dataset
+      active relational particle not in huruf_maani_unified_master
+  ✗ ال (prefix in العسر) — NOT in dataset
+      genus assignment; not a standalone huruf row
+  ✗ تنوين (in يسرًا) — NOT in dataset
+      nasb + indefiniteness; not in huruf_maani catalog
+
+Three of four active linguistic factors (مع, ال, tanwin) lie outside the huruf dataset — catalog covers classical huruf, not all quasi-harf operators
+
+────────────────────────────────────────────────────────────────────────
+STEP 4 — Five state patterns (Q2)
+────────────────────────────────────────────────────────────────────────
+  Event-Residue: no
+      No events → no event residue
+  Event-Continuation: no
+      No ongoing event
+  Identity-Pattern: PARTIAL
+      Abstract nouns behave like identity-bearing kinds
+  Pure Attribute: no
+      No explicit adjectival predicates; nouns are abstract kinds
+  Structural-Condition Inducer: YES (strong)
+      Nasikh imposes structural tawkid state on clause
+
+Dominant: Structural-Condition Inducer
+Discovery: Only one of five patterns is strong; static texts need not activate all five
+
+────────────────────────────────────────────────────────────────────────
+STEP 5 — Resolution & probability (07)
+────────────────────────────────────────────────────────────────────────
+  إِنَّ: fully_determined (explicit nasikh form)
+  مَعَ: contextually_determined (accompaniment reading from surrounding nouns)
+  الْعُسْرِ: genus_level (definite al- (jins, not deixis))
+  يُسْرًا: type_level (indefiniteness + nasb (fatha + tanwin))
+
+Definite hardship (one genus) vs indefinite ease (type/multiplicity) — architecture holds via Resolution + Identity layers
+
+────────────────────────────────────────────────────────────────────────
+STEP 6 — Verdict: held / gaps
+────────────────────────────────────────────────────────────────────────
+Held:
+  + Layer-centric decomposition maps elements without forced fit
+  + Meaning flow stages align with constitutional path (03)
+  + Structural-Condition Inducer captured via إنّ
+  + Genus vs type resolution for العسر / يسر
+  + Layer boundaries respected (Sign ≠ Perception ≠ Relation ≠ Event)
+
+Gaps:
+  ! [medium] huruf_dataset_coverage: Three of four active linguistic factors (مع, ال, tanwin) lie outside the huruf dataset — catalog covers classical huruf, not all quasi-harf operators
+  ! [low] event_layer_dormant_on_static_texts: Event/Transformation inactive — architecture should treat static rule-statements as valid without events
+  ! [medium] accompaniment_relation_untyped: مع encodes accompaniment but architecture does not distinguish temporal / spatial / logical / existential subtypes (05 gap)
+  ! [medium] universal_rule_vs_particular_case: Text is universal rule, not particular event — not yet represented as a first-class distinction
+  ! [low] balagha_fronting: Khabar-fronting registered grammatically but no balagha layer (consistent with deferred expansion)
+
+Overall: Architecture holds in core; three substantive data/relation gaps recorded (huruf coverage, accompaniment typing, universal vs particular)
+========================================================================

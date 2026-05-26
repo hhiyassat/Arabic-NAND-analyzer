@@ -1,0 +1,15 @@
+atom_id,predicate_type,target_field,operation,operand,description
+word_starts_with_seen,startswith_any,word,startswith,"س,سَ,سُ,سِ",الكَلِمَة تَبدَأ بِسين
+audited_root_not_starts_with_seen,not_startswith,audited_root,startswith,س,جَذر المُدَقَّق لا يَبدَأ بِسين
+audited_root_has_alif_middle,contains_at_position,audited_root,middle,ا,أَلِف في وَسط جَذر المُدَقَّق
+engine_root_has_waw_middle,contains_at_position,engine_root,middle,و,واو في وَسط جَذر المُحَرِّك
+audited_root_has_alif_end,endswith,audited_root,endswith,ا,جَذر المُدَقَّق يَنتَهي بِأَلِف
+engine_root_has_waw_end,endswith,engine_root,endswith,و,جَذر المُحَرِّك يَنتَهي بِواو
+word_starts_with_ist,startswith_any,word,startswith,"است,اِست",الكَلِمَة تَبدَأ بِاست (Form X)
+engine_root_equals_audited_root,equals,engine_root_vs_audited_root,equals,,الجَذران مُتَطابِقان
+engine_wazn_not_equals_audited_wazn,not_equals,engine_wazn_vs_audited_wazn,not_equals,,الوَزنان مُختَلِفان (مَع تَحَقُّق أَنّهُما لَيسا فارِغَين)
+engine_wazn_equals_audited_wazn,equals,engine_wazn_vs_audited_wazn,equals,,الوَزنان مُتَطابِقان
+engine_root_not_equals_audited_root,not_equals,engine_root_vs_audited_root,not_equals,,الجَذران مُختَلِفان (مَع تَحَقُّق أَنّهُما لَيسا فارِغَين)
+audited_root_contains_hamza,contains_any,audited_root,contains,"ء,أ,إ,ؤ,ئ",جَذر المُدَقَّق يَحوي هَمزَة
+engine_root_no_hamza,not_contains_any,engine_root,not_contains,"ء,أ,إ,ؤ,ئ",جَذر المُحَرِّك لا يَحوي هَمزَة
+no_match_in_engine,is_empty,engine_root,is_empty,,المُحَرِّك لَم يُخرِج جَذرًا

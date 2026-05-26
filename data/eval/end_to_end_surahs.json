@@ -1,0 +1,184 @@
+{
+  "contract": "EndToEndEval:v1",
+  "fatiha": {
+    "surah": "الفاتحة",
+    "n_verses": 7,
+    "totals": {
+      "tokens": 29,
+      "clauses": 9,
+      "intra_relations": 13,
+      "inter_clause_relations": 2,
+      "pronouns": 7,
+      "pronouns_resolved": 1
+    },
+    "averages": {
+      "intra_per_verse": 1.86,
+      "intra_per_token": 0.448,
+      "pronoun_resolution_rate": 0.1429
+    },
+    "word_class_distribution": {
+      "ISM_MUARAB": 14,
+      "HARF": 8,
+      "FIIL": 5,
+      "SINGULAR_TERM": 1,
+      "JAMID": 1
+    },
+    "intra_relation_distribution": {
+      "attribute_of": 6,
+      "verb_in_clause": 5,
+      "topic_anchor": 1,
+      "possessor_of": 1
+    },
+    "inter_clause_distribution": {
+      "sequence": 2
+    },
+    "per_verse": [
+      {
+        "ref": "1:1",
+        "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+        "n_tokens": 4,
+        "n_clauses": 1,
+        "n_intra_relations": 1,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 1,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "1:2",
+        "text": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
+        "n_tokens": 4,
+        "n_clauses": 1,
+        "n_intra_relations": 4,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 0,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "1:3",
+        "text": "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+        "n_tokens": 2,
+        "n_clauses": 1,
+        "n_intra_relations": 1,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 0,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "1:4",
+        "text": "مَٰلِكِ يَوْمِ ٱلدِّينِ",
+        "n_tokens": 3,
+        "n_clauses": 1,
+        "n_intra_relations": 1,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 1,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "1:5",
+        "text": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        "n_tokens": 4,
+        "n_clauses": 2,
+        "n_intra_relations": 2,
+        "n_inter_clause_relations": 1,
+        "n_pronouns": 2,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "1:6",
+        "text": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+        "n_tokens": 3,
+        "n_clauses": 1,
+        "n_intra_relations": 1,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 1,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "1:7",
+        "text": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+        "n_tokens": 9,
+        "n_clauses": 2,
+        "n_intra_relations": 3,
+        "n_inter_clause_relations": 1,
+        "n_pronouns": 2,
+        "n_pronouns_resolved": 1
+      }
+    ]
+  },
+  "ikhlas": {
+    "surah": "الإخلاص",
+    "n_verses": 4,
+    "totals": {
+      "tokens": 19,
+      "clauses": 5,
+      "intra_relations": 9,
+      "inter_clause_relations": 1,
+      "pronouns": 3,
+      "pronouns_resolved": 1
+    },
+    "averages": {
+      "intra_per_verse": 2.25,
+      "intra_per_token": 0.474,
+      "pronoun_resolution_rate": 0.3333
+    },
+    "word_class_distribution": {
+      "ISM_MUARAB": 7,
+      "HARF": 5,
+      "FIIL": 4,
+      "SINGULAR_TERM": 3
+    },
+    "intra_relation_distribution": {
+      "verb_in_clause": 4,
+      "topic_anchor": 2,
+      "attribute_of": 1,
+      "agent_of": 1,
+      "patient_of": 1
+    },
+    "inter_clause_distribution": {
+      "sequence": 1
+    },
+    "per_verse": [
+      {
+        "ref": "112:1",
+        "text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+        "n_tokens": 8,
+        "n_clauses": 1,
+        "n_intra_relations": 2,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 2,
+        "n_pronouns_resolved": 1
+      },
+      {
+        "ref": "112:2",
+        "text": "ٱللَّهُ ٱلصَّمَدُ",
+        "n_tokens": 2,
+        "n_clauses": 1,
+        "n_intra_relations": 1,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 1,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "112:3",
+        "text": "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+        "n_tokens": 4,
+        "n_clauses": 2,
+        "n_intra_relations": 2,
+        "n_inter_clause_relations": 1,
+        "n_pronouns": 0,
+        "n_pronouns_resolved": 0
+      },
+      {
+        "ref": "112:4",
+        "text": "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ",
+        "n_tokens": 5,
+        "n_clauses": 1,
+        "n_intra_relations": 4,
+        "n_inter_clause_relations": 0,
+        "n_pronouns": 0,
+        "n_pronouns_resolved": 0
+      }
+    ]
+  },
+  "note": "هذا قِياس بِنيويّ شامِل عَلى السُّورَتَين. لا ground-truth يَدَويّة، لذلِك لا نَدَّعي «دِقَّة». الأَرقام تُبَيِّن كَثافَة العَلاقات وانتِظام الـ extractor عَبر السُّورَتَين."
+}

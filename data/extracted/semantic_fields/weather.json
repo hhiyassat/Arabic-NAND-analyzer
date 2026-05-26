@@ -1,0 +1,106 @@
+{
+  "field_name_ar": "الطقس",
+  "field_name_en": "Weather",
+  "members": [
+    {
+      "word": "مَطَر",
+      "plain": "مطر",
+      "phenom": "precipitation"
+    },
+    {
+      "word": "غَيْث",
+      "plain": "غيث",
+      "phenom": "precipitation"
+    },
+    {
+      "word": "ثَلْج",
+      "plain": "ثلج",
+      "phenom": "precipitation"
+    },
+    {
+      "word": "بَرَد",
+      "plain": "برد",
+      "phenom": "precipitation"
+    },
+    {
+      "word": "صَقِيع",
+      "plain": "صقيع",
+      "phenom": "precipitation"
+    },
+    {
+      "word": "نَدَى",
+      "plain": "ندى",
+      "phenom": "moisture"
+    },
+    {
+      "word": "ضَبَاب",
+      "plain": "ضباب",
+      "phenom": "atmospheric"
+    },
+    {
+      "word": "غَيْم",
+      "plain": "غيم",
+      "phenom": "atmospheric"
+    },
+    {
+      "word": "سَحَاب",
+      "plain": "سحاب",
+      "phenom": "atmospheric"
+    },
+    {
+      "word": "رَعْد",
+      "plain": "رعد",
+      "phenom": "storm"
+    },
+    {
+      "word": "بَرْق",
+      "plain": "برق",
+      "phenom": "storm"
+    },
+    {
+      "word": "صَاعِقَة",
+      "plain": "صاعقة",
+      "phenom": "storm"
+    },
+    {
+      "word": "رِيح",
+      "plain": "ريح",
+      "phenom": "wind"
+    },
+    {
+      "word": "إِعْصَار",
+      "plain": "اعصار",
+      "phenom": "wind"
+    },
+    {
+      "word": "زَوْبَعَة",
+      "plain": "زوبعة",
+      "phenom": "wind"
+    },
+    {
+      "word": "حَرّ",
+      "plain": "حر",
+      "phenom": "temperature"
+    },
+    {
+      "word": "بَرْد",
+      "plain": "برد",
+      "phenom": "temperature"
+    },
+    {
+      "word": "دِفْء",
+      "plain": "دفء",
+      "phenom": "temperature"
+    },
+    {
+      "word": "شَمْس",
+      "plain": "شمس",
+      "phenom": "celestial"
+    },
+    {
+      "word": "قَمَر",
+      "plain": "قمر",
+      "phenom": "celestial"
+    }
+  ]
+}

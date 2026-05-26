@@ -1,0 +1,156 @@
+{
+  "field_name_ar": "القرابة",
+  "field_name_en": "Kinship",
+  "members": [
+    {
+      "word": "أَب",
+      "plain": "اب",
+      "gender": "م",
+      "relation": "والد"
+    },
+    {
+      "word": "أُمّ",
+      "plain": "ام",
+      "gender": "ث",
+      "relation": "والدة"
+    },
+    {
+      "word": "اِبْن",
+      "plain": "ابن",
+      "gender": "م",
+      "relation": "نسل"
+    },
+    {
+      "word": "بِنْت",
+      "plain": "بنت",
+      "gender": "ث",
+      "relation": "نسل"
+    },
+    {
+      "word": "أَخ",
+      "plain": "اخ",
+      "gender": "م",
+      "relation": "إخوة"
+    },
+    {
+      "word": "أُخْت",
+      "plain": "اخت",
+      "gender": "ث",
+      "relation": "إخوة"
+    },
+    {
+      "word": "جَدّ",
+      "plain": "جد",
+      "gender": "م",
+      "relation": "جدودة"
+    },
+    {
+      "word": "جَدَّة",
+      "plain": "جدة",
+      "gender": "ث",
+      "relation": "جدودة"
+    },
+    {
+      "word": "حَفِيد",
+      "plain": "حفيد",
+      "gender": "م",
+      "relation": "نسل ثانٍ"
+    },
+    {
+      "word": "حَفِيدَة",
+      "plain": "حفيدة",
+      "gender": "ث",
+      "relation": "نسل ثانٍ"
+    },
+    {
+      "word": "عَمّ",
+      "plain": "عم",
+      "gender": "م",
+      "relation": "عمومة (أبوية)"
+    },
+    {
+      "word": "عَمَّة",
+      "plain": "عمة",
+      "gender": "ث",
+      "relation": "عمومة (أبوية)"
+    },
+    {
+      "word": "خَال",
+      "plain": "خال",
+      "gender": "م",
+      "relation": "خؤولة (أمومية)"
+    },
+    {
+      "word": "خَالَة",
+      "plain": "خالة",
+      "gender": "ث",
+      "relation": "خؤولة (أمومية)"
+    },
+    {
+      "word": "اِبْن عَمّ",
+      "plain": "ابن عم",
+      "gender": "م",
+      "relation": "ابن العم"
+    },
+    {
+      "word": "اِبْن خَال",
+      "plain": "ابن خال",
+      "gender": "م",
+      "relation": "ابن الخال"
+    },
+    {
+      "word": "زَوْج",
+      "plain": "زوج",
+      "gender": "م",
+      "relation": "زواج"
+    },
+    {
+      "word": "زَوْجَة",
+      "plain": "زوجة",
+      "gender": "ث",
+      "relation": "زواج"
+    },
+    {
+      "word": "حَمْو",
+      "plain": "حمو",
+      "gender": "م",
+      "relation": "والد الزوج/الزوجة"
+    },
+    {
+      "word": "حَمَاة",
+      "plain": "حماة",
+      "gender": "ث",
+      "relation": "والدة الزوج/الزوجة"
+    },
+    {
+      "word": "صِهْر",
+      "plain": "صهر",
+      "gender": "م",
+      "relation": "زوج البنت أو الأخت"
+    },
+    {
+      "word": "كَنّة",
+      "plain": "كنة",
+      "gender": "ث",
+      "relation": "زوجة الابن"
+    },
+    {
+      "word": "أَخ شَقِيق",
+      "plain": "اخ شقيق",
+      "gender": "م",
+      "relation": "إخوة كاملون"
+    },
+    {
+      "word": "أَخ لِأَب",
+      "plain": "اخ لاب",
+      "gender": "م",
+      "relation": "إخوة من الأب"
+    },
+    {
+      "word": "أَخ لِأُمّ",
+      "plain": "اخ لام",
+      "gender": "م",
+      "relation": "إخوة من الأم"
+    }
+  ]
+}

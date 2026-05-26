@@ -1,0 +1,61 @@
+FULL QURAN REGRESSION SUMMARY (Phase 3 active)
+======================================================================
+
+Total tokens evaluated:  77728
+Matched MASAQ:           75366
+Mismatched:              2362
+MASAQ-alignment:         96.96%
+
+ACCURACY BY CLASS (MASAQ-aligned only)
+----------------------------------------------------------------------
+  FIIL            19877/19903 = 99.87%
+  HARF            19498/21439 = 90.95%
+  ISM_MABNI       2444/2446 = 99.92%
+  ISM_MAWSOOL     3238/3311 = 97.80%
+  ISM_MUARAB      26086/26379 = 98.89%
+  JAMID           4223/4250 = 99.36%
+
+SOURCE DISTRIBUTION (where the answer came from)
+----------------------------------------------------------------------
+  MASAQ                          64055 (82.41%)
+  registry                       9208 (11.85%)
+  registry-exact-hypothesis      4461 ( 5.74%)
+  heuristic                      4 ( 0.01%)
+
+TOP CONFUSION PAIRS (gold → predicted)
+----------------------------------------------------------------------
+   1083  HARF           → ISM_MABNI
+    835  HARF           → ISM_MAWSOOL
+    187  ISM_MUARAB     → HARF
+     73  ISM_MAWSOOL    → HARF
+     54  ISM_MUARAB     → FIIL
+     22  JAMID          → ISM_MUARAB
+     22  HARF           → ISM_MUARAB
+     18  ISM_MUARAB     → ISM_MABNI
+     17  ISM_MUARAB     → JAMID
+     17  ISM_MUARAB     → ISM_MAWSOOL
+     15  FIIL           → HARF
+      9  FIIL           → ISM_MUARAB
+      5  JAMID          → ISM_MAWSOOL
+      2  ISM_MABNI      → ISM_MAWSOOL
+      2  FIIL           → JAMID
+      1  HARF           → FIIL
+
+ERROR FAMILIES
+----------------------------------------------------------------------
+   1083  harf_vs_mabni
+    835  harf_vs_mawsool
+    187  ISM_MUARAB_to_HARF
+     73  ISM_MAWSOOL_to_HARF
+     54  noun_misread_as_verb
+     22  HARF_to_ISM_MUARAB
+     22  proper_misclassified
+     18  ISM_MUARAB_to_ISM_MABNI
+     17  ISM_MUARAB_to_JAMID
+     17  ISM_MUARAB_to_ISM_MAWSOOL
+     15  FIIL_to_HARF
+      9  verb_misread_as_noun
+      5  JAMID_to_ISM_MAWSOOL
+      2  FIIL_to_JAMID
+      2  ISM_MABNI_to_ISM_MAWSOOL
+      1  HARF_to_FIIL

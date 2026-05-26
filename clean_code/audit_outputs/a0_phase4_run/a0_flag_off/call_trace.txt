@@ -1,0 +1,16 @@
+==== i3rab_engine.layer1:WordClassClassifier.classify (first observed call) ====
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/a0_phase4_pipeline_probe.py", line 730, in <module>
+    sys.exit(main())
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/a0_phase4_pipeline_probe.py", line 726, in main
+    return real_run(out_root)
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/a0_phase4_pipeline_probe.py", line 687, in real_run
+    m_off = _safe_run("0", off_dir)
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/a0_phase4_pipeline_probe.py", line 614, in _safe_run
+    payload = run_pipeline()
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/a0_phase4_pipeline_probe.py", line 181, in run_pipeline
+    sent = engine.analyze_sentence(text)
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/i3rab_engine/engine.py", line 167, in analyze_sentence
+    r1 = self._layer1.classify(tok)
+  File "/Users/husseinhiyassat/fractal/hussein/clean_code/a0_phase4_pipeline_probe.py", line 309, in wrapper
+    FIRST_TRACES[key] = traceback.format_stack()
+

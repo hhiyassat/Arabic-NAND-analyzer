@@ -1,0 +1,216 @@
+{
+  "field_name_ar": "الحيوانات",
+  "field_name_en": "Animals",
+  "members": [
+    {
+      "word": "أَسَد",
+      "plain": "اسد",
+      "type": "predator"
+    },
+    {
+      "word": "نَمِر",
+      "plain": "نمر",
+      "type": "predator"
+    },
+    {
+      "word": "فَهْد",
+      "plain": "فهد",
+      "type": "predator"
+    },
+    {
+      "word": "ذِئْب",
+      "plain": "ذئب",
+      "type": "predator"
+    },
+    {
+      "word": "ثَعْلَب",
+      "plain": "ثعلب",
+      "type": "small_mammal"
+    },
+    {
+      "word": "كَلْب",
+      "plain": "كلب",
+      "type": "domestic"
+    },
+    {
+      "word": "قِطّ",
+      "plain": "قط",
+      "type": "domestic"
+    },
+    {
+      "word": "فَأْر",
+      "plain": "فار",
+      "type": "rodent"
+    },
+    {
+      "word": "أَرْنَب",
+      "plain": "ارنب",
+      "type": "small_mammal"
+    },
+    {
+      "word": "فَرَس",
+      "plain": "فرس",
+      "type": "livestock"
+    },
+    {
+      "word": "خَيْل",
+      "plain": "خيل",
+      "type": "livestock"
+    },
+    {
+      "word": "حِمَار",
+      "plain": "حمار",
+      "type": "livestock"
+    },
+    {
+      "word": "بَغْل",
+      "plain": "بغل",
+      "type": "livestock"
+    },
+    {
+      "word": "جَمَل",
+      "plain": "جمل",
+      "type": "livestock"
+    },
+    {
+      "word": "نَاقَة",
+      "plain": "ناقة",
+      "type": "livestock"
+    },
+    {
+      "word": "بَعِير",
+      "plain": "بعير",
+      "type": "livestock"
+    },
+    {
+      "word": "بَقَرَة",
+      "plain": "بقرة",
+      "type": "livestock"
+    },
+    {
+      "word": "ثَوْر",
+      "plain": "ثور",
+      "type": "livestock"
+    },
+    {
+      "word": "شَاة",
+      "plain": "شاة",
+      "type": "livestock"
+    },
+    {
+      "word": "غَنَم",
+      "plain": "غنم",
+      "type": "livestock"
+    },
+    {
+      "word": "مَاعِز",
+      "plain": "ماعز",
+      "type": "livestock"
+    },
+    {
+      "word": "دَجَاجَة",
+      "plain": "دجاجة",
+      "type": "bird_dom"
+    },
+    {
+      "word": "دِيك",
+      "plain": "ديك",
+      "type": "bird_dom"
+    },
+    {
+      "word": "حَمَام",
+      "plain": "حمام",
+      "type": "bird"
+    },
+    {
+      "word": "عُصْفُور",
+      "plain": "عصفور",
+      "type": "bird"
+    },
+    {
+      "word": "صَقْر",
+      "plain": "صقر",
+      "type": "bird_predator"
+    },
+    {
+      "word": "نَسْر",
+      "plain": "نسر",
+      "type": "bird_predator"
+    },
+    {
+      "word": "بُومَة",
+      "plain": "بومة",
+      "type": "bird_predator"
+    },
+    {
+      "word": "غُرَاب",
+      "plain": "غراب",
+      "type": "bird"
+    },
+    {
+      "word": "ثُعْبَان",
+      "plain": "ثعبان",
+      "type": "reptile"
+    },
+    {
+      "word": "حَيَّة",
+      "plain": "حية",
+      "type": "reptile"
+    },
+    {
+      "word": "أَفْعَى",
+      "plain": "افعى",
+      "type": "reptile"
+    },
+    {
+      "word": "ضِبّ",
+      "plain": "ضب",
+      "type": "reptile"
+    },
+    {
+      "word": "تِمْسَاح",
+      "plain": "تمساح",
+      "type": "reptile"
+    },
+    {
+      "word": "سَمَكَة",
+      "plain": "سمكة",
+      "type": "fish"
+    },
+    {
+      "word": "حُوت",
+      "plain": "حوت",
+      "type": "fish"
+    },
+    {
+      "word": "نَحْلَة",
+      "plain": "نحلة",
+      "type": "insect"
+    },
+    {
+      "word": "نَمْلَة",
+      "plain": "نملة",
+      "type": "insect"
+    },
+    {
+      "word": "ذُبَابَة",
+      "plain": "ذبابة",
+      "type": "insect"
+    },
+    {
+      "word": "بَعُوضَة",
+      "plain": "بعوضة",
+      "type": "insect"
+    },
+    {
+      "word": "عَقْرَب",
+      "plain": "عقرب",
+      "type": "arachnid"
+    },
+    {
+      "word": "عَنْكَبُوت",
+      "plain": "عنكبوت",
+      "type": "arachnid"
+    }
+  ]
+}

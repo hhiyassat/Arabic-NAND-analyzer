@@ -1,0 +1,24 @@
+{
+  "_description": "العُلَماء المُسَتَشهَد بِهِم — مَع نِسَب OCR",
+  "_version": "1.0",
+  "scholars": [
+    {"canonical": "فاضل صالح السامرائي", "school": "معاصر", "variants": ["فاضل السامراني", "فاضل السمرائي", "فاضل السمراني", "فأضل صالح", "فاضل صالح السامراني"]},
+    {"canonical": "سيبويه", "school": "البصرة", "variants": ["سيويه", "سيبوية"]},
+    {"canonical": "ابن الناظم", "school": "متأخر", "variants": ["ابن الناطم", "بن الناظم"]},
+    {"canonical": "ابن عقيل", "school": "متأخر", "variants": ["بن عقيل"]},
+    {"canonical": "الرضي", "school": "متأخر", "variants": ["الرحي"]},
+    {"canonical": "الزمخشري", "school": "متأخر", "variants": ["الزمحشري"]},
+    {"canonical": "ابن يعيش", "school": "متأخر", "variants": ["بن يعيش"]},
+    {"canonical": "الأشموني", "school": "متأخر", "variants": ["الاشموني", "اشموني"]},
+    {"canonical": "الخضري", "school": "متأخر", "variants": ["الحضري", "الخصري"]},
+    {"canonical": "الصبان", "school": "متأخر", "variants": ["الصبانة"]},
+    {"canonical": "ابن جني", "school": "متأخر", "variants": ["بن جني"]},
+    {"canonical": "الزجاجي", "school": "متأخر", "variants": ["الزجاجى"]},
+    {"canonical": "أبو حيان", "school": "متأخر", "variants": ["ابو حيان"]},
+    {"canonical": "ابن هشام", "school": "متأخر", "variants": ["بن هشام"]},
+    {"canonical": "الفراء", "school": "الكوفة", "variants": []},
+    {"canonical": "البصريون", "school": "البصرة", "variants": ["جمهور البصريين", "البصريين"]},
+    {"canonical": "الكوفيون", "school": "الكوفة", "variants": ["جمهور الكوفيين", "الكوفيين"]},
+    {"canonical": "الجمهور", "school": "general", "variants": ["جمهور النحاة"]}
+  ]
+}

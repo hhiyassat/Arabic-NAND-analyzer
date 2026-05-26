@@ -1,0 +1,12 @@
+priority,name,condition,role_phrase,role_kind,case_id_required,note
+1,after_HARF_JARR,prev_is_HARF_JARR,اسم مجرور,Certificate,,بعد حرف جر — السياق قاطع
+2,ism_inna,prev_in_HAROF_INNA_and_case_mansoob,اسم ({prev}) منصوب,Certificate,2,اسم إنّ وأخواتها
+3,khabar_inna,saw_inna_subj_set_and_marfoo,خبر (إنّ) مرفوع,Hypothesis,1,خبر إنّ مرفوع بعد اسم إنّ
+4,mafool_bih,after_verb_mansoob_no_jarr,مفعول به منصوب,Hypothesis,2,اسم منصوب بعد فعل بلا حرف جر بينهما
+5,faail,after_verb_marfoo_no_prior_marfoo,فاعل مرفوع,Hypothesis,1,اسم مرفوع بعد فعل
+6,mubtada,first_marfoo_no_verb_before,مبتدأ مرفوع,Hypothesis,1,أوّل اسم مرفوع لا فعل قبله
+7,khabar,marfoo_after_mubtada,خبر مرفوع,Hypothesis,1,اسم مرفوع بعد مبتدأ
+8,naat,case_def_agreement_with_prev,نعت {case_name},Hypothesis,,يطابق ما قبله في الإعراب والتعريف
+9,mudaf_ilayh,majroor_after_noun,مضاف إليه مجرور,Hypothesis,3,اسم مجرور بعد اسم آخر بلا حرف جر
+10,maotoof,after_HARF_ATF,معطوف {case_name},Certificate,,بعد حرف عطف — يَتبع ما قبله
+99,fallback,case_only,اسم {case_name},Hypothesis,,احتياطي — الحالة فقط

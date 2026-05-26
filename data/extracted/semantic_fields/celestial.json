@@ -1,0 +1,51 @@
+{
+  "field_name_ar": "الأجرام السماوية",
+  "field_name_en": "Celestial bodies",
+  "members": [
+    {
+      "word": "شَمْس",
+      "plain": "شمس",
+      "type": "star"
+    },
+    {
+      "word": "قَمَر",
+      "plain": "قمر",
+      "type": "satellite"
+    },
+    {
+      "word": "نَجْم",
+      "plain": "نجم",
+      "type": "star"
+    },
+    {
+      "word": "كَوْكَب",
+      "plain": "كوكب",
+      "type": "planet"
+    },
+    {
+      "word": "سَيَّارَة",
+      "plain": "سيارة",
+      "type": "planet"
+    },
+    {
+      "word": "مَجَرَّة",
+      "plain": "مجرة",
+      "type": "galaxy"
+    },
+    {
+      "word": "شِهَاب",
+      "plain": "شهاب",
+      "type": "meteor"
+    },
+    {
+      "word": "سَمَاء",
+      "plain": "سماء",
+      "type": "sky"
+    },
+    {
+      "word": "أَرْض",
+      "plain": "ارض",
+      "type": "earth"
+    }
+  ]
+}

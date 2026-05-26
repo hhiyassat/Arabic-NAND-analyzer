@@ -1,0 +1,32 @@
+{"topic_id": "INTRODUCTION__P1", "title": "المقدمة", "part": 1, "start_page": 5, "end_page": 10, "parent_topic_id": null, "raw_heading": "المقدمة -", "normalized_heading": "المقدمة", "confidence": 0.78}
+{"topic_id": "JUMLA_ARABIYYA__P1", "title": "الجملة العربية", "part": 1, "start_page": 11, "end_page": 20, "parent_topic_id": null, "raw_heading": "الجملة العربية", "normalized_heading": "الجملة العربية", "confidence": 0.92}
+{"topic_id": "ZAHIRAT_AL_IRAB__P1", "title": "ظاهرة الإعراب", "part": 1, "start_page": 21, "end_page": 25, "parent_topic_id": null, "raw_heading": "ظاهرة الاعراب", "normalized_heading": "ظاهرة الإعراب", "confidence": 0.92}
+{"topic_id": "MAANI_AL_IRAB__P1", "title": "معاني الإعراب", "part": 1, "start_page": 26, "end_page": 90, "parent_topic_id": null, "raw_heading": "معاني الاعراب", "normalized_heading": "معاني الإعراب", "confidence": 0.92}
+{"topic_id": "LAM__P1", "title": "اللام", "part": 1, "start_page": 91, "end_page": 390, "parent_topic_id": "PREPOSITIONS", "raw_heading": "ولا تلحق ذا اللام", "normalized_heading": "اللام", "confidence": 0.78}
+{"topic_id": "BA__P1", "title": "الباء", "part": 1, "start_page": 391, "end_page": null, "parent_topic_id": "PREPOSITIONS", "raw_heading": "الباء الزائدة", "normalized_heading": "الباء", "confidence": 0.78}
+{"topic_id": "ZANN_WA_AKHAWATUHA__P2", "title": "ظن وأخواتها", "part": 2, "start_page": 5, "end_page": 5, "parent_topic_id": null, "raw_heading": "ظن وأخواتها", "normalized_heading": "ظن وأخواتها", "confidence": 0.92}
+{"topic_id": "AFAL_AL_QULOOB__P2", "title": "أفعال القلوب", "part": 2, "start_page": 6, "end_page": 6, "parent_topic_id": null, "raw_heading": "أفعال القلوب", "normalized_heading": "أفعال القلوب", "confidence": 0.92}
+{"topic_id": "AFAL_AL_YAQIN__P2", "title": "أفعال اليقين", "part": 2, "start_page": 7, "end_page": 13, "parent_topic_id": null, "raw_heading": "١- أفعال اليقين", "normalized_heading": "أفعال اليقين", "confidence": 0.78}
+{"topic_id": "ARAYTA__P2", "title": "أرأيت", "part": 2, "start_page": 14, "end_page": 16, "parent_topic_id": null, "raw_heading": "أرأيت الأمر كما أخبرتك؟", "normalized_heading": "أرأيت", "confidence": 0.78}
+{"topic_id": "AFAL_AL_RUJHAN__P2", "title": "أفعال الرجحان", "part": 2, "start_page": 17, "end_page": 25, "parent_topic_id": null, "raw_heading": "٣- أفعال الرجحان", "normalized_heading": "أفعال الرجحان", "confidence": 0.78}
+{"topic_id": "AFAL_AL_TAHWIL__P2", "title": "أفعال التحويل", "part": 2, "start_page": 26, "end_page": 279, "parent_topic_id": null, "raw_heading": "أفعال التحويل", "normalized_heading": "أفعال التحويل", "confidence": 0.92}
+{"topic_id": "FI__P2", "title": "في", "part": 2, "start_page": 280, "end_page": 299, "parent_topic_id": "PREPOSITIONS", "raw_heading": "في", "normalized_heading": "في", "confidence": 0.92}
+{"topic_id": "ILM__P2", "title": "علم", "part": 2, "start_page": 300, "end_page": 299, "parent_topic_id": "AFAL_AL_YAQIN", "raw_heading": "علم", "normalized_heading": "علم", "confidence": 0.92}
+{"topic_id": "WAJADA__P2", "title": "وجد", "part": 2, "start_page": 300, "end_page": 299, "parent_topic_id": "AFAL_AL_YAQIN", "raw_heading": "وجد", "normalized_heading": "وجد", "confidence": 0.92}
+{"topic_id": "RAA__P2", "title": "رأى", "part": 2, "start_page": 300, "end_page": 299, "parent_topic_id": "AFAL_AL_YAQIN", "raw_heading": "رأى", "normalized_heading": "رأى", "confidence": 0.92}
+{"topic_id": "ZANNA__P2", "title": "ظن", "part": 2, "start_page": 300, "end_page": null, "parent_topic_id": "AFAL_AL_RUJHAN", "raw_heading": "ظن", "normalized_heading": "ظن", "confidence": 0.92}
+{"topic_id": "PREPOSITIONS__P3", "title": "حروف الجر", "part": 3, "start_page": 5, "end_page": 11, "parent_topic_id": null, "raw_heading": "حروف الجر", "normalized_heading": "حروف الجر", "confidence": 0.92}
+{"topic_id": "TADMEEN__P3", "title": "التضمين", "part": 3, "start_page": 12, "end_page": 18, "parent_topic_id": null, "raw_heading": "التضمين", "normalized_heading": "التضمين", "confidence": 0.92}
+{"topic_id": "BA__P3", "title": "الباء", "part": 3, "start_page": 19, "end_page": 46, "parent_topic_id": "PREPOSITIONS", "raw_heading": "الباء", "normalized_heading": "الباء", "confidence": 0.92}
+{"topic_id": "ALA_PREP__P3", "title": "على", "part": 3, "start_page": 47, "end_page": 52, "parent_topic_id": "PREPOSITIONS", "raw_heading": "على", "normalized_heading": "على", "confidence": 0.92}
+{"topic_id": "AN_PREP__P3", "title": "عن", "part": 3, "start_page": 53, "end_page": 56, "parent_topic_id": "PREPOSITIONS", "raw_heading": "عن", "normalized_heading": "عن", "confidence": 0.92}
+{"topic_id": "FI__P3", "title": "في", "part": 3, "start_page": 57, "end_page": 63, "parent_topic_id": "PREPOSITIONS", "raw_heading": "في", "normalized_heading": "في", "confidence": 0.92}
+{"topic_id": "LAM__P3", "title": "اللام", "part": 3, "start_page": 64, "end_page": 74, "parent_topic_id": "PREPOSITIONS", "raw_heading": "اللام", "normalized_heading": "اللام", "confidence": 0.92}
+{"topic_id": "MIN__P3", "title": "من", "part": 3, "start_page": 75, "end_page": null, "parent_topic_id": "PREPOSITIONS", "raw_heading": "من", "normalized_heading": "من", "confidence": 0.92}
+{"topic_id": "JUSSIVE__P4", "title": "جزم المضارع", "part": 4, "start_page": 5, "end_page": 6, "parent_topic_id": null, "raw_heading": "جزم المضارع", "normalized_heading": "جزم المضارع", "confidence": 0.92}
+{"topic_id": "LAM_AL_AMR__P4", "title": "لام الأمر", "part": 4, "start_page": 7, "end_page": 7, "parent_topic_id": null, "raw_heading": "لام الأمر", "normalized_heading": "لام الأمر", "confidence": 0.92}
+{"topic_id": "LA_NAHIYA__P4", "title": "لا الناهية", "part": 4, "start_page": 8, "end_page": 7, "parent_topic_id": null, "raw_heading": "لا الناهية", "normalized_heading": "لا الناهية", "confidence": 0.92}
+{"topic_id": "LAM__P4", "title": "لم", "part": 4, "start_page": 8, "end_page": 11, "parent_topic_id": "JUSSIVE", "raw_heading": "لم", "normalized_heading": "لم", "confidence": 0.92}
+{"topic_id": "JAWAB_AL_TALAB__P4", "title": "جواب الطلب", "part": 4, "start_page": 12, "end_page": 86, "parent_topic_id": null, "raw_heading": "جواب الطلب", "normalized_heading": "جواب الطلب", "confidence": 0.92}
+{"topic_id": "MIN__P4", "title": "من", "part": 4, "start_page": 87, "end_page": 349, "parent_topic_id": "PREPOSITIONS", "raw_heading": "من", "normalized_heading": "من", "confidence": 0.92}
+{"topic_id": "BA__P4", "title": "الباء", "part": 4, "start_page": 350, "end_page": null, "parent_topic_id": "PREPOSITIONS", "raw_heading": "الباء", "normalized_heading": "الباء", "confidence": 0.92}

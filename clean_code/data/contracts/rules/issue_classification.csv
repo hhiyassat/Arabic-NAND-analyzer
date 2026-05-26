@@ -1,0 +1,9 @@
+priority,condition_pattern,issue_type,fix_hint,description
+1,word_starts_with_seen AND audited_root_not_starts_with_seen,seen_prefix_error,أَضِف الكَلِمَة إلى data/contracts/lists/seen_is_root_lexicon.csv,السين عُومِلَت كَ بادِئَة لَكِنّها أَصليَّة
+2,audited_root_has_alif_middle AND engine_root_has_waw_middle,weak_root_hollow_error,تَفَقَّد _expand_hollow_root في root_by_alignment,أَجوف — تَحويل الأَلِف إلى واو/ياء خاطِئ
+3,audited_root_has_alif_end AND engine_root_has_waw_end,weak_root_defective_error,تَفَقَّد _expand_defective_root,ناقِص — استِرداد لام الفِعل الخاطِئ
+4,word_starts_with_ist,form_x_error,تَفَقَّد كَشف وزن استفعل,الفِعل في وزن استفعل لَم يُعرَف
+5,engine_root_equals_audited_root AND engine_wazn_not_equals_audited_wazn,wazn_diff_only,راجِع wazn matcher — الجَذر صَحيح,الوزن مُختَلِف عَن المُدَقَّق
+6,engine_wazn_equals_audited_wazn AND engine_root_not_equals_audited_root,root_diff_only,راجِع مَواضِع ف/ع/ل في root_by_alignment,الجَذر مُختَلِف عَن المُدَقَّق
+7,audited_root_contains_hamza AND engine_root_no_hamza,hamza_normalization_error,لا تُحَوِّل الهَمزَة إلى أَلِف أَو واو,الهَمزَة الأَصليَّة عُومِلَت كَ حَرف عِلَّة
+8,no_match_in_engine,engine_no_root,تَفَقَّد فَلتَرَة الـ closed-class أَو jamid,المُحَرِّك لَم يُخرِج جَذرًا

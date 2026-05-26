@@ -1,0 +1,29 @@
+priority,word,word_plain,time_category,time_value,description
+1,اليَومَ,اليوم,present,today,اليَوم — وَقت الحاضِر
+2,الآنَ,الان,present,now,الآنَ — في هذه اللَّحظَة
+3,أَمسِ,امس,past,yesterday,أَمسِ — اليَوم السَّابِق
+4,غَدًا,غدا,future,tomorrow,غَدًا — اليَوم التَّالي
+5,صَباحًا,صباحا,time_of_day,morning,في الصَّباح
+6,مَساءً,مساء,time_of_day,evening,في المَساء
+7,لَيلًا,ليلا,time_of_day,night,في اللَّيل
+8,نَهارًا,نهارا,time_of_day,daytime,في النَّهار
+9,قَبلَ,قبل,relative,before,قَبل — زَمَن سابِق
+10,بَعدَ,بعد,relative,after,بَعد — زَمَن لاحِق
+11,حينَ,حين,relative,when,حينَ — في وَقت
+12,إِذ,اذ,relative,when_past,إِذ — حين في الماضي
+13,إِذا,اذا,relative,when_future,إِذا — حين في المُستَقبَل
+14,لَمَّا,لما,relative,when_past_completed,لَمَّا — حين تَمَّ
+15,ساعَةَ,ساعة,duration,hour,ساعَة
+16,يَومَ,يوم,duration,day,يَوم
+17,شَهرَ,شهر,duration,month,شَهر
+18,سَنَةَ,سنة,duration,year,سَنَة
+19,أَبَدًا,ابدا,duration,forever,أَبَدًا — دائِمًا
+20,أَوَّلًا,اولا,sequence,first,أَوَّلًا
+21,ثانِيًا,ثانيا,sequence,second,ثانِيًا
+22,أَخيرًا,اخيرا,sequence,last,أَخيرًا
+23,سابِقًا,سابقا,relative,previously,سابِقًا
+24,لاحِقًا,لاحقا,relative,later,لاحِقًا
+25,ثُمَّ,ثم,sequence,then,ثُمَّ — ثُمَّ بَعد
+26,فَ,ف,sequence,then_immediate,الفاء — فَوريّ
+27,قَبلُ,قبل,relative,before,قَبلُ — مُنفَرِدَة
+28,بَعدُ,بعد,relative,after,بَعدُ — مُنفَرِدَة

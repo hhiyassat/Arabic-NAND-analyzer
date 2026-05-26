@@ -1,0 +1,181 @@
+{
+  "field_name_ar": "أعضاء الجسد",
+  "field_name_en": "Body parts",
+  "members": [
+    {
+      "word": "رَأْس",
+      "plain": "راس",
+      "category": "head"
+    },
+    {
+      "word": "وَجْه",
+      "plain": "وجه",
+      "category": "head"
+    },
+    {
+      "word": "عَيْن",
+      "plain": "عين",
+      "category": "sense"
+    },
+    {
+      "word": "أُذُن",
+      "plain": "اذن",
+      "category": "sense"
+    },
+    {
+      "word": "أَنْف",
+      "plain": "انف",
+      "category": "sense"
+    },
+    {
+      "word": "فَم",
+      "plain": "فم",
+      "category": "head"
+    },
+    {
+      "word": "لِسَان",
+      "plain": "لسان",
+      "category": "head"
+    },
+    {
+      "word": "شَفَة",
+      "plain": "شفة",
+      "category": "head"
+    },
+    {
+      "word": "سِنّ",
+      "plain": "سن",
+      "category": "head"
+    },
+    {
+      "word": "شَعْر",
+      "plain": "شعر",
+      "category": "head"
+    },
+    {
+      "word": "عُنُق",
+      "plain": "عنق",
+      "category": "neck"
+    },
+    {
+      "word": "رَقَبَة",
+      "plain": "رقبة",
+      "category": "neck"
+    },
+    {
+      "word": "كَتِف",
+      "plain": "كتف",
+      "category": "upper"
+    },
+    {
+      "word": "صَدْر",
+      "plain": "صدر",
+      "category": "torso"
+    },
+    {
+      "word": "ظَهْر",
+      "plain": "ظهر",
+      "category": "torso"
+    },
+    {
+      "word": "بَطْن",
+      "plain": "بطن",
+      "category": "torso"
+    },
+    {
+      "word": "قَلْب",
+      "plain": "قلب",
+      "category": "organ"
+    },
+    {
+      "word": "رِئَة",
+      "plain": "رئة",
+      "category": "organ"
+    },
+    {
+      "word": "كَبِد",
+      "plain": "كبد",
+      "category": "organ"
+    },
+    {
+      "word": "كُلْيَة",
+      "plain": "كلية",
+      "category": "organ"
+    },
+    {
+      "word": "مَعِدَة",
+      "plain": "معدة",
+      "category": "organ"
+    },
+    {
+      "word": "يَد",
+      "plain": "يد",
+      "category": "limb"
+    },
+    {
+      "word": "ذِرَاع",
+      "plain": "ذراع",
+      "category": "limb"
+    },
+    {
+      "word": "كَفّ",
+      "plain": "كف",
+      "category": "limb"
+    },
+    {
+      "word": "أُصْبُع",
+      "plain": "اصبع",
+      "category": "limb"
+    },
+    {
+      "word": "ظُفُر",
+      "plain": "ظفر",
+      "category": "limb"
+    },
+    {
+      "word": "رِجْل",
+      "plain": "رجل",
+      "category": "limb"
+    },
+    {
+      "word": "سَاق",
+      "plain": "ساق",
+      "category": "limb"
+    },
+    {
+      "word": "قَدَم",
+      "plain": "قدم",
+      "category": "limb"
+    },
+    {
+      "word": "رُكْبَة",
+      "plain": "ركبة",
+      "category": "limb"
+    },
+    {
+      "word": "جِلْد",
+      "plain": "جلد",
+      "category": "skin"
+    },
+    {
+      "word": "عَظْم",
+      "plain": "عظم",
+      "category": "skeleton"
+    },
+    {
+      "word": "دَم",
+      "plain": "دم",
+      "category": "fluid"
+    },
+    {
+      "word": "عَصَب",
+      "plain": "عصب",
+      "category": "nerve"
+    },
+    {
+      "word": "عَضَلَة",
+      "plain": "عضلة",
+      "category": "muscle"
+    }
+  ]
+}

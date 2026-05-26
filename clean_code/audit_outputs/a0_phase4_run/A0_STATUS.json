@@ -1,0 +1,10 @@
+{
+  "a0_executed": true,
+  "repo_detected": true,
+  "pipeline_runner_configured": true,
+  "flag_off_completed": true,
+  "flag_on_completed": true,
+  "classify_call_count": 2038,
+  "classify_with_context_call_count": 2038,
+  "verdict": "WIRE_PHASE4_INTO_L6_L7"
+}
