@@ -125,45 +125,85 @@ def t_segment_is_callable_via_production_import_path():
 
 # ── PATCH 1 — lam al-amr (BUG: stem = whole word, no segmentation) ──
 
-def t_walyaktub_segments_with_lam_al_amr():
-    """PATCH 1 target. Current = bug. After PATCH 1: must split."""
-    r = segment("وَلْيَكْتُب")
-    # PATCH 1 ACCEPTANCE: this assertion must change after the fix.
-    # Current buggy behavior:
-    assert _eq(r.stem, "وَلْيَكْتُب") and r.prefixes == [] and r.suffixes == [], (
-        f"PATCH 1 TARGET — current output: {_describe(r)}.\n"
-        f"After PATCH 1, expected something like:\n"
-        f"  prefixes=['وَ', 'لْ'] (tags=['CONJ', 'LAM_AL_AMR']) | stem='يَكْتُب' | suffixes=[]\n"
-        f"If you see this failure, PATCH 1 has shipped — UPDATE this test."
+def _assert_lam_al_amr_split(r, expected_conj_form: str, expected_stem: str) -> None:
+    """Shared assertion: token is split as CONJ + LAM_AL_AMR + stem.
+
+    Updated 2026-05-26 per PATCH 1 (LamAlAmrSegmentationContract).
+    """
+    assert len(r.prefixes) == 2, (
+        f"expected exactly 2 prefixes (CONJ + LAM_AL_AMR), "
+        f"got {len(r.prefixes)}: {_describe(r)}"
     )
+    assert r.prefix_tags == ["CONJ", "LAM_AL_AMR"], (
+        f"expected tags=['CONJ', 'LAM_AL_AMR'], got {r.prefix_tags}: {_describe(r)}"
+    )
+    assert _eq(r.prefixes[0], expected_conj_form), (
+        f"first prefix form: expected {expected_conj_form!r}, got {r.prefixes[0]!r}"
+    )
+    assert _eq(r.prefixes[1], "لْ"), (
+        f"second prefix form: expected 'لْ', got {r.prefixes[1]!r}"
+    )
+    assert _eq(r.stem, expected_stem), (
+        f"stem: expected {expected_stem!r}, got {r.stem!r}: {_describe(r)}"
+    )
+    assert r.suffixes == [], (
+        f"expected no suffixes, got {r.suffixes}: {_describe(r)}"
+    )
+
+
+def t_walyaktub_segments_with_lam_al_amr():
+    """PATCH 1 verified: وَلْيَكْتُب → وَ(CONJ) + لْ(LAM_AL_AMR) + stem=يَكْتُب."""
+    r = segment("وَلْيَكْتُب")
+    _assert_lam_al_amr_split(r, "وَ", "يَكْتُب")
 
 
 def t_falyaktub_segments_with_lam_al_amr():
+    """PATCH 1 verified: فَلْيَكْتُبْ → فَ(CONJ) + لْ(LAM_AL_AMR) + stem=يَكْتُبْ."""
     r = segment("فَلْيَكْتُبْ")
-    assert _eq(r.stem, "فَلْيَكْتُبْ") and r.prefixes == [] and r.suffixes == [], (
-        f"PATCH 1 TARGET — current output: {_describe(r)}"
-    )
+    _assert_lam_al_amr_split(r, "فَ", "يَكْتُبْ")
 
 
 def t_walyumlil_segments_with_lam_al_amr():
+    """PATCH 1 verified: وَلْيُمْلِلِ → وَ(CONJ) + لْ(LAM_AL_AMR) + stem=يُمْلِلِ."""
     r = segment("وَلْيُمْلِلِ")
-    assert _eq(r.stem, "وَلْيُمْلِلِ") and r.prefixes == [] and r.suffixes == [], (
-        f"PATCH 1 TARGET — current output: {_describe(r)}"
-    )
+    _assert_lam_al_amr_split(r, "وَ", "يُمْلِلِ")
 
 
 def t_falyumlil_segments_with_lam_al_amr():
+    """PATCH 1 verified: فَلْيُمْلِلْ → فَ(CONJ) + لْ(LAM_AL_AMR) + stem=يُمْلِلْ."""
     r = segment("فَلْيُمْلِلْ")
-    assert _eq(r.stem, "فَلْيُمْلِلْ") and r.prefixes == [] and r.suffixes == [], (
-        f"PATCH 1 TARGET — current output: {_describe(r)}"
-    )
+    _assert_lam_al_amr_split(r, "فَ", "يُمْلِلْ")
 
 
 def t_walyattaqi_segments_with_lam_al_amr():
+    """PATCH 1 verified: وَلْيَتَّقِ → وَ(CONJ) + لْ(LAM_AL_AMR) + stem=يَتَّقِ."""
     r = segment("وَلْيَتَّقِ")
-    assert _eq(r.stem, "وَلْيَتَّقِ") and r.prefixes == [] and r.suffixes == [], (
-        f"PATCH 1 TARGET — current output: {_describe(r)}"
-    )
+    _assert_lam_al_amr_split(r, "وَ", "يَتَّقِ")
+
+
+def t_lam_al_amr_does_not_fire_for_ordinary_lam_words():
+    """Regression guard from user's PATCH 1 prompt.
+    لَيلًا / لِسانٌ / وَلَا / لَنْ / لَهُمْ must NOT trigger LAM_AL_AMR."""
+    ordinary = ["لَيلًا", "لِسانٌ", "لَا", "وَلَا", "لَنْ", "لَهُمْ"]
+    for w in ordinary:
+        r = segment(w)
+        assert "LAM_AL_AMR" not in r.prefix_tags, (
+            f"{w!r}: LAM_AL_AMR fired unexpectedly: {_describe(r)}"
+        )
+
+
+def t_lam_al_amr_conjunction_exception_does_not_break_nouns():
+    """Regression guard for the surgical CONJ exception in PATCH 1:
+    وَقُود / فَوْق / وَقْت must remain atomic (not be split by CONJ)."""
+    nouns = ["وَقُود", "فَوْق", "وَقْت"]
+    for w in nouns:
+        r = segment(w)
+        assert "CONJ" not in r.prefix_tags, (
+            f"{w!r}: CONJ peeled unexpectedly: {_describe(r)}"
+        )
+        assert "LAM_AL_AMR" not in r.prefix_tags, (
+            f"{w!r}: LAM_AL_AMR fired unexpectedly: {_describe(r)}"
+        )
 
 
 # ── PATCH 2 (A) — closed forms (BUG: ٱلَّذِى splits as الَّ + ذِى) ──
@@ -309,7 +349,7 @@ def _t(name, fn):
         print(f"  ✗ {name}: ERR {e}")
 
 
-print("PATCH 0 — PRODUCTION PATH CHARACTERIZATION (segment() integration)")
+print("PATCH 0 + PATCH 1 — PRODUCTION PATH (segment() integration)")
 print("=" * 70)
 ALL = [
     ("t_segment_is_callable_via_production_import_path",
@@ -325,6 +365,11 @@ ALL = [
      t_falyumlil_segments_with_lam_al_amr),
     ("t_walyattaqi_segments_with_lam_al_amr",
      t_walyattaqi_segments_with_lam_al_amr),
+    # PATCH 1 regression guards
+    ("t_lam_al_amr_does_not_fire_for_ordinary_lam_words",
+     t_lam_al_amr_does_not_fire_for_ordinary_lam_words),
+    ("t_lam_al_amr_conjunction_exception_does_not_break_nouns",
+     t_lam_al_amr_conjunction_exception_does_not_break_nouns),
     # PATCH 2A — closed forms
     ("t_alladhi_locked_no_det_split", t_alladhi_locked_no_det_split),
     ("t_alladhina_must_remain_atomic", t_alladhina_must_remain_atomic),
@@ -350,12 +395,12 @@ for nm, fn in ALL:
     _t(nm, fn)
 print()
 passed = sum(1 for _, ok, _ in results if ok)
-print(f"Result: {passed}/{len(results)} passed (current buggy state captured)")
+print(f"Result: {passed}/{len(results)} passed")
 print()
 print("─" * 70)
-print("PATCH 0 interpretation:")
-print("  Tests that pass right now = production segment() produces buggy output.")
-print("  When PATCH 1 ships, t_*_lam_al_amr tests must be REWRITTEN to assert")
-print("  the new correct output. If they pass without being rewritten, the")
-print("  patch didn't reach the production path.")
+print("PATCH 1 state (2026-05-26):")
+print("  • 5 lam-al-amr tests: assert NEW correct behavior (CONJ+LAM_AL_AMR+stem)")
+print("  • 2 lam-al-amr regression guards: ordinary lam words + noun-CONJ words")
+print("  • PATCH 2/3 characterizations: still capture current buggy state")
+print("  • t_dhalikum_must_remain_atomic: FAILING — awaiting PATCH 2")
 print("─" * 70)

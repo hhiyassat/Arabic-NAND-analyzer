@@ -508,9 +508,22 @@ def _rule_conjunction(st: _State) -> _State:
     rest = "".join(rest_chars)
     if _count_letters(rest) < _MIN_STEM_LETTERS:
         return st
-    # First-consonant-sukun check: noun-marker, refuse CONJ strip
+    # First-consonant-sukun check: noun-marker, refuse CONJ strip.
+    # PATCH 1 (2026-05-26) — surgical exception for lam-al-amr:
+    # if the rest starts with لْ + (يَ/تَ/نَ/أَ), it's a jussive command
+    # construction (وَلْيَكْتُب, فَلْيَكْتُبْ etc.), not a noun. Allow CONJ
+    # peel so the lam_al_amr rule downstream can recognize it.
+    # Counter-examples preserved (still refused):
+    #   فَوْق  → rest_chars[0]=و, not ل → still refused
+    #   وَقْت  → rest_chars[0]=ق, not ل → still refused
     if len(rest_chars) >= 2 and rest_chars[1] == SUKUN:
-        return st
+        is_lam_al_amr_pattern = (
+            len(rest_chars) >= 3
+            and rest_chars[0] == LAM
+            and rest_chars[2] in _IV_PREFIXES_WITH_HAMZA
+        )
+        if not is_lam_al_amr_pattern:
+            return st
     has_tanwin = any(c in s for c in (TANWIN_FATHA, "ٌ", "ٍ"))
     rest_plain = _strip_diacritics(rest)
     # 3-letter noun + tanwin alif: ف/و is likely root letter, not CONJ.
@@ -1033,9 +1046,13 @@ def _rule_iv_prefix(st: _State) -> _State:
     Singular IV verbs (يَشَاءُ، يَقُولُ) are NOT caught — they're handled
     downstream by wazn_matcher's variant pipeline.
     """
-    # Refuse if any blocking prefix was already stripped
+    # Refuse if any blocking prefix was already stripped.
+    # PATCH 1 (2026-05-26): added LAM_AL_AMR — when the jussive command
+    # particle was peeled, the verb's يَ/تَ/نَ/أَ stays attached to the
+    # stem (the mood is already determined; over-peeling produces a
+    # noisy 3-segment prefix list that downstream code doesn't expect).
     for _, tag in st.prefixes:
-        if tag in {"DET", "IMPERF_PREF"}:
+        if tag in {"DET", "IMPERF_PREF", "LAM_AL_AMR"}:
             return st
     s = st.body
     if len(s) < 4:
@@ -1599,9 +1616,69 @@ class SegmentationResult:
         return "".join(self.prefixes) + self.stem + "".join(self.suffixes)
 
 
+def _rule_lam_al_amr(st: _State) -> _State:
+    """PATCH 1 — Strip jussive command particle لْ (lam al-amr).
+
+    Pattern after conjunction strip: لْ + (يـ/تـ/نـ/أـ) + verb stem
+    Examples from Quran 2:282:
+      وَلْيَكْتُب → conjunction(وَ) + lam_al_amr(لْ) + stem يَكْتُب
+      فَلْيَكْتُبْ → conjunction(فَ) + lam_al_amr(لْ) + stem يَكْتُبْ
+      وَلْيُمْلِلِ → conjunction(وَ) + lam_al_amr(لْ) + stem يُمْلِلِ
+      فَلْيُمْلِلْ → conjunction(فَ) + lam_al_amr(لْ) + stem يُمْلِلْ
+      وَلْيَتَّقِ → conjunction(وَ) + lam_al_amr(لْ) + stem يَتَّقِ
+
+    Strict requirements (PATCH 1 scope — kasra-form lam-al-amr is OUT
+    OF SCOPE for this patch):
+      1. lam must carry SUKUN (لْ). This prevents the rule from firing on:
+         - وَلِيّ (لِ with kasra — lexical, handled by future PATCH 3)
+         - لِسانٌ, لَيلٌ (لِ/لَ at word start — different lexical roots)
+      2. The lam must be followed by an imperfect-prefix letter (ي/ت/ن/أ)
+         carrying a vowel.
+      3. The verb body after stripping must be ≥ 3 letters.
+      4. May fire only after CONJ has been peeled (or with no prior
+         prefix). Refuses if any non-CONJ prefix is present.
+
+    The IV prefix (يَ/تَ/نَ/أَ) is intentionally LEFT attached to the
+    stem — _rule_iv_prefix is extended in this PATCH to refuse firing
+    when LAM_AL_AMR was already peeled (the verb mood is already
+    determined).
+    """
+    # Refuse if a non-CONJ prefix was already stripped.
+    for _, tag in st.prefixes:
+        if tag != "CONJ":
+            return st
+    s = st.body
+    chars = list(s)
+    # Need: ل + ْ + (ي/ت/ن/أ) + diacritic + at least 2 more letters.
+    if len(chars) < 5:
+        return st
+    if chars[0] != LAM:
+        return st
+    if chars[1] != SUKUN:
+        return st
+    if chars[2] not in _IV_PREFIXES_WITH_HAMZA:
+        return st
+    if chars[3] not in DIACRITICS:
+        return st
+    # The remaining stem (chars[2:]) must be a viable verb body (≥3 letters).
+    rest = "".join(chars[2:])
+    if _count_letters(rest) < 3:
+        return st
+    # Peel just the لْ — the IV-prefix-letter stays attached to the stem.
+    pref = "".join(chars[:2])  # "لْ"
+    st.body = rest
+    st.add_prefix(pref, "LAM_AL_AMR", "lam_al_amr")
+    return st
+
+
 # === Pipeline ===
+# PATCH 1 (2026-05-26): lam_al_amr inserted immediately after conjunction,
+# so the وَ/فَ peels first, then لْ is recognized on the remaining body.
+# Runs BEFORE iv_prefix so iv_prefix's refuse-set (which now blocks
+# when LAM_AL_AMR is present) can prevent over-peeling of the verb's يَ.
 _PREFIX_RULES = [
     ("conjunction",            _rule_conjunction),
+    ("lam_al_amr",             _rule_lam_al_amr),  # PATCH 1
     ("vocative_particle",      _rule_vocative_particle),
     ("interrog_alif",          _rule_interrog_alif),
     ("emphatic_lam",           _rule_emphatic_lam),
