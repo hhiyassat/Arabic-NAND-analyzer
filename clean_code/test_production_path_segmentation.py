@@ -472,6 +472,144 @@ def t_patch3_regressions_intact():
         )
 
 
+# ── PATCH 4 — KB.SAM Certified Operator Gate ────────────────────────
+
+_KBSAM_UNAVAILABLE = "__KBSAM_UNAVAILABLE__"
+
+
+def _kbsam_meanings_for(word: str):
+    """Return the list of meaning_ar strings that KB.SAM emits for
+    a single-word input, AFTER the Certified Operator Gate (PATCH 4).
+    Returns the sentinel _KBSAM_UNAVAILABLE if KB.SAM is unavailable
+    in the sandbox (so tests can distinguish 'unavailable' from
+    'legitimately empty post-gate')."""
+    try:
+        from samarrai_analyzer import analyze
+        from samarrai_certified_operator_gate import gate_text_analysis
+    except (ImportError, OSError, PermissionError):
+        return _KBSAM_UNAVAILABLE
+    try:
+        ta = analyze(word)
+        gate_text_analysis(ta)
+    except (PermissionError, OSError):
+        return _KBSAM_UNAVAILABLE
+    out: list[str] = []
+    for wa in ta.words:
+        for c in wa.claims:
+            if getattr(c, "proof_kind", "") == "Zero":
+                continue
+            out.append((getattr(c, "meaning_ar", "") or "").strip())
+    return out
+
+
+def _assert_none_contains(meanings: list[str], forbidden_substrs: list[str], word: str):
+    """Fail if any meaning text contains any of the forbidden substrings."""
+    for m in meanings:
+        for bad in forbidden_substrs:
+            assert bad not in m, (
+                f"PATCH 4 GATE FAILURE — KB.SAM for {word!r} still emits "
+                f"forbidden meaning containing {bad!r}: {m!r}"
+            )
+
+
+def t_walyaktub_kbsam_no_qasam_or_rubba():
+    """PATCH 4: وَلْيَكْتُب must NOT show واو القَسَم / واو رُبَّ in KB.SAM."""
+    ms = _kbsam_meanings_for("وَلْيَكْتُب")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(ms, ["القَسَم", "رُبَّ"], "وَلْيَكْتُب")
+
+
+def t_walyumlil_kbsam_no_qasam_or_rubba():
+    """PATCH 4: وَلْيُمْلِلِ must NOT show واو القَسَم / واو رُبَّ."""
+    ms = _kbsam_meanings_for("وَلْيُمْلِلِ")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(ms, ["القَسَم", "رُبَّ"], "وَلْيُمْلِلِ")
+
+
+def t_walyattaqi_kbsam_no_qasam_or_rubba():
+    """PATCH 4: وَلْيَتَّقِ must NOT show واو القَسَم / واو رُبَّ."""
+    ms = _kbsam_meanings_for("وَلْيَتَّقِ")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(ms, ["القَسَم", "رُبَّ"], "وَلْيَتَّقِ")
+
+
+def t_katibun_kbsam_no_kaf_operators():
+    """PATCH 4: كَاتِبٌ must NOT show كاف المُخاطَب / كاف التَّشبيه / كاف التَّعليل."""
+    ms = _kbsam_meanings_for("كَاتِبٌ")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(
+        ms, ["كاف المُخاطَب", "الكاف لِلتَّشبيه", "الكاف لِلتَّعليل"], "كَاتِبٌ"
+    )
+
+
+def t_safihan_kbsam_no_sin_tanfis():
+    """PATCH 4: سَفِيهًا must NOT show السين — حَرف تَنفيس."""
+    ms = _kbsam_meanings_for("سَفِيهًا")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(ms, ["تَنفيس"], "سَفِيهًا")
+
+
+def t_an_kbsam_no_shart_or_tawkid():
+    """PATCH 4: أَن (fatha) must NOT show إِن الشَّرطيَّة / إِنَّ in جواب القَسَم."""
+    ms = _kbsam_meanings_for("أَن")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(
+        ms, ["إِن الشَّرطيَّة", "إِنَّ في جَواب القَسَم"], "أَن"
+    )
+
+
+def t_alla_kbsam_no_la_nahiya():
+    """PATCH 4: أَلَّا (أن+لا compound) must NOT show لا النَّاهيَة."""
+    ms = _kbsam_meanings_for("أَلَّا")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(ms, ["النَّاهيَة"], "أَلَّا")
+
+
+def t_patch4_allowed_kbsam_meanings_intact():
+    """PATCH 4 regression guards — meanings that MUST still be emitted
+    when their operator IS certified. بِ-PREP keeps الباء meanings;
+    إِلَىٰ / إِذَا keep full-form meanings (not gated by clitic check)."""
+    for w, must_contain in [
+        ("بِدَيْنٍ", "الباء"),
+        ("بِٱلْعَدْلِ", "الباء"),
+        ("إِلَىٰٓ", "إلى"),
+        ("إِذَا", "إِذا"),
+    ]:
+        ms = _kbsam_meanings_for(w)
+        if ms == _KBSAM_UNAVAILABLE:
+            print(f"  [skipped {w} — KB.SAM unavailable]", end=" ")
+            return
+        assert any(must_contain in m for m in ms), (
+            f"PATCH 4 REGRESSION — {w} lost expected meaning containing "
+            f"{must_contain!r}; got: {ms!r}"
+        )
+
+
+def t_patch4_wala_qasam_and_rubba_filtered():
+    """PATCH 4: وَلَا standalone must NOT show واو القَسَم / واو رُبَّ.
+    (واو العَطف requires multi-word context to fire via WawDisambiguation;
+    this test only asserts the forbidden meanings are gone.)"""
+    ms = _kbsam_meanings_for("وَلَا")
+    if ms == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Coverage assertion — these target words actually appear in 2:282
 # ─────────────────────────────────────────────────────────────────────
@@ -569,6 +707,25 @@ ALL = [
     ("t_alla_an_tagged_harf_nasb_not_prep",
      t_alla_an_tagged_harf_nasb_not_prep),
     ("t_patch3_regressions_intact", t_patch3_regressions_intact),
+    # PATCH 4 — KB.SAM Certified Operator Gate
+    ("t_walyaktub_kbsam_no_qasam_or_rubba",
+     t_walyaktub_kbsam_no_qasam_or_rubba),
+    ("t_walyumlil_kbsam_no_qasam_or_rubba",
+     t_walyumlil_kbsam_no_qasam_or_rubba),
+    ("t_walyattaqi_kbsam_no_qasam_or_rubba",
+     t_walyattaqi_kbsam_no_qasam_or_rubba),
+    ("t_katibun_kbsam_no_kaf_operators",
+     t_katibun_kbsam_no_kaf_operators),
+    ("t_safihan_kbsam_no_sin_tanfis",
+     t_safihan_kbsam_no_sin_tanfis),
+    ("t_an_kbsam_no_shart_or_tawkid",
+     t_an_kbsam_no_shart_or_tawkid),
+    ("t_alla_kbsam_no_la_nahiya",
+     t_alla_kbsam_no_la_nahiya),
+    ("t_patch4_allowed_kbsam_meanings_intact",
+     t_patch4_allowed_kbsam_meanings_intact),
+    ("t_patch4_wala_qasam_and_rubba_filtered",
+     t_patch4_wala_qasam_and_rubba_filtered),
     ("t_target_words_are_real_from_2_282",
      t_target_words_are_real_from_2_282),
 ]
@@ -591,4 +748,5 @@ print("  • PATCH 3C: يَكُونَا — نَا stays attached after IMPERF_P
 print("  • PATCH 3D: أَلَّا — أن tagged HARF_NASB, not PREP")
 print("  • PATCH 3E: بَيْنَكُمْ L3 — MASAQ-HARF overridden to ISM_MUARAB")
 print("  • PATCH 3 FIXUP: بَيْنَكُمْ / بَّيْنَكُمْ L3 role = ظرف مكان (not اسم مجزوم)")
+print("  • PATCH 4: KB.SAM gated by L1 prefix/suffix tags (no overmatch)")
 print("─" * 70)

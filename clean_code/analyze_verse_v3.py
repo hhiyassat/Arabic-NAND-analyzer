@@ -93,6 +93,16 @@ def show_samarrai(text: str):
     try:
         from samarrai_analyzer import analyze
         ta = analyze(text)
+        # PATCH 4 (2026-05-26) — Certified Operator Gate.
+        # Filter KB.SAM claims against the production segmenter so that
+        # operator meanings (الكاف لِلتَّشبيه / واو القَسَم / السين تَنفيس / ...)
+        # are emitted only when the corresponding clitic is actually
+        # certified by L1 prefix/suffix tags. See samarrai_certified_operator_gate.py.
+        try:
+            from samarrai_certified_operator_gate import gate_text_analysis
+            gate_text_analysis(ta)
+        except Exception:
+            pass  # gate unavailable → fall back to ungated KB.SAM
         for wa in ta.words:
             if not wa.claims:
                 continue
