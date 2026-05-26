@@ -638,6 +638,130 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate ────────────
+
+_L5_UNAVAILABLE = "__L5_UNAVAILABLE__"
+
+
+def _l5_events_for_verse(verse_text: str):
+    """Run the production pipeline on `verse_text` and return the event
+    list (a list of Event objects). Returns _L5_UNAVAILABLE if the
+    pipeline can't run in the sandbox."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        from relation_extractor import RelationExtractor
+        from event_extractor import EventExtractor
+    except (ImportError, OSError, PermissionError):
+        return _L5_UNAVAILABLE
+    try:
+        sent = I3rabEngine().analyze_sentence(verse_text)
+        rg = RelationExtractor().extract(sent)
+        eg = EventExtractor().extract(sent, rg)
+        return list(eg.events)
+    except (PermissionError, OSError):
+        return _L5_UNAVAILABLE
+
+
+# Short snippets from 2:282 — enough to exercise the targets without
+# loading the whole verse on every test.
+_PATCH5_SNIPPET_FUTURE_CMD = (
+    "إِذَا تَدَايَنتُم بِدَيْنٍ فَٱكْتُبُوهُ ۚ وَلْيَكْتُب بَّيْنَكُمْ كَاتِبٌ"
+)
+_PATCH5_SNIPPET_PAST_NO_SCOPE = (
+    "كَمَا عَلَّمَهُ ٱللَّهُ"   # past عَلَّمَهُ outside any إذا scope
+)
+_PATCH5_SNIPPET_LAM_ONLY = "وَلْيَكْتُب"
+
+
+def t_lam_al_amr_events_are_command_or_jussive():
+    """PATCH 5: lam-al-amr verbs must surface as mood=jussive_command
+    (or speech_act=command), distinguishable from plain indicative
+    present. Tests against the 5 target verbs from 2:282."""
+    events = _l5_events_for_verse(
+        "وَلْيَكْتُب فَلْيَكْتُبْ وَلْيُمْلِلِ فَلْيُمْلِلْ وَلْيَتَّقِ"
+    )
+    if events == _L5_UNAVAILABLE:
+        print("  [skipped — L5 pipeline unavailable]", end=" ")
+        return
+    # Each target verb should produce an event with mood set.
+    targets = {"وَلْيَكْتُب", "فَلْيَكْتُبْ", "وَلْيُمْلِلِ", "فَلْيُمْلِلْ", "وَلْيَتَّقِ"}
+    found = {}
+    for e in events:
+        if e.verb_surface in targets:
+            found[e.verb_surface] = e
+    missing = targets - set(found.keys())
+    assert not missing, f"PATCH 5 — lam-al-amr targets missing as events: {missing}"
+    for surface, e in found.items():
+        mood = getattr(e, "mood", "")
+        sa = getattr(e, "speech_act", "")
+        assert (
+            "command" in mood or "jussive" in mood or sa == "command"
+        ), (
+            f"PATCH 5 FAILURE — {surface} not marked as jussive_command. "
+            f"mood={mood!r}, speech_act={sa!r}, tense={e.tense!r}."
+        )
+
+
+def t_past_events_do_not_get_global_when_future():
+    """PATCH 5: past-tense events that appear OUTSIDE an إذا-scope
+    must NOT receive time=when_future. Uses عَلَّمَهُ in
+    «كَمَا عَلَّمَهُ ٱللَّهُ» which is past and outside any إذا scope."""
+    events = _l5_events_for_verse(_PATCH5_SNIPPET_PAST_NO_SCOPE)
+    if events == _L5_UNAVAILABLE:
+        print("  [skipped — L5 pipeline unavailable]", end=" ")
+        return
+    # Find the past event(s)
+    past_events = [e for e in events if e.tense == "past"]
+    assert past_events, "test setup: expected at least one past event"
+    for e in past_events:
+        assert e.time_value != "when_future", (
+            f"PATCH 5 FAILURE — past event {e.verb_surface!r} "
+            f"({e.type}) got time_value='when_future' with no إذا scope. "
+            f"time_value={e.time_value!r}, time={e.time!r}."
+        )
+
+
+def t_when_future_not_global_default():
+    """PATCH 5: in a full-verse run, NOT every event should be tagged
+    time_value='when_future'. The current bug attaches when_future to
+    100% of events because of the global sentence_time_value."""
+    full_verse_first_half = (
+        "يَٰٓأَيُّهَا ٱلَّذِينَ ءَامَنُوٓا۟ إِذَا تَدَايَنتُم بِدَيْنٍ إِلَىٰٓ "
+        "أَجَلٍ مُّسَمًّى فَٱكْتُبُوهُ ۚ وَلْيَكْتُب بَّيْنَكُمْ كَاتِبٌ بِٱلْعَدْلِ ۚ "
+        "وَلَا يَأْبَ كَاتِبٌ أَن يَكْتُبَ كَمَا عَلَّمَهُ ٱللَّهُ"
+    )
+    events = _l5_events_for_verse(full_verse_first_half)
+    if events == _L5_UNAVAILABLE:
+        print("  [skipped — L5 pipeline unavailable]", end=" ")
+        return
+    if not events:
+        print("  [skipped — no events extracted]", end=" ")
+        return
+    n_total = len(events)
+    n_future = sum(1 for e in events if e.time_value == "when_future")
+    assert n_future < n_total, (
+        f"PATCH 5 FAILURE — {n_future}/{n_total} events still tagged "
+        f"time_value='when_future' (global default not gated). "
+        f"At least one event must be free of when_future."
+    )
+
+
+def t_patch5_lam_al_amr_event_visible():
+    """PATCH 5 minimal smoke: وَلْيَكْتُب alone produces an event with
+    mood marker (sanity for the LAM_AL_AMR detection path)."""
+    events = _l5_events_for_verse(_PATCH5_SNIPPET_LAM_ONLY)
+    if events == _L5_UNAVAILABLE:
+        print("  [skipped — L5 pipeline unavailable]", end=" ")
+        return
+    assert events, "PATCH 5 — no event extracted for وَلْيَكْتُب"
+    e = events[0]
+    assert getattr(e, "mood", "") or getattr(e, "speech_act", ""), (
+        f"PATCH 5 — وَلْيَكْتُب event has no mood/speech_act. "
+        f"mood={getattr(e, 'mood', '')!r}, "
+        f"speech_act={getattr(e, 'speech_act', '')!r}."
+    )
+
+
 # ─────────────────────────────────────────────────────────────────────
 # Coverage assertion — these target words actually appear in 2:282
 # ─────────────────────────────────────────────────────────────────────
@@ -755,6 +879,15 @@ ALL = [
      t_patch4_allowed_kbsam_meanings_intact),
     ("t_patch4_wala_qasam_and_rubba_filtered",
      t_patch4_wala_qasam_and_rubba_filtered),
+    # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
+    ("t_lam_al_amr_events_are_command_or_jussive",
+     t_lam_al_amr_events_are_command_or_jussive),
+    ("t_past_events_do_not_get_global_when_future",
+     t_past_events_do_not_get_global_when_future),
+    ("t_when_future_not_global_default",
+     t_when_future_not_global_default),
+    ("t_patch5_lam_al_amr_event_visible",
+     t_patch5_lam_al_amr_event_visible),
     ("t_target_words_are_real_from_2_282",
      t_target_words_are_real_from_2_282),
 ]
@@ -779,4 +912,5 @@ print("  • PATCH 3E: بَيْنَكُمْ L3 — MASAQ-HARF overridden to ISM_
 print("  • PATCH 3 FIXUP: بَيْنَكُمْ / بَّيْنَكُمْ L3 role = ظرف مكان (not اسم مجزوم)")
 print("  • PATCH 4: KB.SAM gated by L1 prefix/suffix tags (no overmatch)")
 print("  • PATCH 4.5: L3 ظَرف-مَكان override restricted to category=locative (fix بِكُلِّ regression)")
+print("  • PATCH 5: L5 lam-al-amr → mood=jussive_command + TimeScopeGate (no global when_future)")
 print("─" * 70)

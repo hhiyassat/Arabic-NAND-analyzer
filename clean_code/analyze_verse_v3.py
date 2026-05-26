@@ -156,6 +156,9 @@ def show_events(text: str, sent, rg):
             if e.patient: print(f"      patient={e.patient}")
             if e.location: print(f"      location={e.location}")
             if e.tense != "unknown": print(f"      tense={e.tense}")
+            # PATCH 5 — show mood / speech_act when CommandLamEventMood fired.
+            if getattr(e, "mood", ""): print(f"      mood={e.mood}")
+            if getattr(e, "speech_act", ""): print(f"      speech_act={e.speech_act}")
             if e.time_value: print(f"      time={e.time_value}")
             if hasattr(e, "subject") and e.subject:
                 sb = e.state_before
