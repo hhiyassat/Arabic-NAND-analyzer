@@ -638,6 +638,137 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 12 — L4 Remaining Relation Cleanup ────────────────────────
+
+
+def t_l4_no_jalalah_possessor_of_inda():
+    """PATCH 12: ٱللَّهِ must NOT be possessor_of عِندَ in 2:282.
+    In «عِندَ ٱللَّهِ» the jalalah is the مَعمول of the locative
+    ظَرف, not the مالك of عِندَ."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "possessor_of":
+            continue
+        try:
+            sidx = int(r.source_id[1:])
+            tidx = int(r.target_id[1:])
+            src = _nfc(getattr(sent.tokens[sidx], "token", ""))
+            tgt = _nfc(getattr(sent.tokens[tidx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        if "ٱللَّه" in src and tgt == _nfc("عِندَ"):
+            bad.append(f"possessor_of: {src} → {tgt}")
+    assert not bad, (
+        f"PATCH 12 — ٱللَّهِ → عِندَ possessor_of still emitted "
+        f"(forbidden): {bad}"
+    )
+
+
+def t_l4_no_shay_attribute_of_bikulli():
+    """PATCH 12: شَىْءٍ must NOT be attribute_of بِكُلِّ. Inside the PP
+    «بِكُلِّ شَىْءٍ» the شَىْءٍ is مُضاف-إِليه to كُلِّ, not a نعت of
+    the PP head."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "attribute_of":
+            continue
+        try:
+            sidx = int(r.source_id[1:])
+            tidx = int(r.target_id[1:])
+            src = _nfc(getattr(sent.tokens[sidx], "token", ""))
+            tgt = _nfc(getattr(sent.tokens[tidx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        if src == _nfc("شَىْءٍ") and tgt == _nfc("بِكُلِّ"):
+            bad.append(f"attribute_of: {src} → {tgt}")
+    assert not bad, (
+        f"PATCH 12 — شَىْءٍ → بِكُلِّ attribute_of still emitted "
+        f"(forbidden): {bad}"
+    )
+
+
+def t_l4_no_farajul_ism_of_yakuna():
+    """PATCH 12: فَرَجُلٌ (apodosis-headed) must NOT be ism_of_kana of
+    يَكُونَا. The فَ is the جواب الشرط marker that opens a new
+    sentence after «إن لم يكونا رجلين»."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "ism_of_kana":
+            continue
+        try:
+            sidx = int(r.source_id[1:])
+            tidx = int(r.target_id[1:])
+            src = _nfc(getattr(sent.tokens[sidx], "token", ""))
+            tgt = _nfc(getattr(sent.tokens[tidx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        if src.startswith("فَ") and tgt == _nfc("يَكُونَا"):
+            bad.append(f"ism_of_kana: {src} → {tgt}")
+    assert not bad, (
+        f"PATCH 12 — apodosis-headed ism_of_kana for يَكُونَا still "
+        f"emitted (forbidden): {bad}"
+    )
+
+
+def t_l4_no_kabiran_patient2_of_taktubuhu():
+    """PATCH 12: كَبِيرًا must NOT be patient2_of تَكْتُبُوهُ. تَكْتُبُوهُ
+    is not a ditransitive verb, and كَبِيرًا is the second coordinated
+    حال after أَوْ — not a second distinct patient."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "patient2_of":
+            continue
+        try:
+            sidx = int(r.source_id[1:])
+            tidx = int(r.target_id[1:])
+            src = _nfc(getattr(sent.tokens[sidx], "token", ""))
+            tgt = _nfc(getattr(sent.tokens[tidx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        if src == _nfc("كَبِيرًا") and tgt == _nfc("تَكْتُبُوهُ"):
+            bad.append(f"patient2_of: {src} → {tgt}")
+    assert not bad, (
+        f"PATCH 12 — كَبِيرًا → تَكْتُبُوهُ patient2_of still emitted "
+        f"(forbidden): {bad}"
+    )
+
+
 # ── PATCH 11 — L3 Cleanup (إِذَا/عِندَ/أَلَّا/وَأَشْهِدُوا) ─────────
 
 
@@ -1914,6 +2045,15 @@ ALL = [
     ("t_l3_alla_not_tahdid_or_tahdid_wazn",
      t_l3_alla_not_tahdid_or_tahdid_wazn),
     ("t_l3_wa_ashhidu_is_imperative", t_l3_wa_ashhidu_is_imperative),
+    # PATCH 12 — L4 Remaining Relation Cleanup
+    ("t_l4_no_jalalah_possessor_of_inda",
+     t_l4_no_jalalah_possessor_of_inda),
+    ("t_l4_no_shay_attribute_of_bikulli",
+     t_l4_no_shay_attribute_of_bikulli),
+    ("t_l4_no_farajul_ism_of_yakuna",
+     t_l4_no_farajul_ism_of_yakuna),
+    ("t_l4_no_kabiran_patient2_of_taktubuhu",
+     t_l4_no_kabiran_patient2_of_taktubuhu),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1955,4 +2095,5 @@ print("  • PATCH 8: L6 Resolution Safety Gate — block مِن/مَا-as-relat
 print("  • PATCH 9: L6 Antecedent Quality Gate — block PP/possessor-tail/abstract antecedents + إذا-ما cluster")
 print("  • PATCH 10: L6 Huwa/Alladhi clause-head refinement — block هُوَ→رَبَّهُ, ٱلَّذِى→ٱلْحَقُّ")
 print("  • PATCH 11: L3 cleanup — إِذَا→ظرف شرط, عِندَ→ISM_MUARAB, أَلَّا wazn fixed, وَأَشْهِدُوٓا→فعل أمر")
+print("  • PATCH 12: L4 cleanup — ٱللَّهِ→عِندَ, شَىْءٍ→بِكُلِّ, فَ-apodosis-kana, ditrans-ditrans-or guards")
 print("─" * 70)

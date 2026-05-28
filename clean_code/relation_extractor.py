@@ -132,6 +132,92 @@ def _p7_has_iv_prefix_surface(surface_plain: str) -> bool:
 
 
 # ============================================================================
+# PATCH 12 (2026-05-28) — L4 Remaining Relation Cleanup
+# ============================================================================
+#
+# Four narrow safety filters on top of PATCH 7:
+#   • Block possessor_of when the target is a locative ظَرف noun
+#     (ٱللَّهِ → عِندَ should not be possessor_of; ٱللَّهِ is the
+#     complement of the locative, not the مالك of عِندَ).
+#   • Block attribute_of when the TARGET has a PREP prefix
+#     (شَىْءٍ → بِكُلِّ should not be attribute_of; شَىْءٍ is مضاف
+#     إِليه inside the PP, not a نعت of the PP head).
+#   • Block ism_of_kana when the source token starts with فَ
+#     (فَرَجُلٌ is the apodosis جواب الشرط after «إن لم يكونا...»,
+#     not the اسم of يَكُونَا).
+#   • Block patient2_of when (a) the verb's root is NOT in the
+#     ditransitive-verbs set, OR (b) a coordinator (أَوْ/و) sits
+#     between the first patient and the candidate (الكَلِمَتان حال
+#     مَعطوفَتان لا مَفعولان مُختَلِفان).
+
+
+def _p12_target_is_locative_zarf(target_token) -> bool:
+    """True if the target of a possessor_of relation is a locative
+    ظَرف noun (e.g., عِندَ). Reads role_phrase set by L3."""
+    if target_token is None:
+        return False
+    role = getattr(target_token, "role_phrase", "") or ""
+    if "ظرف مكان" in role or "ظرف زمان" in role:
+        return True
+    # Surface fallback for tokens whose role wasn't filled yet
+    surf = _p7_strip(getattr(target_token, "token", "") or "")
+    if surf in {"عند", "بين", "تحت", "فوق", "قبل", "بعد",
+                "امام", "خلف", "وراء", "مع"}:
+        return True
+    return False
+
+
+def _p12_target_has_prep_prefix(target_token) -> bool:
+    """True iff the TARGET token carries a PREP-peeled prefix
+    (بِ / لِ / كِ). Used to block attribute_of from a نعت candidate
+    to a PP-headed noun."""
+    if target_token is None:
+        return False
+    return _p7_token_has_prep_prefix(target_token)
+
+
+def _p12_source_is_apodosis_fa(source_token) -> bool:
+    """True if the source surface starts with فَ — apodosis marker
+    of a conditional (جواب الشرط). Used to block ism_of_kana from
+    apodosis-headed nouns like فَرَجُلٌ → يَكُونَا."""
+    surf = getattr(source_token, "token", "") or ""
+    # Diacritic-sensitive: فَـ (fatha) is the apodosis/conjunction
+    # marker; do NOT match فُـ (which is part of native words like
+    # فُسُوقٌ; that case is the segmenter's false CONJ peel, but the
+    # apodosis fa is always فَـ).
+    return surf.startswith(("فَ",))
+
+
+# Ditransitive-verb roots — verbs that genuinely take two objects.
+_P12_DITRANS_ROOTS = {
+    "عطي", "كسو", "لبس", "علم", "ظنن", "حسب",
+    "خيل", "زعم", "وجد", "جعل", "اتخذ", "ري",
+}
+
+# Coordinators that separate parallel حال/صفة, NOT distinct patients.
+_P12_COORD_SURFACES_PLAIN = {"او", "و", "ام", "بل", "ثم", "ف"}
+
+
+def _p12_should_skip_patient2(verb_root: str, tokens, first_patient_pos: int,
+                                candidate_pos: int) -> bool:
+    """True if patient2_of(candidate → verb) should be blocked because:
+       (a) verb root is NOT in the ditransitive-verbs set, OR
+       (b) a coordinator (أَوْ / و / أم / ...) sits between the first
+           patient position and the candidate position (the two nouns
+           are coordinated حال/صفة, not two distinct patients).
+    """
+    if (verb_root or "").strip() not in _P12_DITRANS_ROOTS:
+        return True
+    for j in range(first_patient_pos + 1, candidate_pos):
+        if 0 <= j < len(tokens):
+            tw = getattr(tokens[j], "token", "") or ""
+            plain = _p7_strip(tw).strip()
+            if plain in _P12_COORD_SURFACES_PLAIN:
+                return True
+    return False
+
+
+# ============================================================================
 # تَطبيع role_phrase — يَدعَم تَنَوُّعات «مفعول به» / «مفعولٌ به» / «مفعول_به»
 # ============================================================================
 
@@ -320,6 +406,14 @@ class RelationExtractor:
                         _is_defective = _dv.is_defective
                     except ImportError:
                         _dv = None
+                    # PATCH 12 — block ism_of_kana when the source is an
+                    # apodosis-headed noun (فَرَجُلٌ in «إن لم يكونا
+                    # رجلين فرجل ...»). The فَ is the جواب-of-conditional
+                    # marker; the noun starts a new sentence and is NOT
+                    # the اسم of the prior كان-class verb.
+                    if (_is_defective and _dv is not None
+                            and _p12_source_is_apodosis_fa(t)):
+                        _is_defective = False
                     if _is_defective and _dv is not None:
                         # كان وَأَخواتُها — هَذا اسم كان لا فاعل
                         g.add_relation(self._build_relation(
@@ -463,6 +557,15 @@ class RelationExtractor:
                 if _p7_token_has_prep_prefix(t):
                     last_noun_idx = i
                     continue
+                # PATCH 12 — block possessor_of when the TARGET is a
+                # locative ظَرف noun (عِندَ / بَيْنَ / تَحْتَ / فَوْقَ).
+                # «عِندَ ٱللَّهِ» — ٱللَّهِ is the مَعمول of the locative,
+                # NOT a possessor of عِندَ. Emitting possessor_of here
+                # would mislead L5/L6/L8 ("does Allah possess عِندَ?").
+                if last_noun_idx is not None and last_noun_idx != i:
+                    if _p12_target_is_locative_zarf(tokens[last_noun_idx]):
+                        last_noun_idx = i
+                        continue
                 if last_noun_idx is not None and last_noun_idx != i:
                     g.add_relation(self._build_relation(
                         name="possessor_of",
@@ -489,6 +592,14 @@ class RelationExtractor:
                         and _p7_is_jalalah(tokens[last_noun_idx])
                         and _p7_token_starts_with_conjunction(t)
                     ):
+                        _emit_attr = False
+                    # PATCH 12 — block attribute_of when the TARGET is
+                    # a PP-headed noun (بِكُلِّ). شَىْءٍ → بِكُلِّ is
+                    # mis-emitted because شَىْءٍ has role=نعت (case
+                    # agreement with بِكُلِّ); but inside «بِكُلِّ
+                    # شَىْءٍ» the شَىْءٍ is مُضاف-إِليه to كُلِّ, not a
+                    # نعت of the whole PP head.
+                    if _emit_attr and _p12_target_has_prep_prefix(tokens[last_noun_idx]):
                         _emit_attr = False
                     if _emit_attr:
                         try:
@@ -857,6 +968,16 @@ class RelationExtractor:
                 if not is_nasb:
                     continue
                 if f"t{j}" in patients:
+                    continue
+                # PATCH 12 — patient2_of safety gate.
+                # The original heuristic over-fires: it labels ANY
+                # second منصوب-tanwin noun after a verb as patient2_of,
+                # even when (a) the verb is NOT ditransitive, and
+                # (b) the two nouns are coordinated حال/صفة separated
+                # by أَوْ / و (صَغِيرًا أَوْ كَبِيرًا → both are size
+                # حال, not two distinct patients).
+                if _p12_should_skip_patient2(verb_root, tokens,
+                                              first_patient_pos, j):
                     continue
                 # override: نَحذِف أَيّ attribute_of لِهذا الـ token (لأنّه مَفعول ثانٍ)
                 g.relations = [r for r in g.relations
@@ -1372,7 +1493,11 @@ class RelationExtractor:
             v_surface = getattr(v_token, "token", "") or "" if v_token else ""
             v_lemma = getattr(v_token, "lemma", "") or "" if v_token else ""
             _dv = check_defective_verb(v_surface, lemma_hint=v_lemma)
-            if _dv.is_defective and not is_implicit:
+            # PATCH 12 — also reject ism_of_kana routing here when the
+            # source noun is apodosis-headed (فَرَجُلٌ → يَكُونَا).
+            _p12_skip_kana = (x_token is not None
+                              and _p12_source_is_apodosis_fa(x_token))
+            if _dv.is_defective and not is_implicit and not _p12_skip_kana:
                 # كان وَأَخواتُها → ism_of_kana لا agent_of
                 return Relation(
                     name=_dv.topic_relation or "ism_of_kana",
@@ -1386,6 +1511,10 @@ class RelationExtractor:
                     ),
                     contract="DefectiveVerbContract:v1",
                 )
+            if _dv.is_defective and _p12_skip_kana:
+                # apodosis-headed noun, not ism — return None so no
+                # ism_of_kana relation is added.
+                return None
         except ImportError:
             pass
 
