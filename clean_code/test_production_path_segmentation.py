@@ -638,6 +638,142 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 10 — L6 Huwa / Alladhi Clause-Head Refinement ─────────────
+
+
+def t_l6_no_huwa_to_rabbahu_possessive_tail():
+    """PATCH 10: هُوَ must NOT resolve to a possessor-tail noun
+    (رَبَّهُ-class, ending in attached pronoun ـه/ـها/ـكم/...).
+    Target: «أَن يُمِلَّ هُوَ» — هُوَ refers to the obligor, not رَبَّهُ."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    from samarrai_certified_operator_gate import _strip_diac as _sd
+    for r in resolutions:
+        if r.resolution_type != "anaphora":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref != _nfc("هُوَ"):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if not tgt:
+            continue
+        tgt_plain = _sd(tgt)
+        if tgt_plain.endswith(("ه", "ها", "هم", "هن", "هما",
+                               "كم", "كن", "نا", "ك")) and len(tgt_plain) >= 3:
+            bad.append(f"anaphora: هُوَ → {tgt}")
+    assert not bad, (
+        f"PATCH 10 — هُوَ → possessor-tail still emitted (forbidden): {bad}"
+    )
+
+
+def t_l6_no_alladhi_to_internal_haqq_clause_noun():
+    """PATCH 10: ٱلَّذِى in «ٱلَّذِى عَلَيْهِ ٱلْحَقُّ» must NOT resolve
+    to ٱلْحَقُّ (an abstract legal noun that is itself part of the
+    relative clause). The relative-pronoun antecedent must be a person/
+    obligor external to the clause; otherwise stay unresolved (Zero)."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    from samarrai_certified_operator_gate import _strip_diac as _sd
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref not in (_nfc("ٱلَّذِى"), _nfc("ٱلَّذِي"),
+                       _nfc("ٱلَّتِى"), _nfc("ٱلَّتِي")):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if not tgt:
+            continue
+        tgt_plain = _sd(tgt)
+        if tgt_plain in ("الحق", "الحقّ", "حق", "حقّ"):
+            bad.append(f"relative: ٱلَّذِى → {tgt}")
+    assert not bad, (
+        f"PATCH 10 — ٱلَّذِى → ٱلْحَقُّ still emitted (forbidden): {bad}"
+    )
+
+
+def t_l6_patch8_patch9_forbidden_relations_still_absent():
+    """PATCH 10 regression guard: all PATCH 8/9 forbidden relations
+    must STILL be absent."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    from samarrai_certified_operator_gate import _strip_diac as _sd
+    JALALAH_MARKERS = ("ٱللَّه", "اللَّه", "الله")
+    ADJ_DESCRIPTORS = {_nfc(s) for s in
+                       ("ضَعِيفًا", "سَفِيهًا", "كَبِيرًا", "صَغِيرًا", "حَاضِرَةً")}
+    for r in resolutions:
+        ref = _nfc(getattr(r, "referent", "") or "")
+        tgt = _res_target_surface(r, sent) if r.candidates else ""
+        tgt_plain = _sd(tgt) if tgt else ""
+
+        # PATCH 8 #1/#2: no مِن/مِنَ as relative
+        if r.resolution_type == "relative" and ref in (
+                _nfc("مِن"), _nfc("مِنَ"), _nfc("مِنْ")):
+            bad.append(f"PATCH 8 regression: relative {ref}")
+
+        # PATCH 8 #3: no مَا → إِذَا
+        if r.resolution_type == "relative" and ref == _nfc("مَا"):
+            if tgt and tgt == _nfc("إِذَا"):
+                bad.append(f"PATCH 8 regression: مَا → إِذَا")
+
+        # PATCH 8 #4/#5: no ٱلَّذِى → jalalah / indef
+        if r.resolution_type == "relative" and ref in (
+                _nfc("ٱلَّذِى"), _nfc("ٱلَّذِي")):
+            if any(jm in tgt for jm in JALALAH_MARKERS):
+                bad.append(f"PATCH 8 regression: ٱلَّذِى → jalalah ({tgt})")
+            if "شَيْ" in tgt and tgt.endswith("ا"):
+                bad.append(f"PATCH 8 regression: ٱلَّذِى → شَيْـًٔا")
+
+        # PATCH 8 #6: no هُوَ → adjective
+        if r.resolution_type == "anaphora" and ref == _nfc("هُوَ"):
+            if tgt in ADJ_DESCRIPTORS:
+                bad.append(f"PATCH 8 regression: هُوَ → adjective ({tgt})")
+
+        # PATCH 9: no ٱلَّذِى → PP / possessor-tail
+        if r.resolution_type == "relative" and ref in (
+                _nfc("ٱلَّذِى"), _nfc("ٱلَّذِي")):
+            if tgt_plain.startswith(("ب", "ل", "ك")) and "ال" in tgt[:4]:
+                bad.append(f"PATCH 9 regression: ٱلَّذِى → PP ({tgt})")
+            if tgt_plain.endswith(("ه", "ها", "هم", "كم", "نا")) and len(tgt_plain) >= 3:
+                bad.append(f"PATCH 9 regression: ٱلَّذِى → possessor-tail ({tgt})")
+
+        # PATCH 9: no مَا relative in إذا+ما cluster
+        if r.resolution_type == "relative" and ref == _nfc("مَا"):
+            ref_pos = getattr(r, "referent_position", -1)
+            if 0 < ref_pos < len(sent.tokens):
+                prev = _nfc(getattr(sent.tokens[ref_pos - 1], "token", "") or "")
+                if prev == _nfc("إِذَا"):
+                    bad.append(f"PATCH 9 regression: relative مَا in إذا+ما cluster")
+
+    assert not bad, (
+        f"PATCH 10 — regression: prior PATCH 8/9 forbidden relations reappeared: {bad}"
+    )
+
+
 # ── PATCH 9 — L6 Antecedent Quality Gate ────────────────────────────
 
 
@@ -1649,6 +1785,13 @@ ALL = [
      t_l6_no_huwa_to_abstract_haqq),
     ("t_l6_idha_ma_cluster_no_relative_resolution",
      t_l6_idha_ma_cluster_no_relative_resolution),
+    # PATCH 10 — L6 Huwa / Alladhi Clause-Head Refinement
+    ("t_l6_no_huwa_to_rabbahu_possessive_tail",
+     t_l6_no_huwa_to_rabbahu_possessive_tail),
+    ("t_l6_no_alladhi_to_internal_haqq_clause_noun",
+     t_l6_no_alladhi_to_internal_haqq_clause_noun),
+    ("t_l6_patch8_patch9_forbidden_relations_still_absent",
+     t_l6_patch8_patch9_forbidden_relations_still_absent),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1688,4 +1831,5 @@ print("  • PATCH 6: L8 Answer-Type Gate — events/agents/locations/time/seque
 print("  • PATCH 7: L4 Relation Safety Gate — block إذا-patient, dual-نَا-⊕نَحْنُ, بِ-PP-possessor, jalalah-attr loop")
 print("  • PATCH 8: L6 Resolution Safety Gate — block مِن/مَا-as-relative, ٱلَّذِى→jalalah/indef, هُوَ→adjective")
 print("  • PATCH 9: L6 Antecedent Quality Gate — block PP/possessor-tail/abstract antecedents + إذا-ما cluster")
+print("  • PATCH 10: L6 Huwa/Alladhi clause-head refinement — block هُوَ→رَبَّهُ, ٱلَّذِى→ٱلْحَقُّ")
 print("─" * 70)

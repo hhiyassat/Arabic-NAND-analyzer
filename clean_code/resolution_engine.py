@@ -278,6 +278,60 @@ def _p9_is_non_person_for_personal_pronoun(t) -> bool:
     return False
 
 
+# ============================================================================
+# PATCH 10 (2026-05-28) — L6 Huwa / Alladhi Clause-Head Refinement
+# ============================================================================
+#
+# Narrow refinement on top of PATCH 8/9:
+#   1. Block هُوَ → possessor-tail noun (e.g. هُوَ → رَبَّهُ). The
+#      possessor-tail attachment makes the noun an "X's-something"
+#      possessed entity, NOT the person referenced by a free personal
+#      pronoun like هُوَ in «أَن يُمِلَّ هُوَ».
+#   2. Block ٱلَّذِى → abstract noun (e.g. ٱلَّذِى → ٱلْحَقُّ). ٱلَّذِى
+#      in «ٱلَّذِى عَلَيْهِ ٱلْحَقُّ» refers to a person/obligor; ٱلْحَقُّ
+#      is the predicate-noun inside the relative clause, NOT its
+#      external antecedent. We extend PATCH 9 Gate I (abstract-noun
+#      rejection on personal pronouns) to apply to relative ٱلَّذِى
+#      candidates as well.
+#
+# All gates reuse existing helpers; no new lexicons or refactors.
+
+
+def _p10_huwa_should_reject_candidate(t_target) -> bool:
+    """Per-PATCH-10 personal-pronoun (هُوَ/هِيَ) candidate-rejector.
+    Combines:
+      • PATCH 8 Gate E — adjective-like (ضَعِيفًا / سَفِيهًا)
+      • PATCH 9 Gate I — abstract (ٱلْحَقُّ) and indefinite (شَيْـًٔا)
+      • PATCH 10 — possessor-tail (رَبَّهُ-class)
+      • PATCH 10 — temporal/conditional particles (إِذَا, even when L3
+        misclassifies it as ISM_MUARAB and admits it to the entity set)
+    """
+    if _p8_is_adjective_like(t_target):
+        return True
+    if _p9_is_non_person_for_personal_pronoun(t_target):
+        return True
+    if _p9_token_has_possessor_tail(t_target):
+        return True
+    if _p8_is_temporal_or_conditional_particle(t_target):
+        return True
+    return False
+
+
+def _p10_alladhi_should_reject_candidate(t_target) -> bool:
+    """Per-PATCH-10 ٱلَّذِى candidate-rejector. Combines PATCH 8 Gate C
+    (jalalah/indefinite/HARF/temporal), PATCH 9 Gate G (PP-prefix),
+    Gate H (possessor-tail), AND PATCH 10's abstract-noun rejection."""
+    if _p8_should_reject_for_relative_alladhi(t_target):
+        return True
+    if _p9_token_has_prep_prefix(t_target):
+        return True
+    if _p9_token_has_possessor_tail(t_target):
+        return True
+    if _p9_is_abstract_noun(t_target):
+        return True
+    return False
+
+
 def _p9_is_idha_ma_cluster(idx: int, tokens) -> bool:
     """True if `tokens[idx]` is مَا preceded by إِذَا at idx-1.
     Such مَا is a clausal extender of إذا (إذا ما = "if/when ever"),
@@ -478,16 +532,14 @@ class ResolutionEngine:
                     g_match = (wanted_g == "X" or ent["gender"] == wanted_g)
                     if not g_match:
                         continue
-                    # PATCH 8 — Gate E (detached path): also reject
-                    # adjective/predicate descriptors as antecedents for
-                    # هُوَ/هِيَ/...  (same rule as the anaphora path).
+                    # PATCH 10 — consolidated rejector on detached path
+                    # (هُوَ/هِيَ/...). Same gate stack as the anaphora
+                    # path: adjective + abstract + indefinite +
+                    # possessor-tail. Keeps PATCH 8/9 behavior plus the
+                    # PATCH 10 fix for هُوَ → رَبَّهُ.
                     ent_idx_d = ent["position"]
                     ent_tok_d = tokens[ent_idx_d] if 0 <= ent_idx_d < len(tokens) else None
-                    if ent_tok_d is not None and _p8_is_adjective_like(ent_tok_d):
-                        continue
-                    # PATCH 9 — Gate I (detached path): also reject
-                    # abstract/legal AND indefinite-tanwin candidates.
-                    if ent_tok_d is not None and _p9_is_non_person_for_personal_pronoun(ent_tok_d):
+                    if ent_tok_d is not None and _p10_huwa_should_reject_candidate(ent_tok_d):
                         continue
                     proximity = i - ent["position"]
                     score = 1.0 / (1.0 + proximity * 0.2)
@@ -615,21 +667,14 @@ class ResolutionEngine:
                 g_match = (gender == "X" or ent["gender"] == gender)
                 n_match = (number == "X" or ent["number"] == number)
                 if g_match and n_match:
-                    # PATCH 8 — Gate E: reject adjective/predicate
-                    # descriptors as antecedents for personal pronouns.
-                    # هُوَ in "أَن يُمِلَّ هُوَ" must not resolve to
-                    # ضَعِيفًا / سَفِيهًا (those describe the person,
-                    # they are not the person referent).
+                    # PATCH 10 — consolidated هُوَ/personal-pronoun
+                    # rejector. Bundles PATCH 8 Gate E (adjective-like),
+                    # PATCH 9 Gate I (abstract + indefinite), AND
+                    # PATCH 10's possessor-tail rejection
+                    # (هُوَ → رَبَّهُ).
                     ent_idx = ent["position"]
                     ent_token = tokens[ent_idx] if 0 <= ent_idx < len(tokens) else None
-                    if ent_token is not None and _p8_is_adjective_like(ent_token):
-                        continue
-                    # PATCH 9 — Gate I: reject abstract/legal nouns AND
-                    # indefinite-tanwin nouns as antecedents for personal
-                    # pronouns. ٱلْحَقُّ (claim/right) and شَيْـًٔا
-                    # (anything) are not the person referenced by هُوَ
-                    # in "أَن يُمِلَّ هُوَ".
-                    if ent_token is not None and _p9_is_non_person_for_personal_pronoun(ent_token):
+                    if ent_token is not None and _p10_huwa_should_reject_candidate(ent_token):
                         continue
                     proximity = i - ent["position"]
                     score = 1.0 / (1.0 + proximity * 0.1)
@@ -771,19 +816,10 @@ class ResolutionEngine:
                                        "اللاتي", "اللاتى",
                                        "اللائي", "اللائى",
                                        "اللواتي", "اللواتى"):
-                    if _p8_should_reject_for_relative_alladhi(ent_token):
-                        continue
-                    # PATCH 9 — Gate G: reject PP-headed antecedents
-                    # (بِٱلْعَدْلِ-class). The بِ-prefixed noun is the
-                    # head of a جار+مجرور adverbial, not a free
-                    # antecedent for the relative pronoun.
-                    if _p9_token_has_prep_prefix(ent_token):
-                        continue
-                    # PATCH 9 — Gate H: reject possessor-tail nouns
-                    # (رَبَّهُ / ـه/ـها/ـكم/ـنا attached). These are
-                    # مُضاف-with-suffix, not free relative-antecedent
-                    # candidates.
-                    if _p9_token_has_possessor_tail(ent_token):
+                    # PATCH 10 — consolidated ٱلَّذِى rejector. Bundles
+                    # PATCH 8 Gate C + PATCH 9 Gates G/H + PATCH 10's
+                    # abstract-noun rejection (ٱلَّذِى → ٱلْحَقُّ).
+                    if _p10_alladhi_should_reject_candidate(ent_token):
                         continue
                 # PATCH 8 — Gate D: مَا/مَن relative must NOT resolve to
                 # temporal/conditional particles (إِذَا, إِذ, لَمَّا ...).
