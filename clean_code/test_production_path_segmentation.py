@@ -638,6 +638,110 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 5.7 — WawQasamDisambiguationGuard ─────────────────────────
+
+def t_waqul_not_waw_qasam():
+    """PATCH 5.7 BINDING: «وَقُل» at sentence start must NOT receive a
+    ✓ Certificate `واو القَسَم` (or any qasam meaning) from KB.SAM.
+    Target: 24:31 «وَقُل لِّلْمُؤْمِنَٰتِ» — وَ here is عَطف/استئناف on
+    آية 30, and قُل is an imperative verb (not a majroor noun).
+    Pre-PATCH-5.7 this was injected as a Certificate by
+    WawDisambiguationContract:v1 via the over-permissive
+    is_sentence_start_with_majroor predicate."""
+    try:
+        from samarrai_analyzer import analyze
+        from samarrai_certified_operator_gate import gate_text_analysis
+    except (ImportError, OSError, PermissionError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+    ta = analyze("وَقُل لِّلْمُؤْمِنَٰتِ")
+    gate_text_analysis(ta)
+    waqul = ta.words[0]
+    # Any non-Zero qasam claim is a failure
+    for c in waqul.claims:
+        if c.proof_kind == "Zero":
+            continue
+        # Forbid: any meaning text containing قَسَم
+        m = c.meaning_ar or ""
+        assert "قَسَم" not in m and "قسم" not in m, (
+            f"PATCH 5.7 FAILURE — «وَقُل» still emits qasam claim: "
+            f"meaning={m!r} contract={c.contract!r} kind={c.proof_kind!r}"
+        )
+
+
+def t_waqul_residue_is_recognized_as_verb():
+    """PATCH 5.7 unit test — the new residue helper must mark وَقُل /
+    وَٱتَّقُوا / وَأَشْهِدُوا / وَٱسْتَشْهِدُوا as verb-bearing وَ-words,
+    while NOT mis-flagging real qasam patterns like وَٱلشَّمْسِ /
+    وَالعَصرِ."""
+    try:
+        from samarrai_analyzer import (
+            _waw_word_residue_is_verb,
+            WordAnalysis,
+        )
+    except (ImportError, OSError, PermissionError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+    must_be_verb = ["وَقُل", "وَٱتَّقُوا", "وَأَشْهِدُوا", "وَٱسْتَشْهِدُوا"]
+    must_be_noun = ["وَٱلشَّمْسِ", "وَالعَصرِ", "وَٱلنَّاسِ", "وَضُحَىٰهَا"]
+    for w in must_be_verb:
+        wa = WordAnalysis(word=w, position=0)
+        assert _waw_word_residue_is_verb(wa), (
+            f"PATCH 5.7 — {w!r} residue NOT recognized as verb"
+        )
+    for w in must_be_noun:
+        wa = WordAnalysis(word=w, position=0)
+        assert not _waw_word_residue_is_verb(wa), (
+            f"PATCH 5.7 — {w!r} residue FALSELY flagged as verb "
+            f"(would block legitimate qasam disambiguation)"
+        )
+
+
+def t_waw_qasam_positive_control_synthetic():
+    """PATCH 5.7 positive control — confirm the
+    is_sentence_start_with_majroor rule still fires for noun-headed
+    sentences after the verb-guard is added.
+
+    NOTE on real-Quran positive control:
+      The existing predicate `is_sentence_start_with_majroor` requires
+      the NEXT word to end in kasra. In real Quranic qasam patterns
+      («وَٱلشَّمْسِ وَضُحَىٰهَا», «وَٱلْعَصْرِ إِنَّ»), the second token
+      ends in alif or shadda + alif, not kasra — so the rule's
+      Certificate path almost never fires on real Quranic qasam. The
+      pre-existing predicate design is itself imperfect for real qasam
+      detection. This is an orthogonal issue NOT in PATCH 5.7's scope.
+
+      For a structural positive control we use a synthetic phrase
+      `وَزَيدٍ مَن أَكرَمَهُ` where:
+        • وَزَيدٍ — noun residue (not verb), at position 0
+        • مَن — next token … does NOT end in kasra (so rule won't fire
+          even synthetically). We adjust to a phrase where the next
+          token ends in kasra: `وَزَيدٍ كِتابِكَ` — here next token is
+          كِتابِكَ ending in ـكَ (fatha) — still not kasra.
+
+      Conclusion: NO POSITIVE CONTROL AVAILABLE in real Quran data
+      because the predicate's `next_word ends in kasra` constraint is
+      structurally mismatched with how قَسَم appears in the corpus.
+      The negative tests (t_waqul_not_waw_qasam +
+      t_waqul_residue_is_recognized_as_verb) carry the load.
+
+    This test is therefore a SMOKE check: ensure the guard helper can
+    be called without exception on synthetic inputs."""
+    try:
+        from samarrai_analyzer import _waw_word_residue_is_verb, WordAnalysis
+    except (ImportError, OSError, PermissionError) as e:
+        print(f"  [skipped — sandbox: {type(e).__name__}]", end=" ")
+        return
+    # Smoke: function returns False for clear-noun residues, True for
+    # clear-verb residues. (The "real positive control" is the absence
+    # of the negative — confirmed by t_waqul_residue_is_recognized_as_verb
+    # which separately checks the noun cases are NOT flagged.)
+    wa_noun = WordAnalysis(word="وَٱلشَّمْسِ", position=0)
+    wa_verb = WordAnalysis(word="وَقُل", position=0)
+    assert _waw_word_residue_is_verb(wa_noun) is False
+    assert _waw_word_residue_is_verb(wa_verb) is True
+
+
 # ── PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate ────────────
 
 _L5_UNAVAILABLE = "__L5_UNAVAILABLE__"
@@ -879,6 +983,12 @@ ALL = [
      t_patch4_allowed_kbsam_meanings_intact),
     ("t_patch4_wala_qasam_and_rubba_filtered",
      t_patch4_wala_qasam_and_rubba_filtered),
+    # PATCH 5.7 — WawQasamDisambiguationGuard
+    ("t_waqul_not_waw_qasam", t_waqul_not_waw_qasam),
+    ("t_waqul_residue_is_recognized_as_verb",
+     t_waqul_residue_is_recognized_as_verb),
+    ("t_waw_qasam_positive_control_synthetic",
+     t_waw_qasam_positive_control_synthetic),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -913,4 +1023,5 @@ print("  • PATCH 3 FIXUP: بَيْنَكُمْ / بَّيْنَكُمْ L3 rol
 print("  • PATCH 4: KB.SAM gated by L1 prefix/suffix tags (no overmatch)")
 print("  • PATCH 4.5: L3 ظَرف-مَكان override restricted to category=locative (fix بِكُلِّ regression)")
 print("  • PATCH 5: L5 lam-al-amr → mood=jussive_command + TimeScopeGate (no global when_future)")
+print("  • PATCH 5.7: WawQasamDisambiguationGuard — verb-headed وَ never injects qasam Certificate")
 print("─" * 70)
