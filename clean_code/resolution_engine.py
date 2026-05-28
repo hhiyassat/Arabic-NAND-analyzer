@@ -378,6 +378,49 @@ def _p15_token_has_extended_possessor_tail(t) -> bool:
     return surf_plain.endswith("ى") and len(surf_plain) >= 3
 
 
+# ============================================================================
+# PATCH 16 (2026-05-28) — L6 Demonstrative Abstract-Reference Policy
+# ============================================================================
+#
+# Narrow follow-up to PATCH 15. When the demonstrative ذَٰلِكَ is
+# followed by a لِمَن/لمن condition clause, it refers to a PRIOR
+# proposition/clause, not to a nearby nominal antecedent.
+#
+# Example (2:196):
+#   "... تِلْكَ عَشَرَةٌ كَامِلَةٌ ۗ ذَٰلِكَ لِمَن لَّمْ يَكُنْ أَهْلُهُ ..."
+# Here ذَٰلِكَ refers to the ruling/allowance just stated, NOT to
+# عَشَرَةٌ (a number) or any other nearby noun.
+
+
+_P16_ABSTRACT_REF_CONTINUATIONS_PLAIN = {
+    "لمن",      # لِمَن / لمن — "(this) is for whoever ..."
+}
+
+
+def _p16_demonstrative_is_abstract_reference(referent: str,
+                                              i: int, tokens) -> bool:
+    """True iff the demonstrative at `tokens[i]` is the surface
+    ذَٰلِكَ / ذلك AND the immediately-following token begins a
+    لِمَن-style PP/condition clause. Such ذَٰلِكَ points to a prior
+    proposition, not to a nominal candidate; the L6 resolver must
+    return Zero rather than emit a noisy noun match."""
+    ref_plain = _p8_strip(referent or "")
+    # Only this narrow trigger word; do not over-extend to all
+    # demonstratives.
+    if ref_plain != "ذلك":
+        return False
+    if i + 1 >= len(tokens):
+        return False
+    nxt = tokens[i + 1]
+    nxt_surface = getattr(nxt, "token", "") or getattr(nxt, "surface", "") or ""
+    nxt_plain = _p8_strip(nxt_surface)
+    if nxt_plain in _P16_ABSTRACT_REF_CONTINUATIONS_PLAIN:
+        return True
+    # Also accept the slightly extended forms (لمن preceded by a
+    # diacritic-stripped fa/wa connector or trailing shadda).
+    return any(nxt_plain.startswith(p) for p in _P16_ABSTRACT_REF_CONTINUATIONS_PLAIN)
+
+
 def _p15_deixis_should_reject_candidate(t_target) -> bool:
     """Per-PATCH-15 demonstrative-pronoun (تِلْكَ / ذَٰلِكَ / هَٰذَا /
     ...) candidate-rejector. Combines:
@@ -788,6 +831,23 @@ class ResolutionEngine:
             demo = is_demonstrative(surface)
             if not demo:
                 continue
+
+            # PATCH 16 — abstract-reference policy. ذَٰلِكَ followed
+            # by a لِمَن/لمن condition clause refers to a prior
+            # proposition (e.g., 2:196 «... عَشَرَةٌ كَامِلَةٌ ۗ ذَٰلِكَ
+            # لِمَن لَّمْ يَكُنْ ...»). Emit Zero rather than a noisy
+            # nominal candidate match.
+            if _p16_demonstrative_is_abstract_reference(surface, i, tokens):
+                results.append(self._build_resolution(
+                    resolution_type="deixis",
+                    referent=surface,
+                    referent_position=i,
+                    candidates=[],
+                    contract=self.CONTRACT_DEIXIS,
+                    rid=f"res_deixis_{i}",
+                ))
+                continue
+
             gender = demo.get("gender", "X")
             number = demo.get("number", "X")
             proximity_kind = demo.get("proximity", "near")

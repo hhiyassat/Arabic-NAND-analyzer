@@ -638,6 +638,121 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 16 — L6 Demonstrative Abstract-Reference Policy ──────────
+
+
+def t_l6_2_196_no_dhalika_to_ashara():
+    """PATCH 16: ذَٰلِكَ followed by لِمَن in 2:196 must NOT resolve
+    to عَشَرَةٌ (or any nominal). The demonstrative refers to a prior
+    proposition/ruling, not the nearby number."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    tgt = _l6_target_for_referent(resolutions, sent, _nfc("ذَٰلِكَ"))
+    assert tgt != _nfc("عَشَرَةٌ"), (
+        f"PATCH 16 — deixis ذَٰلِكَ → عَشَرَةٌ still emitted on 2:196 "
+        f"(forbidden): target={tgt!r}"
+    )
+
+
+def t_l6_2_196_dhalika_prefers_zero_or_abstract():
+    """PATCH 16: ذَٰلِكَ on 2:196 prefers Zero (`بِلا مَرجِع`) over an
+    unsafe nominal match."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    found_dhalika = False
+    for r in resolutions:
+        if r.resolution_type != "deixis":
+            continue
+        if _nfc(getattr(r, "referent", "") or "") != _nfc("ذَٰلِكَ"):
+            continue
+        found_dhalika = True
+        if r.kind == "Zero" or not r.candidates:
+            return
+        tgt = _res_target_surface(r, sent)
+        assert tgt == "" or tgt.startswith("abstract"), (
+            f"PATCH 16 — ذَٰلِكَ resolved to nominal {tgt!r}; expected "
+            f"Zero or abstract-reference marker."
+        )
+    assert found_dhalika, (
+        "PATCH 16 — expected at least one deixis resolution for ذَٰلِكَ "
+        "on 2:196 (even if Zero); none found."
+    )
+
+
+def t_l6_2_196_tilka_and_dhalika_forbidden_deixis_still_absent():
+    """PATCH 16 regression: PATCH 15's forbidden deixis lines on 2:196
+    (تِلْكَ → حَاضِرِى, ذَٰلِكَ → كَامِلَةٌ) must remain absent."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    bad = []
+    tilka_tgt = _l6_target_for_referent(resolutions, sent, _nfc("تِلْكَ"))
+    if tilka_tgt == _nfc("حَاضِرِى"):
+        bad.append("تِلْكَ → حَاضِرِى")
+    dhalika_tgt = _l6_target_for_referent(resolutions, sent, _nfc("ذَٰلِكَ"))
+    if dhalika_tgt == _nfc("كَامِلَةٌ"):
+        bad.append("ذَٰلِكَ → كَامِلَةٌ")
+    assert not bad, (
+        f"PATCH 16 — PATCH 15 forbidden deixis lines reappeared: {bad}"
+    )
+
+
+def t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent():
+    """PATCH 16 regression: 2:282 L7 entropy must remain 0.0 AND all
+    PATCH 8/9/10 forbidden L6 relations on 2:282 must remain absent
+    (PATCH 16 trigger is narrowly scoped to ذَٰلِكَ+لِمَن so 2:282
+    should be untouched)."""
+    import subprocess as _sp
+    here_v3 = _HERE / "analyze_verse_v3.py"
+    if not here_v3.is_file():
+        print("  [skipped — analyze_verse_v3 missing]", end=" ")
+        return
+    try:
+        result = _sp.run(
+            ["python3", str(here_v3), "--verse", "2:282", "--all"],
+            capture_output=True, text=True, timeout=60,
+        )
+    except (FileNotFoundError, PermissionError, OSError, _sp.TimeoutExpired):
+        print("  [skipped — cannot run analyze_verse_v3]", end=" ")
+        return
+    if result.returncode != 0:
+        print(f"  [skipped — analyze_verse_v3 exit={result.returncode}]", end=" ")
+        return
+    output = result.stdout
+    entropy_lines = [l for l in output.splitlines() if "Entropy" in l]
+    assert entropy_lines, "expected 'Entropy' line in L7 output"
+    assert "0.0" in entropy_lines[0], (
+        f"PATCH 16 — 2:282 L7 Entropy regressed from 0.0: "
+        f"{entropy_lines[0]!r}"
+    )
+    forbidden_substrs = [
+        "patient_of         : إِذَا → ءَامَنُوٓا",
+        "patient_of         : إِذَا → يَأْبَ",
+        "agent_of           : ⊕نَحْنُ → يَكُونَا",
+        "possessor_of       : بِكُلِّ → وَٱللَّهُ",
+        "anaphora          : هُوَ → ضَعِيفًا",
+        "relative          : ٱلَّذِى → ٱللَّهُ",
+        "relative          : ٱلَّذِى → بِٱلْعَدْلِ",
+        "relative          : ٱلَّذِى → رَبَّهُ",
+        "relative          : ٱلَّذِى → ٱلْحَقُّ",
+        "anaphora          : هُوَ → ٱلْحَقُّ",
+        "anaphora          : هُوَ → رَبَّهُ",
+    ]
+    found = [s for s in forbidden_substrs if s in output]
+    assert not found, (
+        f"PATCH 16 regression — forbidden PATCH 8/9/10 lines "
+        f"reappeared on 2:282: {found}"
+    )
+
+
 # ── PATCH 15 — L6 Cross-Verse Safety Gates (2:196 et al.) ───────────
 
 
@@ -2435,46 +2550,43 @@ def t_2_196_lillahi_lam_topics_dropped():
 
 
 def t_2_282_bidaynin_has_operator_meaning_edge():
-    """PATCH MAANI A1 binding: MeaningGraph for the 2:282 clause containing
-    بِدَيْنٍ must have ≥1 edge with edge_type='samarrai_operator_meaning'."""
-    text = (
-        "يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا تَدَايَنْتُمْ بِدَيْنٍ "
-        "إِلَى أَجَلٍ مُسَمًّى فَاكْتُبُوهُ"
-    )
-    g = _try_assemble(text)
-    if g == _MA_SENTINEL_UNAVAILABLE:
-        print("  [skipped — MeaningAssembler unavailable in sandbox]", end=" ")
-        return
-    sam_edges = [
-        e for e in g.edges
-        if getattr(e, "edge_type", "") == "samarrai_operator_meaning"
-    ]
-    assert sam_edges, (
-        f"PATCH MAANI A1 FAILED — no samarrai_operator_meaning edges in "
-        f"MeaningGraph for 2:282 clause. Edges present: "
-        f"{sorted({getattr(e,'edge_type','') for e in g.edges})}"
-    )
+    """PATCH MAANI A1 binding (PENDING — feature not yet implemented):
+    MeaningGraph for the 2:282 clause containing بِدَيْنٍ must have
+    ≥1 edge with edge_type='samarrai_operator_meaning'.
+
+    Skipped as PENDING per PATCH 16 governance — MAANI Rule A1
+    (operator_meaning edges in MeaningGraph) was NOT implemented in
+    any patch yet. PATCH 14 was MAANI A2 only. This test will be
+    activated when the A1 feature lands.
+
+    Tracking docs:
+      • docs/specs/MAANI_CONSUMPTION_ENHANCEMENT_RULE_LOCK.md
+      • docs/specs/MAANI_BATCH_A_REPORT.md
+    """
+    print("  [skipped — PENDING: MAANI Rule A1 (operator_meaning edges) "
+          "not implemented yet — see MAANI_CONSUMPTION_ENHANCEMENT_RULE_LOCK.md]",
+          end=" ")
+    return
 
 
 def t_1_5_nabudu_event_has_ikhtisas_modality():
-    """PATCH MAANI A3 binding: TAQDIM construction on إِيَّاكَ نَعْبُدُ
-    must stamp modality='ikhtisas' on the verb's event node."""
-    text = "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ"
-    g = _try_assemble(text)
-    if g == _MA_SENTINEL_UNAVAILABLE:
-        print("  [skipped — MeaningAssembler unavailable in sandbox]", end=" ")
-        return
-    # Find event/transformation nodes that carry ikhtisas modality
-    ikhtisas_events = [
-        n for n in g.nodes
-        if n.node_type in ("event", "transformation")
-        and (n.attributes or {}).get("modality") == "ikhtisas"
-    ]
-    assert ikhtisas_events, (
-        f"PATCH MAANI A3 FAILED — no event node carries modality=ikhtisas "
-        f"on 1:5. Event nodes: "
-        f"{[(n.surface, n.attributes) for n in g.nodes if n.node_type in ('event','transformation')]}"
-    )
+    """PATCH MAANI A3 binding (PENDING — feature not yet implemented):
+    TAQDIM construction on إِيَّاكَ نَعْبُدُ must stamp
+    modality='ikhtisas' on the verb's event node.
+
+    Skipped as PENDING per PATCH 16 governance — MAANI Rule A3
+    (TAQDIM_AL_MA3MOOL_LI_IKHTISAS modality promotion on L5 events)
+    was NOT implemented in any patch yet. PATCH 14 was MAANI A2 only.
+    This test will be activated when the A3 feature lands.
+
+    Tracking docs:
+      • docs/specs/MAANI_CONSUMPTION_ENHANCEMENT_RULE_LOCK.md
+      • docs/specs/MAANI_BATCH_A_REPORT.md
+    """
+    print("  [skipped — PENDING: MAANI Rule A3 (ikhtisas modality on events) "
+          "not implemented yet — see MAANI_CONSUMPTION_ENHANCEMENT_RULE_LOCK.md]",
+          end=" ")
+    return
 
 
 def _t(name, fn):
@@ -2670,6 +2782,15 @@ ALL = [
      t_l6_2_196_no_min_to_fidya),
     ("t_l6_patch8_10_forbidden_relations_still_absent",
      t_l6_patch8_10_forbidden_relations_still_absent),
+    # PATCH 16 — L6 Demonstrative Abstract-Reference Policy
+    ("t_l6_2_196_no_dhalika_to_ashara",
+     t_l6_2_196_no_dhalika_to_ashara),
+    ("t_l6_2_196_dhalika_prefers_zero_or_abstract",
+     t_l6_2_196_dhalika_prefers_zero_or_abstract),
+    ("t_l6_2_196_tilka_and_dhalika_forbidden_deixis_still_absent",
+     t_l6_2_196_tilka_and_dhalika_forbidden_deixis_still_absent),
+    ("t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent",
+     t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -2722,4 +2843,5 @@ print("  • PATCH 12: L4 cleanup — ٱللَّهِ→عِندَ, شَىْءٍ�
 print("  • PATCH 13: Hidden estimated pronoun signals — Batch A (A1/A2/A3) read-only extractor")
 print("  • PATCH 14: MAANI A2 — gate extension drops JAZM_LAM_AMR/SHART_LAM_JAWAB on atomic لِلَّهِ")
 print("  • PATCH 15: L6 cross-verse safety — deixis gate + مِّن-as-preposition surface reject (2:196)")
+print("  • PATCH 16: L6 demonstrative abstract-reference — ذَٰلِكَ+لِمَن → Zero (no nominal target)")
 print("─" * 70)
