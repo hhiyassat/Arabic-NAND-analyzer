@@ -638,6 +638,152 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 7 — L4 Relation Safety Gate ───────────────────────────────
+
+_L4_UNAVAILABLE = "__L4_UNAVAILABLE__"
+
+
+def _l4_relations_for_verse(verse_text: str):
+    """Run the production L4 pipeline on `verse_text` and return its
+    RelationGraph.relations list. Returns _L4_UNAVAILABLE if the
+    pipeline can't run in the sandbox."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        from relation_extractor import RelationExtractor
+    except (ImportError, OSError, PermissionError):
+        return _L4_UNAVAILABLE
+    try:
+        sent = I3rabEngine().analyze_sentence(verse_text)
+        rg = RelationExtractor().extract(sent)
+        return list(rg.relations), sent
+    except (PermissionError, OSError):
+        return _L4_UNAVAILABLE
+
+
+def t_l4_no_idha_patient_relations():
+    """PATCH 7: إِذَا must NEVER be the source of patient_of (it is
+    ظَرف / أَداة شَرط, not a verb patient). Targets the 3 pre-PATCH-7
+    misfires on 2:282: إِذَا → ءَامَنُوٓا / يَأْبَ / وَأَشْهِدُوٓا."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "patient_of":
+            continue
+        # Resolve source token surface
+        try:
+            idx = int(r.source_id[1:])
+            src_surface = _nfc(getattr(sent.tokens[idx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        if _nfc(src_surface) == _nfc("إِذَا") or src_surface.startswith("إِذَا"):
+            bad.append(f"patient_of: {src_surface} → t{r.target_id}")
+    assert not bad, (
+        f"PATCH 7 — إِذَا still emitted as patient_of (forbidden): {bad}"
+    )
+
+
+def t_l4_no_na7nu_agent_for_dual_yakuna():
+    """PATCH 7: يَكُونَا (dual jussive, نَا is dual-marker per PATCH 3C)
+    must NOT receive ⊕نَحْنُ as implicit agent. The past-suffix `نا`
+    rule must skip when verb has IV prefix."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    # Find يَكُونَا token positions
+    yakuna_ids = set()
+    for i, tok in enumerate(sent.tokens):
+        s = _nfc(getattr(tok, "token", "") or "")
+        if s == _nfc("يَكُونَا"):
+            yakuna_ids.add(f"t{i}")
+    bad = []
+    for r in relations:
+        if r.name != "agent_of" or r.target_id not in yakuna_ids:
+            continue
+        # Check whether the source is an implicit ⊕نَحْنُ node
+        src = r.source_id or ""
+        if src.startswith("implicit_"):
+            bad.append(f"⊕…→ {r.target_id} (implicit src={src})")
+    assert not bad, (
+        f"PATCH 7 — يَكُونَا still gets implicit agent (forbidden): {bad}"
+    )
+
+
+def t_l4_no_bikulli_possessor_of_jalalah():
+    """PATCH 7: بِكُلِّ (PP head, بِ-PREP-peeled) must NOT emit
+    possessor_of pointing at the preceding noun (وَٱللَّهُ in 2:282).
+    Prepositional-phrase nouns are جار+مجرور, not مضاف-إليه to
+    whatever last_noun_idx happens to be."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "possessor_of":
+            continue
+        try:
+            idx = int(r.source_id[1:])
+            src_surface = _nfc(getattr(sent.tokens[idx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        if src_surface == _nfc("بِكُلِّ"):
+            bad.append(f"possessor_of: {src_surface} → t{r.target_id}")
+    assert not bad, (
+        f"PATCH 7 — بِكُلِّ still emitted as possessor_of (forbidden): {bad}"
+    )
+
+
+def t_l4_no_conjoined_jalalah_attribute_loop():
+    """PATCH 7: وَٱللَّهُ following a prior ٱللَّهُ across a clause is a
+    coordinated subject of a new clause, NOT an attribute_of the prior
+    لَفظ الجَلالَة."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l4_relations_for_verse(verse)
+    if result == _L4_UNAVAILABLE:
+        print("  [skipped — L4 unavailable]", end=" ")
+        return
+    relations, sent = result
+    bad = []
+    for r in relations:
+        if r.name != "attribute_of":
+            continue
+        try:
+            sidx = int(r.source_id[1:])
+            tidx = int(r.target_id[1:])
+            src = _nfc(getattr(sent.tokens[sidx], "token", ""))
+            tgt = _nfc(getattr(sent.tokens[tidx], "token", ""))
+        except (ValueError, IndexError, AttributeError):
+            continue
+        # Forbidden pattern: وَٱللَّهُ → ٱللَّهُ (jalalah-attribute loop)
+        if src.startswith(("وَ", "فَ")) and "ٱللَّه" in src and "ٱللَّه" in tgt:
+            bad.append(f"attribute_of: {src} → {tgt}")
+    assert not bad, (
+        f"PATCH 7 — repeated لَفظ الجَلالَة attribute loop (forbidden): {bad}"
+    )
+
+
 # ── PATCH 6 — L8 Answer-Type Gate ────────────────────────────────────
 
 _L8_UNAVAILABLE = "__L8_UNAVAILABLE__"
@@ -1182,6 +1328,15 @@ ALL = [
      t_l8_sequence_returns_ordered_events_only),
     ("t_l8_transformation_returns_zero_when_no_transform",
      t_l8_transformation_returns_zero_when_no_transform),
+    # PATCH 7 — L4 Relation Safety Gate
+    ("t_l4_no_idha_patient_relations",
+     t_l4_no_idha_patient_relations),
+    ("t_l4_no_na7nu_agent_for_dual_yakuna",
+     t_l4_no_na7nu_agent_for_dual_yakuna),
+    ("t_l4_no_bikulli_possessor_of_jalalah",
+     t_l4_no_bikulli_possessor_of_jalalah),
+    ("t_l4_no_conjoined_jalalah_attribute_loop",
+     t_l4_no_conjoined_jalalah_attribute_loop),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1218,4 +1373,5 @@ print("  • PATCH 4.5: L3 ظَرف-مَكان override restricted to category=l
 print("  • PATCH 5: L5 lam-al-amr → mood=jussive_command + TimeScopeGate (no global when_future)")
 print("  • PATCH 5.7: WawQasamDisambiguationGuard — verb-headed وَ never injects qasam Certificate")
 print("  • PATCH 6: L8 Answer-Type Gate — events/agents/locations/time/sequence/transform routed strictly")
+print("  • PATCH 7: L4 Relation Safety Gate — block إذا-patient, dual-نَا-⊕نَحْنُ, بِ-PP-possessor, jalalah-attr loop")
 print("─" * 70)
