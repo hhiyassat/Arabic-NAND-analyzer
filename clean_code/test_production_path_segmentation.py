@@ -638,6 +638,98 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 14 — MAANI Rule A2 (Gate Extension Only) ──────────────────
+
+
+def _maani_a2_lam_survivors(word: str) -> list:
+    """Return the (topic_id, meaning_id) pairs that survive the gate
+    on `word` and are part of the A2-target topic set
+    {JAZM_LAM_AMR, SHART_LAM_JAWAB}. Returns _KBSAM_UNAVAILABLE if
+    KB.SAM can't be loaded."""
+    try:
+        from samarrai_analyzer import analyze
+        from samarrai_certified_operator_gate import gate_text_analysis
+    except (ImportError, OSError, PermissionError):
+        return _KBSAM_UNAVAILABLE
+    try:
+        ta = analyze(word)
+        gate_text_analysis(ta)
+    except (PermissionError, OSError):
+        return _KBSAM_UNAVAILABLE
+    targets = {"JAZM_LAM_AMR", "SHART_LAM_JAWAB"}
+    out = []
+    for wa in ta.words:
+        for c in wa.claims:
+            if c.proof_kind == "Zero":
+                continue
+            if c.topic_id in targets:
+                out.append((c.topic_id, c.meaning_id))
+    return out
+
+
+def t_maani_a2_lillahi_drops_false_lam_topics():
+    """PATCH 14 (MAANI A2): لِلَّهِ is atomic in L1 (لَفظ الجَلالَة is
+    protected from لِ-peeling). The four false-positive lam topics
+    (JAZM_LAM_AMR/LAM_AMR + 3 × SHART_LAM_JAWAB) must now drop to Zero."""
+    survivors = _maani_a2_lam_survivors("لِلَّهِ")
+    if survivors == _KBSAM_UNAVAILABLE:
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    assert survivors == [], (
+        f"PATCH 14 A2 — لِلَّهِ should have 0 surviving JAZM_LAM_AMR / "
+        f"SHART_LAM_JAWAB claims; got {survivors}"
+    )
+
+
+def t_maani_a2_lam_al_amr_words_still_pass_or_remain_unchanged():
+    """PATCH 14 (MAANI A2) regression guard: real lam-al-amr verbs
+    (وَلْيَكْتُب / فَلْيَكْتُبْ / وَلْيُمْلِلِ / فَلْيُمْلِلْ / وَلْيَتَّقِ)
+    must be unchanged. KB.SAM does NOT currently emit JAZM_LAM_AMR /
+    SHART_LAM_JAWAB on these tokens (the surface includes the verb
+    body, not the bare لِ), so the post-gate state must remain
+    identical to the pre-PATCH-14 state — which is: zero
+    JAZM_LAM_AMR / SHART_LAM_JAWAB survivors."""
+    for w in ["وَلْيَكْتُب", "فَلْيَكْتُبْ", "وَلْيُمْلِلِ",
+              "فَلْيُمْلِلْ", "وَلْيَتَّقِ"]:
+        survivors = _maani_a2_lam_survivors(w)
+        if survivors == _KBSAM_UNAVAILABLE:
+            print(f"  [skipped {w} — KB.SAM unavailable]", end=" ")
+            return
+        assert survivors == [], (
+            f"PATCH 14 A2 regression — {w} should keep zero "
+            f"JAZM_LAM_AMR / SHART_LAM_JAWAB survivors; got {survivors}"
+        )
+
+
+def t_maani_a2_prep_lam_real_prefix_still_allowed_if_certified():
+    """PATCH 14 (MAANI A2) regression guard: for real لِ-PREP nouns
+    (لِلشَّهَٰدَةِ, لِزَيدٍ, لِلْكِتَابِ), the genuine PREP_LAM readings
+    must continue to survive (this is the PATCH 4 default-allow path
+    for PREP-certified clitics). PATCH 14 only adds JAZM_LAM_AMR and
+    SHART_LAM_JAWAB requirements; PREP_LAM behaviour is untouched."""
+    try:
+        from samarrai_analyzer import analyze
+        from samarrai_certified_operator_gate import gate_text_analysis
+    except (ImportError, OSError, PermissionError):
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    for w in ["لِلشَّهَٰدَةِ", "لِزَيدٍ", "لِلْكِتَابِ"]:
+        try:
+            ta = analyze(w)
+            gate_text_analysis(ta)
+        except (PermissionError, OSError):
+            print(f"  [skipped {w} — KB.SAM unavailable]", end=" ")
+            return
+        prep_lam_survivors = [
+            c for wa in ta.words for c in wa.claims
+            if c.proof_kind != "Zero" and c.topic_id == "PREP_LAM"
+        ]
+        assert len(prep_lam_survivors) > 0, (
+            f"PATCH 14 A2 regression — {w} lost PREP_LAM survivors "
+            f"after PATCH 14; PREP_LAM should be unaffected by A2."
+        )
+
+
 # ── PATCH 13 — Hidden Estimated Pronoun Signals (Batch A) ───────────
 
 
@@ -2296,6 +2388,13 @@ ALL = [
      t_a3_katibun_naib_faail_head),
     ("t_patch13_no_production_path_change",
      t_patch13_no_production_path_change),
+    # PATCH 14 — MAANI Rule A2 (Gate Extension Only)
+    ("t_maani_a2_lillahi_drops_false_lam_topics",
+     t_maani_a2_lillahi_drops_false_lam_topics),
+    ("t_maani_a2_lam_al_amr_words_still_pass_or_remain_unchanged",
+     t_maani_a2_lam_al_amr_words_still_pass_or_remain_unchanged),
+    ("t_maani_a2_prep_lam_real_prefix_still_allowed_if_certified",
+     t_maani_a2_prep_lam_real_prefix_still_allowed_if_certified),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -2339,4 +2438,5 @@ print("  • PATCH 10: L6 Huwa/Alladhi clause-head refinement — block هُوَ
 print("  • PATCH 11: L3 cleanup — إِذَا→ظرف شرط, عِندَ→ISM_MUARAB, أَلَّا wazn fixed, وَأَشْهِدُوٓا→فعل أمر")
 print("  • PATCH 12: L4 cleanup — ٱللَّهِ→عِندَ, شَىْءٍ→بِكُلِّ, فَ-apodosis-kana, ditrans-ditrans-or guards")
 print("  • PATCH 13: Hidden estimated pronoun signals — Batch A (A1/A2/A3) read-only extractor")
+print("  • PATCH 14: MAANI A2 — gate extension drops JAZM_LAM_AMR/SHART_LAM_JAWAB on atomic لِلَّهِ")
 print("─" * 70)

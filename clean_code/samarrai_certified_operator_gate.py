@@ -73,6 +73,23 @@ _PREFIX_REQUIRED: dict[str, tuple[str, set[str]]] = {
     "PREP_WAW":  ("و", {"CONJ"}),
     # فاء العَطف / فاء رابِطَة — both need ف as CONJ
     "SHART_FA_IDH": ("ف", {"CONJ"}),
+    # PATCH 14 (2026-05-28) — MAANI Rule A2 extension.
+    # KB.SAM emits four lam-readings whose topics survived the
+    # pre-PATCH-14 default-allow path on atomic/protected words like
+    # لِلَّهِ (which L1 keeps as prefixes=[] — لَفظ الجَلالَة is
+    # protected from لِ-peeling). Add prefix requirements:
+    #   • JAZM_LAM_AMR (لام الأَمر) — the لِ must be peeled with the
+    #     LAM_AL_AMR tag the segmenter sets on lam-al-amr verb forms
+    #     (وَلْيَكْتُب-class). Atomic لِلَّهِ has no such peel → drop.
+    #   • SHART_LAM_JAWAB (لام جواب الشرط / القَسَم / الِابتداء) —
+    #     conservative: require a PREP-peeled ل. The spec acknowledges
+    #     these jawab-lams aren't truly PREP, but on atomic words like
+    #     لِلَّهِ where NO ل is peeled at all, the dependency is the
+    #     same: drop. Real لِ-PREP nouns retain their PREP_LAM readings
+    #     via the existing PREP_LAM rule; SHART_LAM_JAWAB is not
+    #     linguistically valid on a simple noun-with-jar anyway.
+    "JAZM_LAM_AMR":   ("ل", {"LAM_AL_AMR"}),
+    "SHART_LAM_JAWAB": ("ل", {"PREP"}),
 }
 
 
