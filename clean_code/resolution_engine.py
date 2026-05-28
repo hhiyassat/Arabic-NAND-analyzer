@@ -332,6 +332,79 @@ def _p10_alladhi_should_reject_candidate(t_target) -> bool:
     return False
 
 
+# ============================================================================
+# PATCH 15 (2026-05-28) — Cross-Verse L6 Safety Gates (for 2:196 et al.)
+# ============================================================================
+#
+# Generalize PATCH 8/9/10 rejection logic to two more L6 paths:
+#   • DEIXIS — تِلْكَ / ذَٰلِكَ must NOT resolve to adjective-like or
+#     possessor-tail-bearing candidates. Until PATCH 15 the deixis
+#     resolver had no quality gate at all and emitted noisy matches.
+#   • RELATIVE on مِّن — the assimilated شدّة-bearing form مِّن is the
+#     preposition مِن (idgham after a previous letter), NOT the
+#     relative pronoun مَن. The diacritic-stripped lookup collides;
+#     L1 incorrectly classifies it as ISM_MAWSOOL on 2:196, so the
+#     PATCH 8 word_class==HARF gate doesn't fire. Surface-based
+#     rejection closes this gap.
+
+
+def _p15_min_surface_is_preposition(referent: str) -> bool:
+    """True iff the relative-referent surface is one of the
+    preposition spellings of مِن (with or without idgham-shadda). The
+    relative pronoun مَن uses fatha on م; the preposition مِن uses
+    kasra. The mim-shadda variant مِّن occurs after idgham."""
+    if not referent:
+        return False
+    nfc = unicodedata.normalize("NFC", referent)
+    # Diacritic-stripped + hamza-normalized form for the few canonical
+    # preposition spellings. Match BOTH plain `من` AND the explicit
+    # kasra/sukun-bearing surfaces; the relative pronoun مَن uses fatha
+    # so it will not collide with these specific NFC strings.
+    if nfc in ("مِن", "مِّن", "مِنْ", "مِنَ"):
+        return True
+    return False
+
+
+def _p15_token_has_extended_possessor_tail(t) -> bool:
+    """Like `_p9_token_has_possessor_tail` but also matches the
+    1st-person-singular ـى (alif maksura, U+0649) — corpus
+    orthography sometimes writes the 1sg-genitive pronoun this way.
+    Targets 2:196 حَاضِرِى."""
+    if _p9_token_has_possessor_tail(t):
+        return True
+    surf_plain = _p8_strip(
+        getattr(t, "token", "") or getattr(t, "surface", "") or ""
+    )
+    return surf_plain.endswith("ى") and len(surf_plain) >= 3
+
+
+def _p15_deixis_should_reject_candidate(t_target) -> bool:
+    """Per-PATCH-15 demonstrative-pronoun (تِلْكَ / ذَٰلِكَ / هَٰذَا /
+    ...) candidate-rejector. Combines:
+      • PATCH 8 Gate E — adjective-like (حَاضِر / ضَعِيف / كَامِل / ...)
+      • PATCH 9 — possessor-tail (ـه/ـها/ـكم/ـنا/...)
+      • PATCH 15 — extended possessor-tail (also ـى for حَاضِرِى-class)
+      • PATCH 9 — abstract noun (الحَقّ / العَدل / ...)
+      • role==نعت — candidates currently functioning as نعت are
+        attributes of a head noun, not the referent of an external
+        demonstrative.
+    """
+    if _p8_is_adjective_like(t_target):
+        return True
+    if _p15_token_has_extended_possessor_tail(t_target):
+        return True
+    if _p9_is_abstract_noun(t_target):
+        return True
+    role = getattr(t_target, "role_phrase", "") or ""
+    if "نعت" in role:
+        return True
+    wazn = getattr(t_target, "wazn", "") or ""
+    if wazn == "فاعل":
+        # كَامِلَةٌ (wazn=فاعل) — active-participle adjective pattern.
+        return True
+    return False
+
+
 def _p9_is_idha_ma_cluster(idx: int, tokens) -> bool:
     """True if `tokens[idx]` is مَا preceded by إِذَا at idx-1.
     Such مَا is a clausal extender of إذا (إذا ما = "if/when ever"),
@@ -729,6 +802,15 @@ class ResolutionEngine:
                 n_match = (number == "X" or ent["number"] == number)
                 if not (g_match and n_match):
                     continue
+                # PATCH 15 — deixis candidate quality gate. Reject
+                # adjective-like / possessor-tail / abstract / نعت /
+                # فاعل-pattern candidates. Targets 2:196 misfires
+                # (تِلْكَ → حَاضِرِى, ذَٰلِكَ → كَامِلَةٌ).
+                ent_idx_dx = ent["position"]
+                ent_tok_dx = (tokens[ent_idx_dx]
+                              if 0 <= ent_idx_dx < len(tokens) else None)
+                if ent_tok_dx is not None and _p15_deixis_should_reject_candidate(ent_tok_dx):
+                    continue
                 # الإِشارَة القُربى تُفَضِّل ما هو أَقرَب مَوقِعًا
                 score = 1.0 / (1.0 + pos_diff * 0.15)
                 if proximity_kind == "far":
@@ -774,6 +856,16 @@ class ResolutionEngine:
             # JARR, not the relative pronoun مَن; both collapse to "من"
             # after diacritic strip). Use L3 word_class as ground truth.
             if _p8_token_is_harf_preposition(t):
+                continue
+
+            # PATCH 15 — surface-based reject for مِّن (idgham-shadda
+            # preposition). L1 sometimes classifies this as
+            # ISM_MAWSOOL because the diacritic-stripped form `من`
+            # collides with the relative pronoun, leaving Gate A
+            # ineffective. The diacritic-sensitive surface مِّن /
+            # مِنْ / مِنَ is the preposition spelling and must not
+            # emit a relative resolution.
+            if _p15_min_surface_is_preposition(surface):
                 continue
 
             # PATCH 9 — Gate F: إذا+ما cluster. مَا preceded by إذا is a

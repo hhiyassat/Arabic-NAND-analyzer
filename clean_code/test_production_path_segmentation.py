@@ -638,6 +638,181 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 15 — L6 Cross-Verse Safety Gates (2:196 et al.) ───────────
+
+
+def _load_verse(surah: int, ayah: int):
+    quran = _HERE.parent / "data" / "quran-uthmani-with-pause-mark.txt"
+    if not quran.exists():
+        return None
+    with quran.open(encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) >= 3 and parts[0] == str(surah) and parts[1] == str(ayah):
+                return parts[2]
+    return None
+
+
+def _l6_for_verse(surah: int, ayah: int):
+    """Run the production L6 pipeline on an arbitrary verse. Returns
+    `(resolutions, sent)` or `_L6_UNAVAILABLE`."""
+    verse = _load_verse(surah, ayah)
+    if not verse:
+        return None
+    return _l6_resolutions_for_verse(verse)
+
+
+def _l6_target_for_referent(resolutions, sent, referent_nfc: str) -> str:
+    """Return the chosen target surface (NFC) for a given referent
+    surface, or "" if no resolution has that referent."""
+    for r in resolutions:
+        if _nfc(getattr(r, "referent", "") or "") == referent_nfc:
+            return _res_target_surface(r, sent)
+    return ""
+
+
+def t_l6_2_196_no_tilka_to_hadiri():
+    """PATCH 15: deixis : تِلْكَ → حَاضِرِى on 2:196 must NOT fire.
+    حَاضِرِى carries a 1sg-genitive ـى tail; it cannot be the
+    referent of a free demonstrative."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    tgt = _l6_target_for_referent(resolutions, sent, _nfc("تِلْكَ"))
+    assert tgt != _nfc("حَاضِرِى"), (
+        f"PATCH 15 — deixis تِلْكَ → حَاضِرِى still emitted on 2:196 "
+        f"(forbidden): target={tgt!r}"
+    )
+
+
+def t_l6_2_196_no_dhalika_to_kamilah():
+    """PATCH 15: deixis : ذَٰلِكَ → كَامِلَةٌ on 2:196 must NOT fire.
+    كَامِلَةٌ is wazn=فاعل with role=نعت — adjective, not referent."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    tgt = _l6_target_for_referent(resolutions, sent, _nfc("ذَٰلِكَ"))
+    assert tgt != _nfc("كَامِلَةٌ"), (
+        f"PATCH 15 — deixis ذَٰلِكَ → كَامِلَةٌ still emitted on 2:196 "
+        f"(forbidden): target={tgt!r}"
+    )
+
+
+def t_l6_2_196_no_min_to_adha():
+    """PATCH 15: relative : مِّن → أَذًى on 2:196 must NOT fire.
+    The shadda-on-mim مِّن is the preposition مِن after idgham,
+    NOT the relative pronoun مَن."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref not in (_nfc("مِّن"), _nfc("مِن"), _nfc("مِنْ"), _nfc("مِنَ")):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if tgt == _nfc("أَذًى"):
+            bad.append(f"relative: {ref} → {tgt}")
+    assert not bad, (
+        f"PATCH 15 — مِّن → أَذًى relative still emitted (forbidden): {bad}"
+    )
+
+
+def t_l6_2_196_no_min_to_fidya():
+    """PATCH 15: relative : مِّن → فَفِدْيَةٌ on 2:196 must NOT fire."""
+    res = _l6_for_verse(2, 196)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref not in (_nfc("مِّن"), _nfc("مِن"), _nfc("مِنْ"), _nfc("مِنَ")):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if tgt == _nfc("فَفِدْيَةٌ"):
+            bad.append(f"relative: {ref} → {tgt}")
+    assert not bad, (
+        f"PATCH 15 — مِّن → فَفِدْيَةٌ relative still emitted "
+        f"(forbidden): {bad}"
+    )
+
+
+def t_l6_patch8_10_forbidden_relations_still_absent():
+    """PATCH 15 regression: all PATCH 8/9/10 forbidden L6 relations on
+    2:282 must STILL be absent (verifies the new PATCH 15 gates do
+    not accidentally re-open earlier holes)."""
+    res = _l6_for_verse(2, 282)
+    if res is None or res == _L6_UNAVAILABLE:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    resolutions, sent = res
+    bad = []
+    JALALAH_MARKERS = ("ٱللَّه", "اللَّه", "الله")
+    ADJ_DESCRIPTORS = {_nfc(s) for s in
+                       ("ضَعِيفًا", "سَفِيهًا", "كَبِيرًا", "صَغِيرًا", "حَاضِرَةً")}
+    from samarrai_certified_operator_gate import _strip_diac as _sd
+    for r in resolutions:
+        ref = _nfc(getattr(r, "referent", "") or "")
+        tgt = _res_target_surface(r, sent) if r.candidates else ""
+        tgt_plain = _sd(tgt) if tgt else ""
+
+        # PATCH 8: no مِن/مِنَ as relative on 2:282
+        if r.resolution_type == "relative" and ref in (
+                _nfc("مِن"), _nfc("مِنَ"), _nfc("مِنْ"), _nfc("مِّن")):
+            bad.append(f"PATCH 8 regression: relative {ref}")
+
+        # PATCH 8: no مَا → إِذَا
+        if r.resolution_type == "relative" and ref == _nfc("مَا"):
+            if tgt and tgt == _nfc("إِذَا"):
+                bad.append(f"PATCH 8 regression: مَا → إِذَا")
+            # PATCH 9: no مَا → ٱلشُّهَدَآءُ inside إذا+ما cluster
+            ref_pos = getattr(r, "referent_position", -1)
+            if 0 < ref_pos < len(sent.tokens):
+                prev = _nfc(getattr(sent.tokens[ref_pos - 1], "token", "") or "")
+                if prev == _nfc("إِذَا"):
+                    bad.append(f"PATCH 9 regression: relative مَا in إذا+ما")
+
+        # PATCH 8/9/10: no ٱلَّذِى → bad antecedents
+        if r.resolution_type == "relative" and ref in (
+                _nfc("ٱلَّذِى"), _nfc("ٱلَّذِي")):
+            if any(jm in tgt for jm in JALALAH_MARKERS):
+                bad.append(f"PATCH 8 regression: ٱلَّذِى → jalalah ({tgt})")
+            if "شَيْ" in tgt and tgt.endswith("ا"):
+                bad.append(f"PATCH 8 regression: ٱلَّذِى → indef شَيْـًٔا")
+            if tgt_plain.startswith(("ب", "ل", "ك")) and "ال" in tgt[:4]:
+                bad.append(f"PATCH 9 regression: ٱلَّذِى → PP ({tgt})")
+            if tgt_plain.endswith(("ه", "ها", "هم", "كم", "نا")) and len(tgt_plain) >= 3:
+                bad.append(f"PATCH 9 regression: ٱلَّذِى → possessor-tail ({tgt})")
+            if tgt_plain in ("الحق", "الحقّ", "حق", "حقّ"):
+                bad.append(f"PATCH 10 regression: ٱلَّذِى → ٱلْحَقُّ")
+
+        # PATCH 8/9/10: no هُوَ → bad antecedents
+        if r.resolution_type == "anaphora" and ref == _nfc("هُوَ"):
+            if tgt in ADJ_DESCRIPTORS:
+                bad.append(f"PATCH 8 regression: هُوَ → adjective ({tgt})")
+            if tgt_plain in ("الحق", "الحقّ", "حق", "حقّ"):
+                bad.append(f"PATCH 10 regression: هُوَ → ٱلْحَقُّ")
+            if tgt_plain.endswith(("ه", "ها", "هم", "كم", "نا")) and len(tgt_plain) >= 3:
+                bad.append(f"PATCH 10 regression: هُوَ → possessor-tail ({tgt})")
+
+    assert not bad, (
+        f"PATCH 15 — regression: prior PATCH 8/9/10 forbidden L6 "
+        f"relations reappeared on 2:282: {bad}"
+    )
+
+
 # ── PATCH 14 — MAANI Rule A2 (Gate Extension Only) ──────────────────
 
 
@@ -2213,6 +2388,95 @@ def t_target_words_are_real_from_2_282():
 results: list[tuple[str, bool, str]] = []
 
 
+# ─────────────────────────────────────────────────────────────────────
+# PATCH MAANI Batch A (2026-05-28) — 3 verification tests for A1/A2/A3
+# ─────────────────────────────────────────────────────────────────────
+
+_MA_SENTINEL_UNAVAILABLE = "__MEANING_ASSEMBLER_UNAVAILABLE__"
+
+def _try_assemble(text):
+    """Try to build a MeaningGraph for `text`. Returns sentinel if the
+    assembler stack is unavailable (e.g. sandbox can't load wazn_data)."""
+    try:
+        from meaning_assembler import MeaningAssembler
+    except (ImportError, OSError, PermissionError):
+        return _MA_SENTINEL_UNAVAILABLE
+    try:
+        return MeaningAssembler().assemble(text)
+    except (PermissionError, OSError, FileNotFoundError):
+        return _MA_SENTINEL_UNAVAILABLE
+
+
+def t_2_196_lillahi_lam_topics_dropped():
+    """PATCH MAANI A2 binding: gate must drop JAZM_LAM_AMR + SHART_LAM_JAWAB
+    on لِلَّهِ (which L1 keeps as atomic لَفظ الجَلالَة, prefixes=[])."""
+    try:
+        from samarrai_analyzer import analyze
+        from samarrai_certified_operator_gate import gate_text_analysis
+    except (ImportError, OSError, PermissionError):
+        print("  [skipped — KB.SAM unavailable]", end=" ")
+        return
+    ta = analyze("لِلَّهِ")
+    gate_text_analysis(ta)
+    wa = ta.words[0]
+    surviving = [
+        (c.topic_id, c.meaning_id)
+        for c in wa.claims
+        if c.proof_kind != "Zero"
+    ]
+    bad = [
+        (t, m) for (t, m) in surviving
+        if t in ("JAZM_LAM_AMR", "SHART_LAM_JAWAB")
+    ]
+    assert not bad, (
+        f"PATCH MAANI A2 FAILED — لِلَّهِ still has lam-topics through gate: {bad}. "
+        f"All surviving: {surviving}"
+    )
+
+
+def t_2_282_bidaynin_has_operator_meaning_edge():
+    """PATCH MAANI A1 binding: MeaningGraph for the 2:282 clause containing
+    بِدَيْنٍ must have ≥1 edge with edge_type='samarrai_operator_meaning'."""
+    text = (
+        "يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا تَدَايَنْتُمْ بِدَيْنٍ "
+        "إِلَى أَجَلٍ مُسَمًّى فَاكْتُبُوهُ"
+    )
+    g = _try_assemble(text)
+    if g == _MA_SENTINEL_UNAVAILABLE:
+        print("  [skipped — MeaningAssembler unavailable in sandbox]", end=" ")
+        return
+    sam_edges = [
+        e for e in g.edges
+        if getattr(e, "edge_type", "") == "samarrai_operator_meaning"
+    ]
+    assert sam_edges, (
+        f"PATCH MAANI A1 FAILED — no samarrai_operator_meaning edges in "
+        f"MeaningGraph for 2:282 clause. Edges present: "
+        f"{sorted({getattr(e,'edge_type','') for e in g.edges})}"
+    )
+
+
+def t_1_5_nabudu_event_has_ikhtisas_modality():
+    """PATCH MAANI A3 binding: TAQDIM construction on إِيَّاكَ نَعْبُدُ
+    must stamp modality='ikhtisas' on the verb's event node."""
+    text = "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ"
+    g = _try_assemble(text)
+    if g == _MA_SENTINEL_UNAVAILABLE:
+        print("  [skipped — MeaningAssembler unavailable in sandbox]", end=" ")
+        return
+    # Find event/transformation nodes that carry ikhtisas modality
+    ikhtisas_events = [
+        n for n in g.nodes
+        if n.node_type in ("event", "transformation")
+        and (n.attributes or {}).get("modality") == "ikhtisas"
+    ]
+    assert ikhtisas_events, (
+        f"PATCH MAANI A3 FAILED — no event node carries modality=ikhtisas "
+        f"on 1:5. Event nodes: "
+        f"{[(n.surface, n.attributes) for n in g.nodes if n.node_type in ('event','transformation')]}"
+    )
+
+
 def _t(name, fn):
     try:
         fn()
@@ -2395,6 +2659,17 @@ ALL = [
      t_maani_a2_lam_al_amr_words_still_pass_or_remain_unchanged),
     ("t_maani_a2_prep_lam_real_prefix_still_allowed_if_certified",
      t_maani_a2_prep_lam_real_prefix_still_allowed_if_certified),
+    # PATCH 15 — L6 Cross-Verse Safety Gates (2:196 et al.)
+    ("t_l6_2_196_no_tilka_to_hadiri",
+     t_l6_2_196_no_tilka_to_hadiri),
+    ("t_l6_2_196_no_dhalika_to_kamilah",
+     t_l6_2_196_no_dhalika_to_kamilah),
+    ("t_l6_2_196_no_min_to_adha",
+     t_l6_2_196_no_min_to_adha),
+    ("t_l6_2_196_no_min_to_fidya",
+     t_l6_2_196_no_min_to_fidya),
+    ("t_l6_patch8_10_forbidden_relations_still_absent",
+     t_l6_patch8_10_forbidden_relations_still_absent),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -2406,6 +2681,13 @@ ALL = [
      t_patch5_lam_al_amr_event_visible),
     ("t_target_words_are_real_from_2_282",
      t_target_words_are_real_from_2_282),
+    # PATCH MAANI Batch A (2026-05-28) — A1/A2/A3 verification
+    ("t_2_196_lillahi_lam_topics_dropped",
+     t_2_196_lillahi_lam_topics_dropped),
+    ("t_2_282_bidaynin_has_operator_meaning_edge",
+     t_2_282_bidaynin_has_operator_meaning_edge),
+    ("t_1_5_nabudu_event_has_ikhtisas_modality",
+     t_1_5_nabudu_event_has_ikhtisas_modality),
 ]
 for nm, fn in ALL:
     _t(nm, fn)
@@ -2439,4 +2721,5 @@ print("  • PATCH 11: L3 cleanup — إِذَا→ظرف شرط, عِندَ→I
 print("  • PATCH 12: L4 cleanup — ٱللَّهِ→عِندَ, شَىْءٍ→بِكُلِّ, فَ-apodosis-kana, ditrans-ditrans-or guards")
 print("  • PATCH 13: Hidden estimated pronoun signals — Batch A (A1/A2/A3) read-only extractor")
 print("  • PATCH 14: MAANI A2 — gate extension drops JAZM_LAM_AMR/SHART_LAM_JAWAB on atomic لِلَّهِ")
+print("  • PATCH 15: L6 cross-verse safety — deixis gate + مِّن-as-preposition surface reject (2:196)")
 print("─" * 70)
