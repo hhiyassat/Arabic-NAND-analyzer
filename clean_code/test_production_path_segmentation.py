@@ -638,6 +638,152 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 9 — L6 Antecedent Quality Gate ────────────────────────────
+
+
+def t_l6_no_relative_to_prepositional_phrase():
+    """PATCH 9: relative pronouns (ٱلَّذِى / ٱلَّتِى / ...) must NOT
+    resolve to a PP-headed noun (بِ-/لِ-/كِ-prefixed). Target case
+    from 2:282: relative : ٱلَّذِى → بِٱلْعَدْلِ."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        tgt = _res_target_surface(r, sent)
+        if not tgt:
+            continue
+        if tgt.startswith(("بِ", "لِ", "كِ", "ب", "ل", "ك")) and len(tgt) >= 3:
+            # heuristic: surface starts with PREP letter + diacritic
+            # Confirm via PATCH 7 helper if available; otherwise accept
+            # the surface signal.
+            from samarrai_certified_operator_gate import _strip_diac as _sd
+            tgt_plain = _sd(tgt)
+            if tgt_plain.startswith(("ب", "ل", "ك")):
+                # Restrict to truly PP-prefixed nouns (not native ب-initial
+                # words). The L6 gate uses the production segmenter for
+                # exactness; the test settles for a stronger marker: the
+                # tgt surface contains an L-prefix `الْ` after the lead.
+                if "الْ" in tgt or "ال" in tgt[1:3]:
+                    bad.append(f"relative: ٱلَّذِى → {tgt} (PP-headed)")
+    assert not bad, (
+        f"PATCH 9 — relative still resolves to PP-headed noun (forbidden): {bad}"
+    )
+
+
+def t_l6_no_alladhi_to_rabbahu_possessive_tail():
+    """PATCH 9: ٱلَّذِى must NOT resolve to a possessor-tail noun
+    (رَبَّهُ-class, ending in ـه/ـها/ـكم/ـنا/...)."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    POSS_TAILS_NFC = tuple(_nfc(s) for s in ("ه", "هُ", "هَا", "هَا", "كُمْ", "نا", "هِم"))
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref not in (_nfc("ٱلَّذِى"), _nfc("ٱلَّتِى"),
+                       _nfc("ٱلَّذِي"), _nfc("ٱلَّتِي")):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if not tgt:
+            continue
+        # Quick surface check: ends in ـه after diacritic strip
+        from samarrai_certified_operator_gate import _strip_diac as _sd
+        tgt_plain = _sd(tgt)
+        if tgt_plain.endswith(("ه", "ها", "هم", "هن", "هما",
+                               "كم", "كن", "نا", "ك")) and len(tgt_plain) >= 3:
+            bad.append(f"relative: ٱلَّذِى → {tgt} (possessor-tail)")
+    assert not bad, (
+        f"PATCH 9 — ٱلَّذِى still resolves to possessor-tail noun (forbidden): {bad}"
+    )
+
+
+def t_l6_no_huwa_to_abstract_haqq():
+    """PATCH 9: هُوَ must NOT resolve to ٱلْحَقُّ (abstract legal noun)
+    or to any abstract/non-person candidate."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "anaphora":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref != _nfc("هُوَ"):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if not tgt:
+            continue
+        # Forbidden: ٱلْحَقُّ / الحَقّ
+        from samarrai_certified_operator_gate import _strip_diac as _sd
+        tgt_plain = _sd(tgt)
+        if tgt_plain in ("الحق", "الحقّ", "حق", "حقّ"):
+            bad.append(f"anaphora: هُوَ → {tgt}")
+    assert not bad, (
+        f"PATCH 9 — هُوَ → ٱلْحَقُّ-class still emitted (forbidden): {bad}"
+    )
+
+
+def t_l6_idha_ma_cluster_no_relative_resolution():
+    """PATCH 9: مَا preceded by إِذَا (e.g. «إِذَا مَا دُعُوا») must
+    NOT emit a relative resolution. Such مَا is a clausal extender of
+    إذا, not a relative pronoun."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    # Find the position of ما preceded by إذا in the verse
+    bad_positions = []
+    for i, tok in enumerate(sent.tokens):
+        if i == 0:
+            continue
+        s = _nfc(getattr(tok, "token", "") or "")
+        prev_s = _nfc(getattr(sent.tokens[i-1], "token", "") or "")
+        if s == _nfc("مَا") and prev_s == _nfc("إِذَا"):
+            bad_positions.append(i)
+    if not bad_positions:
+        # The verse doesn't contain إذا+ما — test setup
+        print("  [skipped — no إذا+ما cluster in verse]", end=" ")
+        return
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        if getattr(r, "referent_position", -1) in bad_positions:
+            bad.append(f"relative @ pos {r.referent_position}: "
+                       f"{r.referent} → {_res_target_surface(r, sent)}")
+    assert not bad, (
+        f"PATCH 9 — إذا+ما cluster still emits relative (forbidden): {bad}"
+    )
+
+
 # ── PATCH 8 — L6 Resolution Safety Gate ─────────────────────────────
 
 _L6_UNAVAILABLE = "__L6_UNAVAILABLE__"
@@ -1494,6 +1640,15 @@ ALL = [
      t_l6_no_alladhi_to_jalalah_or_shay),
     ("t_l6_no_huwa_to_adjective_descriptor",
      t_l6_no_huwa_to_adjective_descriptor),
+    # PATCH 9 — L6 Antecedent Quality Gate
+    ("t_l6_no_relative_to_prepositional_phrase",
+     t_l6_no_relative_to_prepositional_phrase),
+    ("t_l6_no_alladhi_to_rabbahu_possessive_tail",
+     t_l6_no_alladhi_to_rabbahu_possessive_tail),
+    ("t_l6_no_huwa_to_abstract_haqq",
+     t_l6_no_huwa_to_abstract_haqq),
+    ("t_l6_idha_ma_cluster_no_relative_resolution",
+     t_l6_idha_ma_cluster_no_relative_resolution),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1532,4 +1687,5 @@ print("  • PATCH 5.7: WawQasamDisambiguationGuard — verb-headed وَ never i
 print("  • PATCH 6: L8 Answer-Type Gate — events/agents/locations/time/sequence/transform routed strictly")
 print("  • PATCH 7: L4 Relation Safety Gate — block إذا-patient, dual-نَا-⊕نَحْنُ, بِ-PP-possessor, jalalah-attr loop")
 print("  • PATCH 8: L6 Resolution Safety Gate — block مِن/مَا-as-relative, ٱلَّذِى→jalalah/indef, هُوَ→adjective")
+print("  • PATCH 9: L6 Antecedent Quality Gate — block PP/possessor-tail/abstract antecedents + إذا-ما cluster")
 print("─" * 70)

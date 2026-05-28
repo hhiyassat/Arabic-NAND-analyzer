@@ -185,6 +185,112 @@ def _p8_is_adjective_like(t) -> bool:
     return False
 
 
+# ============================================================================
+# PATCH 9 (2026-05-28) — L6 Antecedent Quality Gates
+# ============================================================================
+#
+# After PATCH 8 removed impossible antecedent links, low-quality
+# antecedents (PP-headed nouns, possessor-bearing nouns, abstract legal
+# nouns, إذا+ما clusters) still surface. PATCH 9 adds 4 more filters,
+# all reading existing token attributes (no segmenter/i3rab/relation
+# changes).
+
+
+def _p9_token_has_prep_prefix(t) -> bool:
+    """True if the token carries a بِ / لِ / كِ as a PREP-peeled prefix.
+    Reads `prefix_tags` if present; falls back to re-segmenting via the
+    production segmenter when the i3rab pipeline didn't carry tags."""
+    prefix_tags = getattr(t, "prefix_tags", None) or []
+    if "PREP" in prefix_tags:
+        return True
+    # Reliable surface fallback (PP nouns in this corpus always start
+    # with بِ / لِ / كِ / فِ — diacritic-mark on first letter).
+    surface = getattr(t, "token", "") or getattr(t, "surface", "") or ""
+    plain = _p8_strip(surface)
+    if plain.startswith(("ب", "ل", "ك")):
+        # Distinguish PREP-clitic-on-noun from native-letter words by
+        # asking the segmenter directly. False when segmenter is not
+        # importable — better to leave the candidate than over-reject.
+        try:
+            from segmenter import segment as _segment  # type: ignore
+            seg = _segment(surface, normalize_input=True)
+            return "PREP" in (seg.prefix_tags or [])
+        except Exception:
+            return False
+    return False
+
+
+# Possessor-tail attached pronouns (POSS_PRON suffixes). When a noun
+# carries one of these (ـهُ / ـهَا / ـكُم / ـنا / ـهِم / ـكَ), it is
+# the مضاف with the suffix as مُضاف-إليه — making the noun a possessed
+# entity, not a free relative-pronoun antecedent.
+_P9_POSS_TAILS = ("ه", "ها", "هم", "هن", "هما",
+                  "ك", "كم", "كن", "كما", "نا", "ي")
+
+
+def _p9_token_has_possessor_tail(t) -> bool:
+    """True if the token surface ends with an attached pronoun suffix
+    (ـه/ـها/ـكم/ـنا/...). Catches رَبَّهُ-class antecedents that PATCH 8
+    let through because they aren't jalalah / indefinite / particle."""
+    suffix_tags = getattr(t, "suffix_tags", None) or []
+    if "POSS_PRON" in suffix_tags:
+        return True
+    # Surface fallback: strip diacritics and check tail.
+    surf_plain = _p8_strip(getattr(t, "token", "") or getattr(t, "surface", "") or "")
+    return any(surf_plain.endswith(tail) for tail in _P9_POSS_TAILS) and len(surf_plain) >= 3
+
+
+# Abstract/legal nouns that personal pronouns (هُوَ/هِيَ) should not
+# resolve to. Person pronouns refer to PERSONS, not abstract concepts
+# (الحَقّ, العَدل, الباطِل, الدِّين, الإيمان, الكُفر, ...). The list is
+# intentionally small and Quranic-corpus-tuned; expand only when an
+# actual misfire surfaces.
+_P9_ABSTRACT_NOUN_STEMS = {
+    "حق", "حقّ", "الحق", "الحقّ",
+    "باطل", "الباطل",
+    "عدل", "العدل",
+    "دين", "الدين",
+    "ايمان", "الايمان",
+    "كفر", "الكفر",
+    "علم", "العلم",
+}
+
+
+def _p9_is_abstract_noun(t) -> bool:
+    """True if the token surface (stripped) matches a known abstract /
+    legal noun. Used to reject ٱلْحَقُّ-class antecedents for هُوَ."""
+    surf_plain = _p8_strip(
+        getattr(t, "stem", "") or getattr(t, "token", "") or
+        getattr(t, "surface", "") or ""
+    )
+    return surf_plain in _P9_ABSTRACT_NOUN_STEMS
+
+
+def _p9_is_non_person_for_personal_pronoun(t) -> bool:
+    """True if the candidate is non-person (abstract OR indefinite-
+    tanwin). Personal pronouns هُوَ/هِيَ should reach a person; if no
+    person is available it is better to stay unresolved than to fall
+    back to شَيْـًٔا-class indefinite nouns."""
+    if _p9_is_abstract_noun(t):
+        return True
+    if _p8_is_indefinite_token(t):
+        return True
+    return False
+
+
+def _p9_is_idha_ma_cluster(idx: int, tokens) -> bool:
+    """True if `tokens[idx]` is مَا preceded by إِذَا at idx-1.
+    Such مَا is a clausal extender of إذا (إذا ما = "if/when ever"),
+    NOT a relative pronoun. Reject relative resolution entirely."""
+    if idx <= 0:
+        return False
+    surf = _p8_strip(getattr(tokens[idx], "token", "") or "")
+    if surf not in ("ما",):
+        return False
+    prev_surf = _p8_strip(getattr(tokens[idx - 1], "token", "") or "")
+    return prev_surf == "اذا"
+
+
 # Set of jalalah-ish surface markers used for ٱلَّذِى gate
 def _p8_should_reject_for_relative_alladhi(t_target) -> bool:
     """True if `t_target` is an impossible antecedent for ٱلَّذِى /
@@ -379,6 +485,10 @@ class ResolutionEngine:
                     ent_tok_d = tokens[ent_idx_d] if 0 <= ent_idx_d < len(tokens) else None
                     if ent_tok_d is not None and _p8_is_adjective_like(ent_tok_d):
                         continue
+                    # PATCH 9 — Gate I (detached path): also reject
+                    # abstract/legal AND indefinite-tanwin candidates.
+                    if ent_tok_d is not None and _p9_is_non_person_for_personal_pronoun(ent_tok_d):
+                        continue
                     proximity = i - ent["position"]
                     score = 1.0 / (1.0 + proximity * 0.2)
                     candidates.append(Candidate(
@@ -514,6 +624,13 @@ class ResolutionEngine:
                     ent_token = tokens[ent_idx] if 0 <= ent_idx < len(tokens) else None
                     if ent_token is not None and _p8_is_adjective_like(ent_token):
                         continue
+                    # PATCH 9 — Gate I: reject abstract/legal nouns AND
+                    # indefinite-tanwin nouns as antecedents for personal
+                    # pronouns. ٱلْحَقُّ (claim/right) and شَيْـًٔا
+                    # (anything) are not the person referenced by هُوَ
+                    # in "أَن يُمِلَّ هُوَ".
+                    if ent_token is not None and _p9_is_non_person_for_personal_pronoun(ent_token):
+                        continue
                     proximity = i - ent["position"]
                     score = 1.0 / (1.0 + proximity * 0.1)
                     candidates.append(Candidate(
@@ -614,6 +731,11 @@ class ResolutionEngine:
             if _p8_token_is_harf_preposition(t):
                 continue
 
+            # PATCH 9 — Gate F: إذا+ما cluster. مَا preceded by إذا is a
+            # clausal extender ("إِذَا مَا دُعُوا"), not a relative.
+            if _p9_is_idha_ma_cluster(i, tokens):
+                continue
+
             # PATCH 8 — Gate B: reject this resolver attempt entirely if
             # the candidate-window before `i` contains ONLY temporal /
             # conditional particles as same-position-matching antecedents.
@@ -650,6 +772,18 @@ class ResolutionEngine:
                                        "اللائي", "اللائى",
                                        "اللواتي", "اللواتى"):
                     if _p8_should_reject_for_relative_alladhi(ent_token):
+                        continue
+                    # PATCH 9 — Gate G: reject PP-headed antecedents
+                    # (بِٱلْعَدْلِ-class). The بِ-prefixed noun is the
+                    # head of a جار+مجرور adverbial, not a free
+                    # antecedent for the relative pronoun.
+                    if _p9_token_has_prep_prefix(ent_token):
+                        continue
+                    # PATCH 9 — Gate H: reject possessor-tail nouns
+                    # (رَبَّهُ / ـه/ـها/ـكم/ـنا attached). These are
+                    # مُضاف-with-suffix, not free relative-antecedent
+                    # candidates.
+                    if _p9_token_has_possessor_tail(ent_token):
                         continue
                 # PATCH 8 — Gate D: مَا/مَن relative must NOT resolve to
                 # temporal/conditional particles (إِذَا, إِذ, لَمَّا ...).
