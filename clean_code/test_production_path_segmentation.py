@@ -638,6 +638,186 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 6 — L8 Answer-Type Gate ────────────────────────────────────
+
+_L8_UNAVAILABLE = "__L8_UNAVAILABLE__"
+
+
+def _l8_answer_for(verse_text: str, question: str):
+    """Run the production L8 pipeline on `verse_text` and return the
+    Answer object for `question`. Returns _L8_UNAVAILABLE if the
+    pipeline can't run in the sandbox."""
+    try:
+        from reasoning_engine import ReasoningEngine
+    except (ImportError, OSError, PermissionError):
+        return _L8_UNAVAILABLE
+    try:
+        return ReasoningEngine().answer(verse_text, question)
+    except (PermissionError, OSError):
+        return _L8_UNAVAILABLE
+
+
+def _load_verse_2_282():
+    """Load 2:282 from the Quran source for production-path tests."""
+    quran = _HERE.parent / "data" / "quran-uthmani-with-pause-mark.txt"
+    if not quran.exists():
+        return None
+    with quran.open(encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) >= 3 and parts[0] == "2" and parts[1] == "282":
+                return parts[2]
+    return None
+
+
+def t_l8_what_happened_returns_events_only():
+    """PATCH 6: «ماذا حَدَث؟» must return event/action labels, NOT
+    patient entities (إِذَا / ٱللَّهَ / شَيْـًٔا / إِحْدَىٰهُمَا / صَغِيرًا)."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    a = _l8_answer_for(verse, "ماذا حَدَث؟")
+    if a == _L8_UNAVAILABLE:
+        print("  [skipped — L8 unavailable]", end=" ")
+        return
+    assert a.query.query_type == "what_event", (
+        f"PATCH 6 — wrong routing: query_type={a.query.query_type!r}, "
+        f"strategy={a.query.answer_strategy!r}"
+    )
+    answer_text = a.answer or ""
+    # Forbidden patient-like answers from the pre-PATCH-6 behavior
+    forbidden = ["إِذَا", "ٱللَّهَ", "شَيْـًٔا", "إِحْدَىٰهُمَا", "صَغِيرًا"]
+    for bad in forbidden:
+        assert bad not in answer_text, (
+            f"PATCH 6 — «ماذا حَدَث؟» still returns patient {bad!r} "
+            f"in answer: {answer_text!r}"
+        )
+
+
+def t_l8_who_agent_returns_agents_only():
+    """PATCH 6 regression guard: «مَن الفاعِل؟» must still return agents,
+    not patients/times."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    a = _l8_answer_for(verse, "مَن الفاعِل؟")
+    if a == _L8_UNAVAILABLE:
+        print("  [skipped — L8 unavailable]", end=" ")
+        return
+    assert a.query.answer_strategy == "find_agent", (
+        f"PATCH 6 — wrong routing: strategy={a.query.answer_strategy!r}"
+    )
+    answer_text = a.answer or ""
+    # Forbidden — these are temporal/event labels, not agents
+    forbidden = ["when_future", "tense:past", "tense:present", "tense:command"]
+    for bad in forbidden:
+        assert bad not in answer_text, (
+            f"PATCH 6 — «مَن الفاعِل؟» wrongly returned tense/time "
+            f"label {bad!r}: {answer_text!r}"
+        )
+
+
+def t_l8_where_returns_locations_only():
+    """PATCH 6: «أَين حَدَث؟» must NOT return temporal nouns (أَجَل) or
+    person entities (رِّجَالِكُمْ). 2:282 has no explicit place — must
+    return Zero or a true place expression only."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    a = _l8_answer_for(verse, "أَين حَدَث؟")
+    if a == _L8_UNAVAILABLE:
+        print("  [skipped — L8 unavailable]", end=" ")
+        return
+    answer_text = a.answer or ""
+    # Forbidden — these are NOT places
+    forbidden = ["أَجَلٍ", "أَجَلِهِ", "رِّجَالِكُمْ", "tense:"]
+    for bad in forbidden:
+        assert bad not in answer_text, (
+            f"PATCH 6 — «أَين حَدَث؟» still returns non-place {bad!r}: "
+            f"{answer_text!r}"
+        )
+
+
+def t_l8_when_returns_temporal_only():
+    """PATCH 6: «متى حَدَث؟» must NOT return raw tense:* labels as the
+    main answer. Allowed: explicit temporal values (when_future, past,
+    then, ...) or a Zero with tense metadata in rejected_reason."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    a = _l8_answer_for(verse, "متى حَدَث؟")
+    if a == _L8_UNAVAILABLE:
+        print("  [skipped — L8 unavailable]", end=" ")
+        return
+    answer_text = a.answer or ""
+    assert "tense:" not in answer_text, (
+        f"PATCH 6 — «متى حَدَث؟» still emits raw tense:* label: "
+        f"{answer_text!r}"
+    )
+
+
+def t_l8_sequence_returns_ordered_events_only():
+    """PATCH 6: «ما تَسَلسُل الأَحداث؟» must return ordered events
+    (separated by →) and must NOT equal the same fallback list as
+    «ماذا حَدَث؟»."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    seq_a = _l8_answer_for(verse, "ما تَسَلسُل الأَحداث؟")
+    what_a = _l8_answer_for(verse, "ماذا حَدَث؟")
+    if seq_a == _L8_UNAVAILABLE or what_a == _L8_UNAVAILABLE:
+        print("  [skipped — L8 unavailable]", end=" ")
+        return
+    assert seq_a.query.query_type == "sequence", (
+        f"PATCH 6 — wrong routing for sequence: "
+        f"query_type={seq_a.query.query_type!r}"
+    )
+    seq_text = seq_a.answer or ""
+    what_text = what_a.answer or ""
+    # Sequence answer must use → separator AND differ from what-happened
+    assert "→" in seq_text, (
+        f"PATCH 6 — sequence answer missing → separator: {seq_text!r}"
+    )
+    assert seq_text != what_text, (
+        f"PATCH 6 — sequence answer equals what-happened (pre-PATCH-6 "
+        f"fallback regression): {seq_text!r}"
+    )
+
+
+def t_l8_transformation_returns_zero_when_no_transform():
+    """PATCH 6: «إلى ماذا تَحَوَّلَ شَيء؟» on 2:282 (which has no
+    transformation verb in the transformation_verbs lexicon) must
+    return Zero, NOT the generic patient fallback."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    a = _l8_answer_for(verse, "إلى ماذا تَحَوَّلَ شَيء؟")
+    if a == _L8_UNAVAILABLE:
+        print("  [skipped — L8 unavailable]", end=" ")
+        return
+    assert a.query.query_type == "transformation", (
+        f"PATCH 6 — wrong routing: query_type={a.query.query_type!r}"
+    )
+    assert a.kind == "Zero", (
+        f"PATCH 6 — «إلى ماذا تَحَوَّلَ» must return Zero on 2:282 "
+        f"(no transformation), got kind={a.kind!r} answer={a.answer!r}"
+    )
+    # And forbidden: the pre-PATCH-6 patient fallback
+    answer_text = a.answer or ""
+    forbidden = ["إِذَا", "ٱللَّهَ", "شَيْـًٔا", "إِحْدَىٰهُمَا"]
+    for bad in forbidden:
+        assert bad not in answer_text, (
+            f"PATCH 6 — transformation still returns patient fallback "
+            f"{bad!r}: {answer_text!r}"
+        )
+
+
 # ── PATCH 5.7 — WawQasamDisambiguationGuard ─────────────────────────
 
 def t_waqul_not_waw_qasam():
@@ -989,6 +1169,19 @@ ALL = [
      t_waqul_residue_is_recognized_as_verb),
     ("t_waw_qasam_positive_control_synthetic",
      t_waw_qasam_positive_control_synthetic),
+    # PATCH 6 — L8 Answer-Type Gate
+    ("t_l8_what_happened_returns_events_only",
+     t_l8_what_happened_returns_events_only),
+    ("t_l8_who_agent_returns_agents_only",
+     t_l8_who_agent_returns_agents_only),
+    ("t_l8_where_returns_locations_only",
+     t_l8_where_returns_locations_only),
+    ("t_l8_when_returns_temporal_only",
+     t_l8_when_returns_temporal_only),
+    ("t_l8_sequence_returns_ordered_events_only",
+     t_l8_sequence_returns_ordered_events_only),
+    ("t_l8_transformation_returns_zero_when_no_transform",
+     t_l8_transformation_returns_zero_when_no_transform),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1024,4 +1217,5 @@ print("  • PATCH 4: KB.SAM gated by L1 prefix/suffix tags (no overmatch)")
 print("  • PATCH 4.5: L3 ظَرف-مَكان override restricted to category=locative (fix بِكُلِّ regression)")
 print("  • PATCH 5: L5 lam-al-amr → mood=jussive_command + TimeScopeGate (no global when_future)")
 print("  • PATCH 5.7: WawQasamDisambiguationGuard — verb-headed وَ never injects qasam Certificate")
+print("  • PATCH 6: L8 Answer-Type Gate — events/agents/locations/time/sequence/transform routed strictly")
 print("─" * 70)
