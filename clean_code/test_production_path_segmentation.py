@@ -638,6 +638,154 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 8 — L6 Resolution Safety Gate ─────────────────────────────
+
+_L6_UNAVAILABLE = "__L6_UNAVAILABLE__"
+
+
+def _l6_resolutions_for_verse(verse_text: str):
+    """Run the production L6 pipeline on `verse_text` and return its
+    list of Resolution objects + the sentence. Returns
+    _L6_UNAVAILABLE if the pipeline can't run in the sandbox."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        from relation_extractor import RelationExtractor
+        from event_extractor import EventExtractor
+        from resolution_engine import ResolutionEngine
+    except (ImportError, OSError, PermissionError):
+        return _L6_UNAVAILABLE
+    try:
+        sent = I3rabEngine().analyze_sentence(verse_text)
+        rg = RelationExtractor().extract(sent)
+        eg = EventExtractor().extract(sent, rg)
+        res = ResolutionEngine().resolve(sent, eg, prior_context=[])
+        return list(res.resolutions), sent
+    except (PermissionError, OSError):
+        return _L6_UNAVAILABLE
+
+
+def _res_target_surface(r, sent) -> str:
+    """Best-effort: return the surface of the resolution's chosen target."""
+    if not r.candidates:
+        return ""
+    best = r.candidates[0]
+    return _nfc(getattr(best, "entity_surface", "") or "")
+
+
+def t_l6_no_min_as_relative_pronoun():
+    """PATCH 8: مِن / مِنَ (HARF JARR) must NOT emit a relative
+    resolution. Pre-PATCH-8 the diacritic-stripped plain form `من`
+    collided with the relative pronoun lexicon."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref in (_nfc("مِن"), _nfc("مِنَ"), _nfc("مِنْ")):
+            bad.append(f"relative: {ref!r} → {_res_target_surface(r, sent)}")
+    assert not bad, (
+        f"PATCH 8 — مِن / مِنَ still emitted as relative (forbidden): {bad}"
+    )
+
+
+def t_l6_no_ma_to_idha_resolution():
+    """PATCH 8: مَا relative must NOT resolve to إِذَا (a
+    temporal/conditional particle, never a nominal antecedent)."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref != _nfc("مَا"):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if tgt and tgt == _nfc("إِذَا"):
+            bad.append(f"relative: مَا → {tgt}")
+    assert not bad, (
+        f"PATCH 8 — مَا → إِذَا still emitted (forbidden): {bad}"
+    )
+
+
+def t_l6_no_alladhi_to_jalalah_or_shay():
+    """PATCH 8: ٱلَّذِى / ٱلَّتِى must NOT resolve to لَفظ الجَلالَة
+    (ٱللَّهُ) or to indefinite-tanwin nouns like شَيْـًٔا."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    JALALAH_MARKERS = ("ٱللَّه", "اللَّه", "الله")
+    for r in resolutions:
+        if r.resolution_type != "relative":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref not in (_nfc("ٱلَّذِى"), _nfc("ٱلَّتِى"),
+                       _nfc("ٱلَّذِي"), _nfc("ٱلَّتِي")):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if not tgt:
+            continue
+        if any(jm in tgt for jm in JALALAH_MARKERS):
+            bad.append(f"relative: ٱلَّذِى → {tgt} (jalalah)")
+        # شَيْـًٔا / شَيْئًا — indefinite tanwin
+        if tgt.endswith(("ًا", "ًٔا", "ـًا")) or "شَيْ" in tgt and tgt.endswith("ا"):
+            bad.append(f"relative: ٱلَّذِى → {tgt} (indefinite tanwin)")
+    assert not bad, (
+        f"PATCH 8 — ٱلَّذِى bad antecedents still emitted (forbidden): {bad}"
+    )
+
+
+def t_l6_no_huwa_to_adjective_descriptor():
+    """PATCH 8: هُوَ must NOT resolve to adjective/predicate descriptors
+    (ضَعِيفًا / سَفِيهًا / كَبِيرًا / صَغِيرًا) in 2:282."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    result = _l6_resolutions_for_verse(verse)
+    if result == _L6_UNAVAILABLE:
+        print("  [skipped — L6 unavailable]", end=" ")
+        return
+    resolutions, sent = result
+    bad = []
+    ADJ_DESCRIPTORS = {"ضَعِيفًا", "سَفِيهًا", "كَبِيرًا", "صَغِيرًا", "حَاضِرَةً"}
+    for r in resolutions:
+        if r.resolution_type != "anaphora":
+            continue
+        ref = _nfc(getattr(r, "referent", "") or "")
+        if ref != _nfc("هُوَ"):
+            continue
+        tgt = _res_target_surface(r, sent)
+        if tgt in {_nfc(a) for a in ADJ_DESCRIPTORS}:
+            bad.append(f"anaphora: هُوَ → {tgt}")
+    assert not bad, (
+        f"PATCH 8 — هُوَ → adjective antecedents still emitted (forbidden): {bad}"
+    )
+
+
 # ── PATCH 7 — L4 Relation Safety Gate ───────────────────────────────
 
 _L4_UNAVAILABLE = "__L4_UNAVAILABLE__"
@@ -1337,6 +1485,15 @@ ALL = [
      t_l4_no_bikulli_possessor_of_jalalah),
     ("t_l4_no_conjoined_jalalah_attribute_loop",
      t_l4_no_conjoined_jalalah_attribute_loop),
+    # PATCH 8 — L6 Resolution Safety Gate
+    ("t_l6_no_min_as_relative_pronoun",
+     t_l6_no_min_as_relative_pronoun),
+    ("t_l6_no_ma_to_idha_resolution",
+     t_l6_no_ma_to_idha_resolution),
+    ("t_l6_no_alladhi_to_jalalah_or_shay",
+     t_l6_no_alladhi_to_jalalah_or_shay),
+    ("t_l6_no_huwa_to_adjective_descriptor",
+     t_l6_no_huwa_to_adjective_descriptor),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1374,4 +1531,5 @@ print("  • PATCH 5: L5 lam-al-amr → mood=jussive_command + TimeScopeGate (no
 print("  • PATCH 5.7: WawQasamDisambiguationGuard — verb-headed وَ never injects qasam Certificate")
 print("  • PATCH 6: L8 Answer-Type Gate — events/agents/locations/time/sequence/transform routed strictly")
 print("  • PATCH 7: L4 Relation Safety Gate — block إذا-patient, dual-نَا-⊕نَحْنُ, بِ-PP-possessor, jalalah-attr loop")
+print("  • PATCH 8: L6 Resolution Safety Gate — block مِن/مَا-as-relative, ٱلَّذِى→jalalah/indef, هُوَ→adjective")
 print("─" * 70)

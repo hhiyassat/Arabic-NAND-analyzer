@@ -104,6 +104,103 @@ def is_relative_pronoun(word: str) -> Optional[dict]:
     return cache.get(_normalize(voc))
 
 
+# ============================================================================
+# PATCH 8 (2026-05-28) — L6 Resolution Safety Gates
+# ============================================================================
+#
+# Block obviously impossible / unsafe antecedent links. Each gate is a
+# small predicate; the resolver consults them before adding a Resolution
+# (or before keeping a candidate). No resolution is invented — only
+# filtered. No relation/segmenter/i3rab data is changed.
+
+# Particles whose diacritic-stripped surface collides with relative
+# pronouns: مِن (HARF JARR) vs مَن (relative). The CSV lexicon stores
+# both under plain `من`, so we additionally check the token's
+# word_class from L3 to distinguish.
+_P8_TEMPORAL_OR_CONDITIONAL = {
+    "اذا", "اذ", "لما", "متى", "حين", "حينما", "ايان", "كلما",
+    "حيث", "حيثما",
+}
+
+
+def _p8_strip(s: str) -> str:
+    s = "".join(c for c in (s or "") if c not in "ًٌٍَُِّْـٰٓ")
+    return s.replace("ٱ", "ا").replace("أ", "ا").replace("إ", "ا").replace("آ", "ا")
+
+
+def _p8_token_is_harf_preposition(t) -> bool:
+    """True if the token's L3 word_class is HARF (i.e., a real particle,
+    not a homograph relative pronoun). Used to reject مِن / مِنَ from
+    relative resolution — those are HARF JARR, not مَن the relative."""
+    return getattr(t, "word_class", "") == "HARF"
+
+
+def _p8_is_temporal_or_conditional_particle(t) -> bool:
+    """True for إِذَا / إِذ / لَمَّا / مَتى / حيث / كُلَّما, by surface or wazn."""
+    surf = _p8_strip(getattr(t, "token", "") or getattr(t, "surface", ""))
+    if surf in _P8_TEMPORAL_OR_CONDITIONAL:
+        return True
+    wazn = getattr(t, "wazn", "") or ""
+    return "ظرف" in wazn or "شرط" in wazn
+
+
+def _p8_is_jalalah_token(t) -> bool:
+    """True for لَفظ الجَلالَة by word_class, wazn, or surface fallback."""
+    if getattr(t, "word_class", "") == "JALALAH":
+        return True
+    wazn = getattr(t, "wazn", "") or ""
+    if "جلال" in wazn:
+        return True
+    stem = getattr(t, "stem", "") or getattr(t, "token", "") or getattr(t, "surface", "") or ""
+    stem_plain = _p8_strip(stem)
+    return stem_plain in ("الله", "اللاه", "اله") or stem_plain.endswith("الله")
+
+
+def _p8_is_indefinite_token(t) -> bool:
+    """True if the token's surface ends in tanwin (ـًا / ـٍ / ـٌ /
+    ـً / ـٍ / ـٌ) → indefinite noun. Used to reject things like شَيْـًٔا
+    as antecedent for ٱلَّذِى."""
+    surf = getattr(t, "token", "") or getattr(t, "surface", "") or ""
+    return surf.endswith(("ًا", "ٍ", "ٌ", "ً", "ـٌ", "ـٍ", "ـً", "ـٰ"))
+
+
+def _p8_is_adjective_like(t) -> bool:
+    """True if the token looks like an adjective/predicate descriptor
+    (فَعِيل-pattern, indefinite, often in خبر/نعت role). Used to reject
+    ضَعِيفًا / سَفِيهًا as anaphor antecedents for هُوَ."""
+    surf = _p8_strip(getattr(t, "token", "") or getattr(t, "surface", "") or "")
+    # The two patterns we care about for 2:282: سَفِيها / ضَعِيفا
+    # (and the broader فَعِيل-tanwin family). Also accept role hints.
+    if surf in {"سفيها", "ضعيفا", "كبيرا", "صغيرا", "حاضرة", "ضعيف",
+                "سفيه", "كبير", "صغير"}:
+        return True
+    # فَعِيل-tanwin pattern: ends in ـِيلًا / ـِيها / ـِيدا etc.
+    if surf.endswith("ا") and len(surf) >= 4 and "يـ" in (
+            getattr(t, "token", "") or ""):
+        return True
+    role = getattr(t, "role_phrase", "") or ""
+    if "نعت" in role or "خبر" in role:
+        # Pure predicates aren't person referents.
+        return True
+    return False
+
+
+# Set of jalalah-ish surface markers used for ٱلَّذِى gate
+def _p8_should_reject_for_relative_alladhi(t_target) -> bool:
+    """True if `t_target` is an impossible antecedent for ٱلَّذِى /
+    ٱلَّتِى: لَفظ الجَلالَة, indefinite tanwin nouns (شَيْـًٔا),
+    particles/HARF, temporal/conditional particles."""
+    if _p8_is_jalalah_token(t_target):
+        return True
+    if _p8_is_indefinite_token(t_target):
+        return True
+    if getattr(t_target, "word_class", "") == "HARF":
+        return True
+    if _p8_is_temporal_or_conditional_particle(t_target):
+        return True
+    return False
+
+
 def _detached_lex() -> dict:
     """يُحَمِّل detached_pronouns.csv — يُفَهرَس بِالسَّطح وَ المُجَرَّد."""
     global _DETACHED_CACHE
@@ -275,6 +372,13 @@ class ResolutionEngine:
                     g_match = (wanted_g == "X" or ent["gender"] == wanted_g)
                     if not g_match:
                         continue
+                    # PATCH 8 — Gate E (detached path): also reject
+                    # adjective/predicate descriptors as antecedents for
+                    # هُوَ/هِيَ/...  (same rule as the anaphora path).
+                    ent_idx_d = ent["position"]
+                    ent_tok_d = tokens[ent_idx_d] if 0 <= ent_idx_d < len(tokens) else None
+                    if ent_tok_d is not None and _p8_is_adjective_like(ent_tok_d):
+                        continue
                     proximity = i - ent["position"]
                     score = 1.0 / (1.0 + proximity * 0.2)
                     candidates.append(Candidate(
@@ -401,6 +505,15 @@ class ResolutionEngine:
                 g_match = (gender == "X" or ent["gender"] == gender)
                 n_match = (number == "X" or ent["number"] == number)
                 if g_match and n_match:
+                    # PATCH 8 — Gate E: reject adjective/predicate
+                    # descriptors as antecedents for personal pronouns.
+                    # هُوَ in "أَن يُمِلَّ هُوَ" must not resolve to
+                    # ضَعِيفًا / سَفِيهًا (those describe the person,
+                    # they are not the person referent).
+                    ent_idx = ent["position"]
+                    ent_token = tokens[ent_idx] if 0 <= ent_idx < len(tokens) else None
+                    if ent_token is not None and _p8_is_adjective_like(ent_token):
+                        continue
                     proximity = i - ent["position"]
                     score = 1.0 / (1.0 + proximity * 0.1)
                     candidates.append(Candidate(
@@ -494,6 +607,20 @@ class ResolutionEngine:
             rel = is_relative_pronoun(surface)
             if not rel:
                 continue
+
+            # PATCH 8 — Gate A: reject HARF homographs (مِن/مِنَ is HARF
+            # JARR, not the relative pronoun مَن; both collapse to "من"
+            # after diacritic strip). Use L3 word_class as ground truth.
+            if _p8_token_is_harf_preposition(t):
+                continue
+
+            # PATCH 8 — Gate B: reject this resolver attempt entirely if
+            # the candidate-window before `i` contains ONLY temporal /
+            # conditional particles as same-position-matching antecedents.
+            # Specifically: مَا → إِذَا must NOT be emitted (an explicit
+            # rejection that survives even if مَا's other matches exist).
+            referent_plain = _p8_strip(surface)
+
             gender = rel.get("gender", "X")
             number = rel.get("number", "X")
 
@@ -506,6 +633,29 @@ class ResolutionEngine:
                 n_match = (number == "X" or ent["number"] == number)
                 if not (g_match and n_match):
                     continue
+                # PATCH 8 — Gate C: for ٱلَّذِى / ٱلَّتِى reject obviously
+                # impossible antecedents (jalalah, indefinite tanwin
+                # nouns like شَيْـًٔا, particles, temporal/conditional).
+                # Identified by the entity position pointing to a token.
+                ent_idx = ent["position"]
+                ent_token = tokens[ent_idx] if 0 <= ent_idx < len(tokens) else None
+                if ent_token is None:
+                    continue
+                # Plain forms include ى-final variants (الذى, التى) because
+                # NFC-stripping keeps ٱلَّذِى's ى; we accept both ي and ى.
+                if referent_plain in ("الذي", "الذى", "التي", "التى",
+                                       "اللذان", "اللذين",
+                                       "اللتان", "اللتين", "الذين",
+                                       "اللاتي", "اللاتى",
+                                       "اللائي", "اللائى",
+                                       "اللواتي", "اللواتى"):
+                    if _p8_should_reject_for_relative_alladhi(ent_token):
+                        continue
+                # PATCH 8 — Gate D: مَا/مَن relative must NOT resolve to
+                # temporal/conditional particles (إِذَا, إِذ, لَمَّا ...).
+                if referent_plain in ("ما", "من"):
+                    if _p8_is_temporal_or_conditional_particle(ent_token):
+                        continue
                 proximity = i - ent["position"]
                 # المَوصول يُفَضِّل القَريب جِدًّا (الأَقرَب فَوريّ تَقريبًا)
                 score = 1.0 / (1.0 + proximity * 0.3)
