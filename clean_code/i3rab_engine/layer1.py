@@ -329,6 +329,72 @@ class WordClassClassifier:
         return result
 
     def classify(self, token: str) -> dict:
+        """PATCH 11 wrapper. Calls `_classify_raw` (the original logic
+        unchanged) then applies narrow per-surface overrides for 3 known
+        2:282 misclassifications:
+          • عِندَ        → force class=ISM_MUARAB (locative ظَرف, not HARF)
+          • أَلَّا       → fix wazn=`حرف نصب + لا` (was: حرف تحضيض)
+          • وَأَشْهِدُوٓا → force verb_aspect=CV (was: IV; CSV has CV per MASAQ
+                          but exact-surface miss because of ٓ pause-mark)
+        إِذَا's role is fixed in layer3.py (the L1 class is already correct
+        via PATCH 3E)."""
+        result = self._classify_raw(token)
+        return self._p11_post_classify(token, result)
+
+    def _p11_post_classify(self, token: str, result: dict) -> dict:
+        """Apply PATCH 11 narrow overrides. Reads only the existing
+        result dict + the input surface; no segmenter/MTL changes."""
+        if not token:
+            return result
+        import unicodedata as _ud
+        nfc = _ud.normalize("NFC", token)
+        # Strip diacritics + small alif maddah / sukun / pause marks
+        # so surface-variant matching survives MASAQ orthography.
+        _EXTRA_MARKS = "ًٌٍَُِّْـٰٓۚۖۗۘۙۛۜ۟۠ۢۤۥۦ"
+        stripped = "".join(c for c in nfc if c not in _EXTRA_MARKS)
+        norm = (stripped
+                .replace("ٱ", "ا").replace("أ", "ا")
+                .replace("إ", "ا").replace("آ", "ا"))
+
+        # Override 1: عِندَ is a locative functional noun (ظَرف مَكان),
+        # NOT a حَرف. closed_function_word_gate tags it as HARF for
+        # "relation routing", but L3 then renders it as `class=HARF |
+        # role=حرف` which is linguistically wrong (and L4/L5/L8 lose
+        # the locative signal). Override to ISM_MUARAB so PATCH 4.5's
+        # _is_functional_locative_noun gate assigns role=ظرف مكان.
+        if norm == "عند" and result.get("word_class") == "HARF":
+            result["word_class"] = "ISM_MUARAB"
+            result.setdefault("proof_blockers", []).append(
+                "patch11:inda_locative_noun_override_harf_to_ism"
+            )
+
+        # Override 2: أَلَّا wazn. The CSV row tags wazn=حرف تحضيض from
+        # MASAQ, which is wrong in the 2:282 contexts where أَلَّا is
+        # the assimilation أَن (HARF_NASB) + لا (NAFI). The L1
+        # segmenter already peels it correctly (PATCH 3D); the wazn
+        # label should reflect that.
+        if norm == "الا" and (result.get("wazn") or "") == "حرف تحضيض":
+            result["wazn"] = "حرف نصب + لا"
+            result.setdefault("proof_blockers", []).append(
+                "patch11:alla_wazn_is_subjunc_la_not_tahdid"
+            )
+
+        # Override 3: وَأَشْهِدُوٓا / فَأَشْهِدُوٓا — CV imperative.
+        # MASAQ lists these as aspect=CV (verbs of command), but the
+        # exact-surface lookup misses because the verse spelling has
+        # the small alif maddah ٓ that the CSV row lacks. Without MTL
+        # certifying, verb_form_contract falls back to surface
+        # heuristics and labels them IV (mudāriʿ) because they start
+        # with أَ + sukun. Force CV when surface is one of these.
+        if norm in ("واشهدوا", "فاشهدوا") and result.get("verb_aspect") in ("IV", ""):
+            result["verb_aspect"] = "CV"
+            result.setdefault("proof_blockers", []).append(
+                "patch11:wa_ashhidu_is_imperative_cv_per_masaq"
+            )
+
+        return result
+
+    def _classify_raw(self, token: str) -> dict:
         """Classify a token into a WordClass with proof-theoretic metadata.
 
         Returns dict with:

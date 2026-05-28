@@ -217,6 +217,27 @@ class RoleClassifier:
         """Assign role for ISM via RoleRulesContract (data-driven)."""
         prev = tokens[i - 1] if i > 0 else None
 
+        # PATCH 11 (2026-05-28) — Temporal/conditional particle role.
+        # Tokens like إِذَا / إِذ / لَمَّا are ظَرف زَمان / أَداة شَرط,
+        # never مفعول به. L3's case-based RoleRulesContract picks
+        # `مفعول به منصوب` for them because case_id=2 (accusative
+        # form) and there's a verb in scope. Force the correct role
+        # before the case-rules fire.
+        _surf = (getattr(t, "token", "") or "").strip()
+        _surf_plain = "".join(c for c in _surf if c not in "ًٌٍَُِّْـٰٓ")
+        _surf_plain = (_surf_plain
+                        .replace("ٱ", "ا").replace("أ", "ا")
+                        .replace("إ", "ا").replace("آ", "ا"))
+        if _surf_plain in ("اذا", "اذ", "لما"):
+            self._set_role(
+                t,
+                phrase="ظرف شرط",
+                source="patch11_temporal_conditional_particle",
+                kind="Certificate",
+                contract="TemporalConditionalParticleContract:patch11",
+            )
+            return
+
         # PATCH 3 FIXUP (2026-05-26) — FunctionalNounIdafaContract.
         # Fires BEFORE the case-based RoleRulesContract because functional
         # locative nouns (بَيْنَ، عِندَ، تَحْتَ، ...) must NOT receive the

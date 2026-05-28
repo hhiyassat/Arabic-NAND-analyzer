@@ -638,6 +638,122 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 11 — L3 Cleanup (إِذَا/عِندَ/أَلَّا/وَأَشْهِدُوا) ─────────
+
+
+def _l3_tokens_for_verse(verse_text: str):
+    """Run the production engine on `verse_text` and return its tokens.
+    Returns _L4_UNAVAILABLE-style sentinel if sandbox unavailable."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        return None
+    try:
+        return I3rabEngine().analyze_sentence(verse_text).tokens
+    except (PermissionError, OSError):
+        return None
+
+
+def t_l3_idha_not_object():
+    """PATCH 11: إِذَا must NOT carry role=`مفعول به منصوب` in 2:282.
+    Acceptable role: any ظرف/شرط label (ظرف شرط / ظرف زمان / etc.)."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    toks = _l3_tokens_for_verse(verse)
+    if toks is None:
+        print("  [skipped — engine unavailable]", end=" ")
+        return
+    bad = []
+    target_nfc = _nfc("إِذَا")
+    for t in toks:
+        if _nfc(getattr(t, "token", "")) != target_nfc:
+            continue
+        rp = getattr(t, "role_phrase", "") or ""
+        if "مفعول" in rp:
+            bad.append(f"إِذَا role={rp!r}")
+    assert not bad, (
+        f"PATCH 11 — إِذَا still labelled مفعول: {bad}"
+    )
+
+
+def t_l3_inda_is_locative_not_harf():
+    """PATCH 11: عِندَ must NOT be class=HARF. It is a locative ظَرف
+    مَكان. In 2:282 «عِندَ ٱللَّهِ» it should resolve as ISM_MUARAB."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    toks = _l3_tokens_for_verse(verse)
+    if toks is None:
+        print("  [skipped — engine unavailable]", end=" ")
+        return
+    bad = []
+    target_nfc = _nfc("عِندَ")
+    for t in toks:
+        if _nfc(getattr(t, "token", "")) != target_nfc:
+            continue
+        wc = getattr(t, "word_class", "")
+        if wc == "HARF":
+            bad.append(f"عِندَ word_class={wc!r}")
+    assert not bad, (
+        f"PATCH 11 — عِندَ still classified as HARF: {bad}"
+    )
+
+
+def t_l3_alla_not_tahdid_or_tahdid_wazn():
+    """PATCH 11: أَلَّا must NOT carry wazn=`حرف تحضيض` in 2:282.
+    The L1 segmentation peels أَلَّا as أن(HARF_NASB) + لا; the wazn
+    label should reflect that (acceptable: `حرف نصب + لا`, `أن+لا`,
+    or anything NOT containing تحضيض)."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    toks = _l3_tokens_for_verse(verse)
+    if toks is None:
+        print("  [skipped — engine unavailable]", end=" ")
+        return
+    bad = []
+    target_nfc = _nfc("أَلَّا")
+    for t in toks:
+        if _nfc(getattr(t, "token", "")) != target_nfc:
+            continue
+        w = getattr(t, "wazn", "") or ""
+        if "تحضيض" in w:
+            bad.append(f"أَلَّا wazn={w!r}")
+    assert not bad, (
+        f"PATCH 11 — أَلَّا still has wazn=`حرف تحضيض`: {bad}"
+    )
+
+
+def t_l3_wa_ashhidu_is_imperative():
+    """PATCH 11: وَأَشْهِدُوٓا must be role=`فعل أمر`, not `فعل مضارع`.
+    MASAQ certifies aspect=CV; the exact-surface MTL miss (because of
+    ٓ) made verb_form_contract fall back to IV. PATCH 11 overrides
+    aspect to CV → L3 role becomes فعل أمر."""
+    verse = _load_verse_2_282()
+    if not verse:
+        print("  [skipped — Quran source missing]", end=" ")
+        return
+    toks = _l3_tokens_for_verse(verse)
+    if toks is None:
+        print("  [skipped — engine unavailable]", end=" ")
+        return
+    bad = []
+    target_nfc = _nfc("وَأَشْهِدُوٓا")
+    for t in toks:
+        if _nfc(getattr(t, "token", "")) != target_nfc:
+            continue
+        rp = getattr(t, "role_phrase", "") or ""
+        if "مضارع" in rp:
+            bad.append(f"وَأَشْهِدُوٓا role={rp!r}")
+    assert not bad, (
+        f"PATCH 11 — وَأَشْهِدُوٓا still labelled فعل مضارع: {bad}"
+    )
+
+
 # ── PATCH 10 — L6 Huwa / Alladhi Clause-Head Refinement ─────────────
 
 
@@ -1792,6 +1908,12 @@ ALL = [
      t_l6_no_alladhi_to_internal_haqq_clause_noun),
     ("t_l6_patch8_patch9_forbidden_relations_still_absent",
      t_l6_patch8_patch9_forbidden_relations_still_absent),
+    # PATCH 11 — L3 Cleanup (إِذَا/عِندَ/أَلَّا/وَأَشْهِدُوا)
+    ("t_l3_idha_not_object", t_l3_idha_not_object),
+    ("t_l3_inda_is_locative_not_harf", t_l3_inda_is_locative_not_harf),
+    ("t_l3_alla_not_tahdid_or_tahdid_wazn",
+     t_l3_alla_not_tahdid_or_tahdid_wazn),
+    ("t_l3_wa_ashhidu_is_imperative", t_l3_wa_ashhidu_is_imperative),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -1832,4 +1954,5 @@ print("  • PATCH 7: L4 Relation Safety Gate — block إذا-patient, dual-ن�
 print("  • PATCH 8: L6 Resolution Safety Gate — block مِن/مَا-as-relative, ٱلَّذِى→jalalah/indef, هُوَ→adjective")
 print("  • PATCH 9: L6 Antecedent Quality Gate — block PP/possessor-tail/abstract antecedents + إذا-ما cluster")
 print("  • PATCH 10: L6 Huwa/Alladhi clause-head refinement — block هُوَ→رَبَّهُ, ٱلَّذِى→ٱلْحَقُّ")
+print("  • PATCH 11: L3 cleanup — إِذَا→ظرف شرط, عِندَ→ISM_MUARAB, أَلَّا wazn fixed, وَأَشْهِدُوٓا→فعل أمر")
 print("─" * 70)
