@@ -638,6 +638,225 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── PATCH 13 — Hidden Estimated Pronoun Signals (Batch A) ───────────
+
+
+_HPS_UNAVAILABLE = "__HPS_UNAVAILABLE__"
+
+
+def _hps_import():
+    try:
+        from hidden_pronoun_signals import (
+            extract_signals,
+            extract_signals_for,
+            extract_signals_any_row,
+        )
+    except (ImportError, OSError, PermissionError):
+        return None
+    return extract_signals, extract_signals_for, extract_signals_any_row
+
+
+def _hps_corpus_available() -> bool:
+    """Whether the i3rab corpus CSV is accessible at one of the
+    candidate paths."""
+    try:
+        from hidden_pronoun_signals import _corpus_candidate_paths
+    except (ImportError, OSError, PermissionError):
+        return False
+    return any(p.is_file() for p in _corpus_candidate_paths())
+
+
+def t_a1_yaktuba_hidden_subject_huwa():
+    """PATCH 13 A1: 2:282 يَكْتُبَ → hidden_subject=هو."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(2, 282, "يَكْتُبَ")
+    assert sig is not None, "PATCH 13 — no row found for 2:282 يَكْتُبَ"
+    assert sig.hidden_subject == "هو", (
+        f"PATCH 13 A1 — expected hidden_subject='هو', got {sig.hidden_subject!r}"
+    )
+    assert sig.proof_kind == "Certificate"
+    assert "A1" in sig.rules_fired
+
+
+def t_a1_falyaktub_hidden_subject_huwa():
+    """PATCH 13 A1: 2:282 فَلْيَكْتُبْ → hidden_subject=هو."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(2, 282, "فَلْيَكْتُبْ")
+    assert sig is not None, "no row found for 2:282 فَلْيَكْتُبْ"
+    assert sig.hidden_subject == "هو", (
+        f"PATCH 13 A1 — expected هو, got {sig.hidden_subject!r}"
+    )
+
+
+def t_a1_yabkhas_hidden_subject_huwa():
+    """PATCH 13 A1: 2:282 يَبْخَسْ → hidden_subject=هو."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(2, 282, "يَبْخَسْ")
+    assert sig is not None
+    assert sig.hidden_subject == "هو", (
+        f"PATCH 13 A1 — expected هو, got {sig.hidden_subject!r}"
+    )
+
+
+def t_a1_takuna_hidden_subject_hiya():
+    """PATCH 13 A1: 2:282 تَكُونَ → hidden_subject=هي."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(2, 282, "تَكُونَ")
+    assert sig is not None
+    assert sig.hidden_subject == "هي", (
+        f"PATCH 13 A1 — expected هي, got {sig.hidden_subject!r}"
+    )
+
+
+def t_a1_naabud_hidden_subject_nahnu():
+    """PATCH 13 A1: 1:5 نَعْبُدُ → hidden_subject=نحن."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(1, 5, "نَعْبُدُ")
+    assert sig is not None
+    assert sig.hidden_subject == "نحن", (
+        f"PATCH 13 A1 — expected نحن, got {sig.hidden_subject!r}"
+    )
+
+
+def t_a1_ihdina_hidden_subject_anta():
+    """PATCH 13 A1: 1:6 اهْدِنَا → hidden_subject=أنت."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(1, 6, "اهْدِنَا")
+    assert sig is not None
+    assert sig.hidden_subject == "أنت", (
+        f"PATCH 13 A1 — expected أنت, got {sig.hidden_subject!r}"
+    )
+
+
+def t_a1_negative_azan_phonological():
+    """PATCH 13 A1-negative: 2:196 أَذًى carries only «الضمة المقدرة»
+    (phonological case-estimation), NOT a hidden pronoun. A1 must
+    not fire."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(2, 196, "أَذًى")
+    assert sig is not None
+    assert sig.hidden_subject is None, (
+        f"PATCH 13 A1-neg — أَذًى must not resolve to a pronoun; got "
+        f"{sig.hidden_subject!r}"
+    )
+
+
+def t_a1_negative_bismi_ellipsis():
+    """PATCH 13 A1-negative: 1:1 بِسْمِ carries «لفعل محذوف تقديره
+    أبتدئ» (verb ellipsis), NOT a hidden subject pronoun. A1 must
+    not fire."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(1, 1, "بِسْمِ")
+    assert sig is not None
+    assert sig.hidden_subject is None, (
+        f"PATCH 13 A1-neg — بِسْمِ must not resolve to a pronoun; got "
+        f"{sig.hidden_subject!r}"
+    )
+
+
+def t_a2_du3u_passive_voice():
+    """PATCH 13 A2: 2:282 دُعُوا → voice=passive."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, extract_signals_for, _ = hps
+    sig = extract_signals_for(2, 282, "دُعُوا")
+    assert sig is not None
+    assert sig.voice == "passive", (
+        f"PATCH 13 A2 — expected voice=passive, got {sig.voice!r}"
+    )
+    assert "A2" in sig.rules_fired
+    assert sig.proof_kind == "Certificate"
+
+
+def t_a3_katibun_naib_faail_head():
+    """PATCH 13 A3: 2:282 كَاتِبٌ — one of the three corpus rows for
+    this word/ayah carries head-position `نائب فاعل`. A3 must fire
+    at least once across the rows."""
+    hps = _hps_import()
+    if hps is None or not _hps_corpus_available():
+        print("  [skipped — corpus unavailable]", end=" ")
+        return
+    _, _, extract_signals_any_row = hps
+    sig = extract_signals_any_row(2, 282, "كَاتِبٌ")
+    assert sig is not None
+    assert sig.role == "naib_faail", (
+        f"PATCH 13 A3 — expected role=naib_faail, got {sig.role!r}"
+    )
+
+
+def t_patch13_no_production_path_change():
+    """PATCH 13 guard: the hidden_pronoun_signals module must NOT be
+    referenced by segmenter / i3rab_engine / relation_extractor /
+    event_extractor / resolution_engine / reasoning_engine /
+    analyze_verse_v3. Batch A is signal-only; consumption is a
+    separate Batch B/C decision per the spec."""
+    import re as _re
+    from pathlib import Path as _Path
+    here = _Path(__file__).resolve().parent
+    forbidden_consumers = [
+        here / "segmenter.py",
+        here / "i3rab_engine" / "layer1.py",
+        here / "i3rab_engine" / "layer2.py",
+        here / "i3rab_engine" / "layer3.py",
+        here / "i3rab_engine" / "engine.py",
+        here / "relation_extractor.py",
+        here / "event_extractor.py",
+        here / "resolution_engine.py",
+        here / "reasoning_engine.py",
+        here / "analyze_verse_v3.py",
+    ]
+    bad = []
+    pat = _re.compile(r"hidden_pronoun_signals")
+    for fp in forbidden_consumers:
+        if not fp.is_file():
+            continue
+        try:
+            txt = fp.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if pat.search(txt):
+            bad.append(str(fp.name))
+    assert not bad, (
+        f"PATCH 13 — hidden_pronoun_signals referenced by forbidden "
+        f"consumer(s): {bad}. Batch A must not be wired to production "
+        f"L4/L5 yet (see spec §4.4)."
+    )
+
+
 # ── PATCH 12 — L4 Remaining Relation Cleanup ────────────────────────
 
 
@@ -2054,6 +2273,29 @@ ALL = [
      t_l4_no_farajul_ism_of_yakuna),
     ("t_l4_no_kabiran_patient2_of_taktubuhu",
      t_l4_no_kabiran_patient2_of_taktubuhu),
+    # PATCH 13 — Hidden Estimated Pronoun Signals (Batch A)
+    ("t_a1_yaktuba_hidden_subject_huwa",
+     t_a1_yaktuba_hidden_subject_huwa),
+    ("t_a1_falyaktub_hidden_subject_huwa",
+     t_a1_falyaktub_hidden_subject_huwa),
+    ("t_a1_yabkhas_hidden_subject_huwa",
+     t_a1_yabkhas_hidden_subject_huwa),
+    ("t_a1_takuna_hidden_subject_hiya",
+     t_a1_takuna_hidden_subject_hiya),
+    ("t_a1_naabud_hidden_subject_nahnu",
+     t_a1_naabud_hidden_subject_nahnu),
+    ("t_a1_ihdina_hidden_subject_anta",
+     t_a1_ihdina_hidden_subject_anta),
+    ("t_a1_negative_azan_phonological",
+     t_a1_negative_azan_phonological),
+    ("t_a1_negative_bismi_ellipsis",
+     t_a1_negative_bismi_ellipsis),
+    ("t_a2_du3u_passive_voice",
+     t_a2_du3u_passive_voice),
+    ("t_a3_katibun_naib_faail_head",
+     t_a3_katibun_naib_faail_head),
+    ("t_patch13_no_production_path_change",
+     t_patch13_no_production_path_change),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -2096,4 +2338,5 @@ print("  • PATCH 9: L6 Antecedent Quality Gate — block PP/possessor-tail/abs
 print("  • PATCH 10: L6 Huwa/Alladhi clause-head refinement — block هُوَ→رَبَّهُ, ٱلَّذِى→ٱلْحَقُّ")
 print("  • PATCH 11: L3 cleanup — إِذَا→ظرف شرط, عِندَ→ISM_MUARAB, أَلَّا wazn fixed, وَأَشْهِدُوٓا→فعل أمر")
 print("  • PATCH 12: L4 cleanup — ٱللَّهِ→عِندَ, شَىْءٍ→بِكُلِّ, فَ-apodosis-kana, ditrans-ditrans-or guards")
+print("  • PATCH 13: Hidden estimated pronoun signals — Batch A (A1/A2/A3) read-only extractor")
 print("─" * 70)
