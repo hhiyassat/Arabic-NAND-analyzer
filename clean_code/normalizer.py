@@ -11,6 +11,8 @@
   Normalization scope:
     1. NFC Unicode normalization
     2. Alif madda decomposition (آ → ءَا) — preserves phonetic content
+       EXCEPT at word-end: word-final آ is a prolongation marker (مَدّ)
+       and is preserved as-is (no phantom hamza injected).
     3. Stray whitespace cleanup (trim, collapse internal)
     4. Tatweel/kashida removal (ـ)
     5. Alif wasla normalization (ٱ → ا)
@@ -119,27 +121,56 @@ def _rule_dagger_alif_to_alif(s: str) -> tuple[str, bool]:
 
 
 def _rule_alif_madda_decompose(s: str) -> tuple[str, bool]:
-    """Decompose alif madda آ into its phonetic components ء + ـَ + ا.
+    """Position-aware normalization of alif madda آ.
 
-    The alif madda represents [ʔ] + long [aː] phonetically. As a single
-    Unicode codepoint it bundles hamza + fatha + alif. For morphological
-    analysis (especially wazn matching), this needs to be decomposed:
-      آلِهَة (alif-madda + lam + ...) → ءَالِهَة → matches فَاعِلَة pattern correctly
+    Quranic Uthmani convention (per user direction 2026-05-29):
+      • Word-INITIAL آ represents [ʔaː] — a real hamza + long alif.
+        Examples: آدَم, آمَنُوا, آلِهَة. Decompose to ء + ـَ + ا so the
+        leading hamza becomes visible to wazn matching (آلِهَة → ءَالِهَة
+        → فَاعِلَة pattern).
+      • Word-MEDIAL or word-FINAL آ is a vocalization mark (مَدّ) on an
+        already-existing alif, NOT a hamza. Examples: وَأَوْحَيْنَآ,
+        رَآدُّوهُ, شَآءَ. Map to plain ا — there is NO hamza.
 
-    Without this decomposition, the analyzer sees only 3 letters when there
-    are really 4 (the leading hamza is invisible inside the madda glyph).
+    "Initial" here means the first real letter of the word — leading
+    diacritics or tatweel are transparent for the decision. A word
+    boundary is whitespace (or start-of-string).
+
+    The previous behaviour of unconditional decomposition produced
+    phantom hamzas in words like وَأَوْحَيْنَآ → وَأَوْحَيْنَءَا, which
+    broke MASAQ surface lookups and morphology.
     """
     if ALIF_MADDA not in s:
         return s, False
     out: list[str] = []
-    for c in s:
-        if c == ALIF_MADDA:
-            out.append(HAMZA)
-            out.append(FATHA)
-            out.append(ALIF)
-        else:
+    n = len(s)
+    changed = False
+    # Track whether we have seen a real (non-diacritic, non-whitespace)
+    # letter since the most recent word boundary. Resets on whitespace.
+    saw_letter_in_word = False
+    for i, c in enumerate(s):
+        if c.isspace():
             out.append(c)
-    return "".join(out), True
+            saw_letter_in_word = False
+            continue
+        if c == ALIF_MADDA:
+            if not saw_letter_in_word:
+                # Word-INITIAL آ → ء + ـَ + ا (real hamza).
+                out.append(HAMZA)
+                out.append(FATHA)
+                out.append(ALIF)
+            else:
+                # Word-MEDIAL or word-FINAL آ → ا (madd marker only).
+                out.append(ALIF)
+            changed = True
+            saw_letter_in_word = True
+            continue
+        out.append(c)
+        # Diacritics and tatweel are transparent — they do NOT mark
+        # the "first letter" boundary.
+        if c not in DIACRITICS and c != TATWEEL:
+            saw_letter_in_word = True
+    return "".join(out), changed
 
 
 def _rule_hamzat_wasl(s: str) -> tuple[str, bool]:
