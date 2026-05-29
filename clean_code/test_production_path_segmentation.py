@@ -638,6 +638,141 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── Step C Part 3 — 28:7 prohibition speech-act ─────────────────────
+
+
+def _step_c_p3_events_for_28_7():
+    """Run the production pipeline on 28:7 and return its event list.
+    Returns the unavailable sentinel if the pipeline cannot run."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        from relation_extractor import RelationExtractor
+        from event_extractor import EventExtractor
+    except (ImportError, OSError, PermissionError):
+        return None
+    quran = _HERE.parent / "data" / "quran-uthmani-with-pause-mark.txt"
+    if not quran.exists():
+        return None
+    verse = None
+    with quran.open(encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) >= 3 and parts[0] == "28" and parts[1] == "7":
+                verse = parts[2]
+                break
+    if not verse:
+        return None
+    try:
+        sent = I3rabEngine().analyze_sentence(verse)
+        rg = RelationExtractor().extract(sent)
+        eg = EventExtractor().extract(sent, rg)
+    except (PermissionError, OSError):
+        return None
+    return eg.events, sent
+
+
+def _step_c_p3_find_event(events, verb_nfc: str):
+    """Match an event by NFC of its verb_surface; tolerate the engine's
+    diacritic ordering by also checking suffix-trimmed equality."""
+    target = _nfc(verb_nfc)
+    for e in events:
+        v = _nfc(getattr(e, "verb_surface", ""))
+        if v == target:
+            return e
+    return None
+
+
+def t_28_7_la_takhafi_is_prohibition():
+    """Step C Part 3: تَخَافِى (preceded by وَلَا) must carry
+    speech_act=prohibition + mood=jussive_prohibition."""
+    result = _step_c_p3_events_for_28_7()
+    if result is None:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    events, _sent = result
+    e = _step_c_p3_find_event(events, "تَخَافِى")
+    assert e is not None, "28:7 — no event found for تَخَافِى"
+    assert getattr(e, "speech_act", "") == "prohibition", (
+        f"28:7 — تَخَافِى speech_act={getattr(e,'speech_act','')!r}, "
+        f"expected 'prohibition'"
+    )
+    assert getattr(e, "mood", "") == "jussive_prohibition", (
+        f"28:7 — تَخَافِى mood={getattr(e,'mood','')!r}, "
+        f"expected 'jussive_prohibition'"
+    )
+
+
+def t_28_7_la_tahzani_is_prohibition():
+    """Step C Part 3: تَحْزَنِىٓ (preceded by وَلَا) must carry
+    speech_act=prohibition + mood=jussive_prohibition."""
+    result = _step_c_p3_events_for_28_7()
+    if result is None:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    events, _sent = result
+    e = _step_c_p3_find_event(events, "تَحْزَنِىٓ")
+    assert e is not None, "28:7 — no event found for تَحْزَنِىٓ"
+    assert getattr(e, "speech_act", "") == "prohibition", (
+        f"28:7 — تَحْزَنِىٓ speech_act={getattr(e,'speech_act','')!r}, "
+        f"expected 'prohibition'"
+    )
+    assert getattr(e, "mood", "") == "jussive_prohibition", (
+        f"28:7 — تَحْزَنِىٓ mood={getattr(e,'mood','')!r}, "
+        f"expected 'jussive_prohibition'"
+    )
+
+
+def t_28_7_khifti_not_prohibition():
+    """Step C Part 3 negative guard: خِفْتِ inside «فَإِذَا خِفْتِ» is
+    a past-tense verb inside a condition clause — NOT a prohibition.
+    The NahyEventMood detector must not fire because the preceding
+    token is the condition particle إِذَا / فَإِذَا, not a لا-class
+    negation HARF."""
+    result = _step_c_p3_events_for_28_7()
+    if result is None:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    events, _sent = result
+    e = _step_c_p3_find_event(events, "خِفْتِ")
+    assert e is not None, "28:7 — no event found for خِفْتِ"
+    assert getattr(e, "speech_act", "") != "prohibition", (
+        f"28:7 — خِفْتِ wrongly marked prohibition; "
+        f"speech_act={getattr(e,'speech_act','')!r}"
+    )
+    assert getattr(e, "mood", "") != "jussive_prohibition", (
+        f"28:7 — خِفْتِ wrongly marked jussive_prohibition; "
+        f"mood={getattr(e,'mood','')!r}"
+    )
+
+
+def t_28_7_awhayna_remains_past():
+    """Step C Part 3 regression: وَأَوْحَيْنَآ (fixed by Steps B + C
+    Part 1/2) must remain classified as past-tense AND must not be
+    marked as prohibition or command."""
+    result = _step_c_p3_events_for_28_7()
+    if result is None:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    events, sent = result
+    # The verb's Event.type uses the root («وحي»); the verb_surface
+    # carries the original «وَأَوْحَيْنَآ» form.
+    e = _step_c_p3_find_event(events, "وَأَوْحَيْنَآ")
+    assert e is not None, (
+        f"28:7 — no event found for وَأَوْحَيْنَآ; "
+        f"events: {[getattr(ev,'verb_surface','') for ev in events]}"
+    )
+    assert getattr(e, "tense", "") == "past", (
+        f"28:7 — وَأَوْحَيْنَآ tense={getattr(e,'tense','')!r}, expected 'past'"
+    )
+    assert getattr(e, "speech_act", "") != "prohibition", (
+        f"28:7 — وَأَوْحَيْنَآ wrongly marked prohibition"
+    )
+    assert getattr(e, "mood", "") not in ("jussive_command", "jussive_prohibition"), (
+        f"28:7 — وَأَوْحَيْنَآ mood={getattr(e,'mood','')!r}, "
+        f"expected indicative (no jussive)"
+    )
+
+
 # ── Phase 5 / Batch A — Standalone Clause Segmenter ─────────────────
 
 
@@ -3046,6 +3181,15 @@ ALL = [
      t_l6_2_196_tilka_and_dhalika_forbidden_deixis_still_absent),
     ("t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent",
      t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent),
+    # Step C Part 3 — 28:7 prohibition speech-act
+    ("t_28_7_la_takhafi_is_prohibition",
+     t_28_7_la_takhafi_is_prohibition),
+    ("t_28_7_la_tahzani_is_prohibition",
+     t_28_7_la_tahzani_is_prohibition),
+    ("t_28_7_khifti_not_prohibition",
+     t_28_7_khifti_not_prohibition),
+    ("t_28_7_awhayna_remains_past",
+     t_28_7_awhayna_remains_past),
     # Phase 5 / Batch A — Standalone Clause Segmenter
     ("t_phase5_2_282_has_at_least_10_clauses",
      t_phase5_2_282_has_at_least_10_clauses),
@@ -3121,4 +3265,5 @@ print("  • PATCH 14: MAANI A2 — gate extension drops JAZM_LAM_AMR/SHART_LAM_
 print("  • PATCH 15: L6 cross-verse safety — deixis gate + مِّن-as-preposition surface reject (2:196)")
 print("  • PATCH 16: L6 demonstrative abstract-reference — ذَٰلِكَ+لِمَن → Zero (no nominal target)")
 print("  • Phase 5 / Batch A: standalone clause segmenter (A1–A6) — NOT wired to L4–L8")
+print("  • Step C Part 3: L5 NahyEventMood — وَلَا/فَلَا/لَا + IV → speech_act=prohibition")
 print("─" * 70)

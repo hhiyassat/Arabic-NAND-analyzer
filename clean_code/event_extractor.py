@@ -254,6 +254,57 @@ def _detect_command_lam_mood(token) -> tuple[str, str]:
     return "", ""
 
 
+# Step C Part 3 — diacritic-stripped + hamza-normalised forms of the
+# negation particle لا that opens لا-النَّاهيَة constructions. وَلَا /
+# فَلَا / لَا all collapse to these plain forms after diacritic strip.
+_NAHY_PREV_SURFACES_PLAIN = {"ولا", "فلا", "لا"}
+
+
+def _detect_la_nahy_mood(token, prev_token) -> tuple[str, str]:
+    """Step C Part 3 (2026-05-29) — NahyEventMood. Companion to PATCH
+    5's CommandLamEventMood for the لا-النَّاهيَة construction.
+
+    Fires when:
+      (a) prev_token surface (diacritic-stripped + hamza-normalised)
+          is one of {ولا, فلا, لا}, AND
+      (b) prev_token's L3 word_class is HARF, AND
+      (c) current token is an imperfect verb (word_class=FIIL AND
+          verb_aspect=IV, OR has IMPERF_PREF in its prefix tags).
+
+    On hit returns (mood, speech_act) = ("jussive_prohibition",
+    "prohibition"). Otherwise returns ("", "").
+
+    Pure read: inspects existing token attributes only. No
+    segmentation, no relation, no upstream mutation.
+    """
+    if prev_token is None:
+        return "", ""
+    # (a) prev_token surface check
+    prev_surf = getattr(prev_token, "token", "") or getattr(prev_token, "surface", "") or ""
+    if not prev_surf:
+        return "", ""
+    _DIAC = "ًٌٍَُِّْـٰٓ"
+    prev_plain = "".join(c for c in _nfc(prev_surf) if c not in _DIAC)
+    prev_plain = (prev_plain
+                  .replace("ٱ", "ا").replace("أ", "ا")
+                  .replace("إ", "ا").replace("آ", "ا"))
+    if prev_plain not in _NAHY_PREV_SURFACES_PLAIN:
+        return "", ""
+    # (b) prev_token must be a HARF (the negation particle, not a noun
+    # whose plain form happens to collapse to "لا").
+    if getattr(prev_token, "word_class", "") != "HARF":
+        return "", ""
+    # (c) current token must be an imperfect verb.
+    if getattr(token, "word_class", "") != "FIIL":
+        return "", ""
+    aspect = getattr(token, "verb_aspect", "") or ""
+    if aspect != "IV":
+        prefix_tags = getattr(token, "prefix_tags", None) or []
+        if "IMPERF_PREF" not in prefix_tags:
+            return "", ""
+    return "jussive_prohibition", "prohibition"
+
+
 # ─────────────────────────────────────────────────────────────────
 # Tense detection (مِن صيغَة الفِعل)
 # ─────────────────────────────────────────────────────────────────
@@ -441,6 +492,16 @@ class EventExtractor:
             # jussive command (وَلْيَكْتُب) from indicative present
             # (يَكْتُبُ).
             mood_value, speech_act_value = _detect_command_lam_mood(t)
+            # Step C Part 3 — NahyEventMood: لا-النَّاهيَة construction
+            # (وَلَا / فَلَا / لَا + imperfect verb). If LAM_AL_AMR
+            # didn't fire, check whether the prior token is a لا-class
+            # negation HARF in front of an imperfect verb; if so, mark
+            # mood=jussive_prohibition.
+            if not mood_value:
+                _prev_tok = tokens[i - 1] if i > 0 else None
+                _nahy_mood, _nahy_sa = _detect_la_nahy_mood(t, _prev_tok)
+                if _nahy_mood:
+                    mood_value, speech_act_value = _nahy_mood, _nahy_sa
 
             # 5. تَوَقُّع الـ frame مِن verb_frames_loader
             frame_roles: list = []
