@@ -81,6 +81,56 @@ def _is_uninflected_verb(token: str) -> bool:
     return s in _UNINFLECTED_VERB_FORMS
 
 
+# ── InterrogPronounContract — اسم استفهام مبني lexicon ──────────────
+# Diacritic-safe lexical detector (2026-05-30). MTL has رows for these
+# surfaces but tags them word_class=UNKNOWN; the ClosedFunctionWordGate
+# then routes them as HARF particles. Classical Arabic grammar treats
+# these as ISM_MABNI (اسم استفهام مبني) — indeclinable interrogative
+# nouns. Inserting an early lexical certifier closes 7 cases identified
+# in the diacritic-safe MASAQ sweep.
+#
+# IMPORTANT — مَنْ / مَا / مِنْ / ذَا are deliberately EXCLUDED from
+# this lexicon. Those surfaces have context-dependent readings
+# (NEG/REL/COND/INTERROG) and need contextual disambiguation, not a
+# static lexicon. They are tracked under the separate وَمَا/مَا family.
+#
+# Linguistic vowel diacritics are preserved. Only Quranic-only marks
+# (ٱ→ا, آ→ا, ٰ, ٓ, ۟) are folded at lookup time (handles e.g.,
+# مَتَى ↔ مَتَىٰ between MASAQ MSA and Quranic Uthmani spellings).
+_INTERROG_PRONOUN_FORMS = {
+    # كَيْفَ family — "how?"
+    "كَيْفَ", "وَكَيْفَ", "فَكَيْفَ",
+    # كَمْ family — "how many/much?"
+    "كَمْ", "وَكَمْ", "فَكَمْ",
+    # لِمَ family — "why?" (لِ + ماَ-interrog elided to لِمَ)
+    "لِمَ", "وَلِمَ", "فَلِمَ",
+    # مَتَى family — "when?"
+    "مَتَى", "وَمَتَى", "فَمَتَى",
+    # أَيْنَ family — "where?"
+    "أَيْنَ", "وَأَيْنَ", "فَأَيْنَ",
+    # أَنَّى family — "how/whence?"
+    "أَنَّى", "وَأَنَّى", "فَأَنَّى",
+}
+
+
+def _is_interrog_pronoun(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, linguistic
+    diacritics preserved) matches a known interrogative-pronoun form
+    (اسم استفهام مبني). Same diacritic-safe pattern as
+    `_is_uninflected_verb`."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _INTERROG_PRONOUN_FORMS
+
+
 # Heuristic: verbal wazn prefix → verb aspect
 # Imperfect: starts with يَ/تَ/أَ/نَ (vocalized) + has فْعَل/فْعُل/فْعِل interior
 # Perfect:   starts with فَعَ/فَعِ/فَعُ patterns
@@ -573,6 +623,20 @@ class WordClassClassifier:
             result["source"] = "uninflected_verb_lexicon"
             result["proof_kind"] = "Certificate"
             result["proof_contract"] = "UninflectedVerbContract:v1"
+            return result
+
+        # === STEP 0.6: InterrogPronounContract — اسم استفهام مبني ===
+        # MASAQ diacritic-safe F3 (2026-05-30): MTL hits these surfaces
+        # with class=UNKNOWN, so they fall into ClosedFunctionWordGate
+        # and get routed as HARF. Classical grammar treats كَيْفَ، كَمْ،
+        # لِمَ، مَتَى، أَيْنَ، أَنَّى as ISM_MABNI (اسم استفهام مبني).
+        # Lexicon excludes مَنْ/مَا/مِن/ذَا — those have ambiguous
+        # readings and need contextual disambiguation, not static lookup.
+        if _is_interrog_pronoun(token):
+            result["word_class"] = "ISM_MABNI"
+            result["source"] = "interrog_pronoun_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "InterrogPronounContract:v1"
             return result
 
         plain = _strip_diac(token)
