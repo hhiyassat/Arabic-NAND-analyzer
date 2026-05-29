@@ -638,6 +638,261 @@ def t_patch4_wala_qasam_and_rubba_filtered():
     _assert_none_contains(ms, ["لِلقَسَم", "القَسَم", "رُبَّ"], "وَلَا")
 
 
+# ── Phase 5 / Batch A — Standalone Clause Segmenter ─────────────────
+
+
+_PHASE5_UNAVAILABLE = "__PHASE5_UNAVAILABLE__"
+
+
+def _phase5_segment(verse_ref: str):
+    """Load the verse text and run the standalone Phase 5 segmenter.
+    Returns the clause list or the unavailable sentinel."""
+    try:
+        from phase5_clause_segmenter import segment_clauses_from_surfaces
+    except (ImportError, OSError, PermissionError):
+        return _PHASE5_UNAVAILABLE
+    s, a = verse_ref.split(":")
+    verse_text = _load_verse(int(s), int(a))
+    if not verse_text:
+        return _PHASE5_UNAVAILABLE
+    surfaces = verse_text.split()
+    try:
+        return segment_clauses_from_surfaces(surfaces, verse_ref)
+    except Exception as e:
+        # Surfacing the exception is more useful than swallowing
+        raise AssertionError(f"Phase 5 segmenter crashed on {verse_ref}: {e}")
+
+
+def _phase5_clause_texts_of_type(clauses, ctype: str) -> list:
+    """Return ALL clause `.text` values for the given type, NFC-normalised."""
+    return [_nfc(c.text) for c in clauses if c.type == ctype]
+
+
+def _phase5_clause_heads_of_type(clauses, ctype: str) -> list:
+    return [_nfc(c.head_token) for c in clauses if c.type == ctype]
+
+
+def t_phase5_2_282_has_at_least_10_clauses():
+    """Phase 5 Batch A: 2:282 must produce at least 10 clauses."""
+    cls = _phase5_segment("2:282")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    assert len(cls) >= 10, (
+        f"Phase 5 Batch A — 2:282 should yield ≥ 10 clauses; got {len(cls)}"
+    )
+
+
+def t_phase5_2_282_condition_idha_tadayantum():
+    """Phase 5 Batch A: 2:282 contains a `condition` clause headed by
+    إِذَا whose text starts with «إِذَا تَدَايَنتُم»."""
+    cls = _phase5_segment("2:282")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    target = _nfc("إِذَا تَدَايَنتُم")
+    matching = [c for c in cls if c.type == "condition"
+                and target in _nfc(c.text)]
+    assert matching, (
+        "Phase 5 Batch A — expected at least one condition clause with "
+        "head إِذَا containing «إِذَا تَدَايَنتُم» on 2:282; got types: "
+        f"{sorted({c.type for c in cls})}"
+    )
+
+
+def t_phase5_2_282_condition_answer_command_faktubuhu():
+    """Phase 5 Batch A: 2:282 contains a `condition_answer_command`
+    clause for فَٱكْتُبُوهُ, linked to the prior condition."""
+    cls = _phase5_segment("2:282")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    matching = [c for c in cls if c.type == "condition_answer_command"
+                and _nfc("فَٱكْتُبُوهُ") in _nfc(c.text)]
+    assert matching, (
+        "Phase 5 Batch A — expected condition_answer_command for "
+        "فَٱكْتُبُوهُ on 2:282"
+    )
+    assert any(c.parent_clause_id for c in matching), (
+        "Phase 5 Batch A — condition_answer_command should carry a "
+        "parent_clause_id linking to the condition"
+    )
+
+
+def t_phase5_2_282_all_five_lam_al_amr_command_clauses():
+    """Phase 5 Batch A: 2:282 contains 5 `command` clauses for the
+    lam-al-amr verbs from PATCH 1: وَلْيَكْتُب, فَلْيَكْتُبْ,
+    وَلْيُمْلِلِ, وَلْيَتَّقِ, فَلْيُمْلِلْ."""
+    cls = _phase5_segment("2:282")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    required = ["وَلْيَكْتُب", "فَلْيَكْتُبْ", "وَلْيُمْلِلِ",
+                "وَلْيَتَّقِ", "فَلْيُمْلِلْ"]
+    cmd_heads = _phase5_clause_heads_of_type(cls, "command")
+    cmd_heads_ans = _phase5_clause_heads_of_type(cls, "condition_answer_command")
+    all_cmd_heads = set(cmd_heads + cmd_heads_ans)
+    missing = [r for r in required if _nfc(r) not in all_cmd_heads]
+    assert not missing, (
+        f"Phase 5 Batch A — missing command clauses for lam-al-amr verbs: "
+        f"{missing}. command heads observed: {sorted(all_cmd_heads)}"
+    )
+
+
+def t_phase5_2_282_complement_an_clauses():
+    """Phase 5 Batch A: 2:282 contains complement_an clauses for the
+    5 أَن + imperfect constructions: أَن يَكْتُبَ, أَن يُمِلَّ,
+    أَن تَضِلَّ, أَن تَكْتُبُوهُ, أَن تَكُونَ."""
+    cls = _phase5_segment("2:282")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    comp_texts = _phase5_clause_texts_of_type(cls, "complement_an")
+    required_substrs = ["أَن يَكْتُبَ", "أَن يُمِلَّ", "أَن تَضِلَّ",
+                         "أَن تَكْتُبُوهُ", "أَن تَكُونَ"]
+    missing = []
+    for req in required_substrs:
+        target = _nfc(req)
+        if not any(target in text for text in comp_texts):
+            missing.append(req)
+    assert not missing, (
+        f"Phase 5 Batch A — missing complement_an clauses: {missing}. "
+        f"complement_an texts seen: {[t[:40] for t in comp_texts]}"
+    )
+
+
+def t_phase5_2_282_prohibition_clauses():
+    """Phase 5 Batch A: 2:282 contains prohibition clauses for the 4
+    وَلَا + imperfect verbs: وَلَا يَأْبَ, وَلَا يَبْخَسْ,
+    وَلَا تَسْـَٔمُوا, وَلَا يُضَآرَّ."""
+    cls = _phase5_segment("2:282")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    prohib_texts = _phase5_clause_texts_of_type(cls, "prohibition")
+    required = ["وَلَا يَأْبَ", "وَلَا يَبْخَسْ",
+                "وَلَا تَسْـَٔمُوٓا", "وَلَا يُضَآرَّ"]
+    missing = []
+    for req in required:
+        target = _nfc(req)
+        if not any(target in text for text in prohib_texts):
+            missing.append(req)
+    assert not missing, (
+        f"Phase 5 Batch A — missing prohibition clauses: {missing}. "
+        f"prohibition texts seen: {[t[:40] for t in prohib_texts]}"
+    )
+
+
+def t_phase5_2_196_three_condition_clauses():
+    """Phase 5 Batch A: 2:196 contains condition clauses for
+    فَإِنْ أُحْصِرْتُمْ, فَإِذَآ أَمِنتُمْ, إِذَا رَجَعْتُمْ."""
+    cls = _phase5_segment("2:196")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    cond_texts = _phase5_clause_texts_of_type(cls, "condition")
+    required = ["فَإِنْ أُحْصِرْتُمْ", "فَإِذَآ أَمِنتُمْ",
+                "إِذَا رَجَعْتُمْ"]
+    missing = []
+    for req in required:
+        target = _nfc(req)
+        if not any(target in text for text in cond_texts):
+            missing.append(req)
+    assert not missing, (
+        f"Phase 5 Batch A — missing condition clauses on 2:196: {missing}. "
+        f"condition texts seen: {[t[:40] for t in cond_texts]}"
+    )
+
+
+def t_phase5_2_196_command_clauses():
+    """Phase 5 Batch A: 2:196 contains command clauses for
+    وَأَتِمُّوا, وَٱتَّقُوا, وَٱعْلَمُوا."""
+    cls = _phase5_segment("2:196")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    cmd_heads = _phase5_clause_heads_of_type(cls, "command")
+    required = ["وَأَتِمُّوا۟", "وَٱتَّقُوا۟", "وَٱعْلَمُوٓا۟"]
+    # accept with or without the ۟ small high meem
+    missing = []
+    for req in required:
+        target = _nfc(req)
+        target_no_pause = target.replace("۟", "").replace("ٓ", "")
+        hit = any(target == h or target_no_pause == h.replace("۟","").replace("ٓ","")
+                  for h in cmd_heads)
+        if not hit:
+            missing.append(req)
+    assert not missing, (
+        f"Phase 5 Batch A — missing command clauses on 2:196: {missing}. "
+        f"command heads seen: {cmd_heads}"
+    )
+
+
+def t_phase5_2_196_prohibition_tahliqu():
+    """Phase 5 Batch A: 2:196 contains a prohibition clause for
+    وَلَا تَحْلِقُوا."""
+    cls = _phase5_segment("2:196")
+    if cls == _PHASE5_UNAVAILABLE:
+        print("  [skipped — phase5 unavailable]", end=" ")
+        return
+    prohib_texts = _phase5_clause_texts_of_type(cls, "prohibition")
+    target = _nfc("وَلَا تَحْلِقُوا")
+    assert any(target in text for text in prohib_texts), (
+        f"Phase 5 Batch A — missing prohibition clause «وَلَا تَحْلِقُوا» "
+        f"on 2:196. prohibition texts seen: {[t[:40] for t in prohib_texts]}"
+    )
+
+
+def t_phase5_clause_segmenter_not_imported_by_production_path():
+    """Phase 5 Batch A isolation guard. The Phase-5 surface — the
+    standalone `phase5_clause_segmenter` module and its exports
+    (`Phase5Clause` / `Phase5ClauseGraph` / `segment_clauses` /
+    `segment_clauses_from_surfaces` / `build_clause_graph`) — must NOT
+    be referenced by any production-path module. Allowed consumers:
+    tests only.
+
+    This guard inspects the production files explicitly named in the
+    Phase 5 SPEC §6 (Required non-goals) and asserts none of them
+    references the Phase 5 module or its surface."""
+    import re as _re
+    here = _HERE
+    production_files = [
+        here / "segmenter.py",
+        here / "i3rab_engine" / "layer1.py",
+        here / "i3rab_engine" / "layer2.py",
+        here / "i3rab_engine" / "layer3.py",
+        here / "i3rab_engine" / "engine.py",
+        here / "relation_extractor.py",
+        here / "event_extractor.py",
+        here / "resolution_engine.py",
+        here / "reasoning_engine.py",
+        here / "meaning_assembler.py",
+        here / "hidden_pronoun_signals.py",
+        here / "samarrai_certified_operator_gate.py",
+        here / "analyze_verse_v3.py",
+    ]
+    # Phase 5 surface markers — the module name + the dataclass /
+    # function exports defined in clean_code/phase5_clause_segmenter.py.
+    phase5_markers = _re.compile(
+        r"\b(phase5_clause_segmenter|Phase5Clause|Phase5ClauseGraph"
+        r"|segment_clauses_from_surfaces|build_clause_graph)\b"
+    )
+    bad = []
+    for fp in production_files:
+        if not fp.is_file():
+            continue
+        try:
+            txt = fp.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if phase5_markers.search(txt):
+            bad.append(f"{fp.name}: references Phase 5 surface")
+    assert not bad, (
+        f"Phase 5 Batch A — production module(s) reference the Phase 5 "
+        f"clause segmenter; isolation broken: {bad}"
+    )
+
+
 # ── PATCH 16 — L6 Demonstrative Abstract-Reference Policy ──────────
 
 
@@ -2791,6 +3046,27 @@ ALL = [
      t_l6_2_196_tilka_and_dhalika_forbidden_deixis_still_absent),
     ("t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent",
      t_l6_2_282_entropy_still_zero_or_forbidden_relations_absent),
+    # Phase 5 / Batch A — Standalone Clause Segmenter
+    ("t_phase5_2_282_has_at_least_10_clauses",
+     t_phase5_2_282_has_at_least_10_clauses),
+    ("t_phase5_2_282_condition_idha_tadayantum",
+     t_phase5_2_282_condition_idha_tadayantum),
+    ("t_phase5_2_282_condition_answer_command_faktubuhu",
+     t_phase5_2_282_condition_answer_command_faktubuhu),
+    ("t_phase5_2_282_all_five_lam_al_amr_command_clauses",
+     t_phase5_2_282_all_five_lam_al_amr_command_clauses),
+    ("t_phase5_2_282_complement_an_clauses",
+     t_phase5_2_282_complement_an_clauses),
+    ("t_phase5_2_282_prohibition_clauses",
+     t_phase5_2_282_prohibition_clauses),
+    ("t_phase5_2_196_three_condition_clauses",
+     t_phase5_2_196_three_condition_clauses),
+    ("t_phase5_2_196_command_clauses",
+     t_phase5_2_196_command_clauses),
+    ("t_phase5_2_196_prohibition_tahliqu",
+     t_phase5_2_196_prohibition_tahliqu),
+    ("t_phase5_clause_segmenter_not_imported_by_production_path",
+     t_phase5_clause_segmenter_not_imported_by_production_path),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
@@ -2844,4 +3120,5 @@ print("  • PATCH 13: Hidden estimated pronoun signals — Batch A (A1/A2/A3) r
 print("  • PATCH 14: MAANI A2 — gate extension drops JAZM_LAM_AMR/SHART_LAM_JAWAB on atomic لِلَّهِ")
 print("  • PATCH 15: L6 cross-verse safety — deixis gate + مِّن-as-preposition surface reject (2:196)")
 print("  • PATCH 16: L6 demonstrative abstract-reference — ذَٰلِكَ+لِمَن → Zero (no nominal target)")
+print("  • Phase 5 / Batch A: standalone clause segmenter (A1–A6) — NOT wired to L4–L8")
 print("─" * 70)
