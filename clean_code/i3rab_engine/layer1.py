@@ -131,6 +131,47 @@ def _is_interrog_pronoun(token: str) -> bool:
     return s in _INTERROG_PRONOUN_FORMS
 
 
+# ── ComparativeAdjectiveContract — اسم تَفْضِيل lexicon ────────────
+# Diacritic-safe lexical detector (2026-05-30). Comparative/superlative
+# nouns on the أَفْعَل/فُعْلَى/أَفْعَى patterns get misclassified as 1st-
+# person-sg IV verbs by the surface heuristic (`_looks_like_verb_by_surface`
+# matches أَ-prefix + ≥4 letters). For أَعْلَمُ specifically the MTL has
+# rows tagged class=FIIL (MASAQ data quirk for the ambiguous أَفْعَلُ
+# pattern), so MTL itself returns the wrong answer. This contract
+# must therefore run BEFORE MTL — the lexicon is exact-vocalized and
+# narrow so the pre-MTL override is safe.
+#
+# IMPORTANT — exact-vocalized lexicon only. No "أَ-prefix → noun"
+# heuristic. Genuine 1st-person verbs (أَكْتُبُ, أَدْعُو, أُحِبُّ) and
+# 3rd-person verbs (يَعْلَمُ, تَعْلَمُونَ) remain unaffected.
+_ADJ_COMP_FORMS = {
+    # أَعْلَمُ family — "more/most knowing"
+    "أَعْلَمُ", "وَأَعْلَمُ", "فَأَعْلَمُ",
+    # أَدْنَى family — "lower/nearer"
+    "أَدْنَى", "وَأَدْنَى", "فَأَدْنَى",
+    # أُخْرَى family — "other" (feminine comparative)
+    "أُخْرَى", "وَأُخْرَى", "فَأُخْرَى",
+}
+
+
+def _is_comparative_adj(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, linguistic
+    diacritics preserved) matches a known اسم تَفْضِيل form. Same
+    diacritic-safe pattern as `_is_uninflected_verb` and
+    `_is_interrog_pronoun`."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _ADJ_COMP_FORMS
+
+
 # Heuristic: verbal wazn prefix → verb aspect
 # Imperfect: starts with يَ/تَ/أَ/نَ (vocalized) + has فْعَل/فْعُل/فْعِل interior
 # Perfect:   starts with فَعَ/فَعِ/فَعُ patterns
@@ -552,6 +593,25 @@ class WordClassClassifier:
                 # plain ambiguity → نُكمِل إِلى heuristics
         except ImportError:
             pass
+
+        # ═════════════════════════════════════════════════════════════
+        # === STEP -0.5: ComparativeAdjectiveContract — اسم تَفْضِيل ═
+        # ═════════════════════════════════════════════════════════════
+        # MASAQ diacritic-safe F3 (2026-05-30): runs BEFORE MTL because
+        # MTL has rows for أَعْلَمُ tagged class=FIIL (MASAQ data quirk
+        # for the ambiguous أَفْعَلُ pattern shared between اسم تَفْضِيل
+        # and 1st-sg IV verb). Without the pre-MTL override, MTL would
+        # short-circuit with the wrong FIIL answer. The lexicon is
+        # exact-vocalized + Quranic-mark fold; linguistic vowel
+        # diacritics are never stripped.
+        if _is_comparative_adj(token):
+            result["word_class"] = "ISM_MUARAB"
+            result["verb_aspect"] = ""
+            result["wazn"] = "اسم تفضيل"
+            result["source"] = "comparative_adjective_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "ComparativeAdjectiveContract:v1"
+            return result
 
         # ═════════════════════════════════════════════════════════════
         # === STEP 0: MasterTokenLookup — قَبل كُلّ شَيء (MASAQ-backed)

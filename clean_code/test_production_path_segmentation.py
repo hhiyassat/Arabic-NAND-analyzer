@@ -891,6 +891,98 @@ def t_1_6_ahdina_no_nahnu_implicit_agent():
     )
 
 
+# ── MASAQ diacritic-safe F3 — ADJ_COMP lexicon (أَعْلَمُ/أَدْنَى/أُخْرَى) ─
+
+
+def _l1_class_for_token(sura: int, ayah: int, surface: str):
+    """Return only the word_class for the first matching token by NFC.
+    Sentinel "__skip__" / "__missing__" used per the existing helpers."""
+    wc, _asp = _l1_class_aspect_in_verse(sura, ayah, surface)
+    return wc
+
+
+def _assert_adj_comp_ism(sura, ayah, surface):
+    wc, asp = _l1_class_aspect_in_verse(sura, ayah, surface)
+    if wc == "__skip__":
+        print(f"  [skipped — {sura}:{ayah} unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError(f"{sura}:{ayah} — token {surface!r} not found")
+    assert wc == "ISM_MUARAB", (
+        f"{sura}:{ayah} — token {surface!r} class={wc!r}, "
+        f"expected 'ISM_MUARAB' (comparative-adjective lexicon)"
+    )
+    assert asp == "", (
+        f"{sura}:{ayah} — token {surface!r} verb_aspect={asp!r}, "
+        f"expected empty (comparative adjective is not a verb)"
+    )
+
+
+def t_masaq_adjcomp_a3lamu_2_140_is_ism_muarab():
+    """MASAQ F3 (ADJ_COMP): أَعْلَمُ (2:140) — اسم تفضيل (comparative).
+    Pre-fix: FIIL/IV because MTL has class=FIIL for this surface
+    (MASAQ data quirk for ambiguous أَفْعَلُ pattern). The pre-MTL
+    lexicon match overrides."""
+    _assert_adj_comp_ism(2, 140, "أَعْلَمُ")
+
+
+def t_masaq_adjcomp_adnaa_4_3_is_ism_muarab():
+    """MASAQ F3 (ADJ_COMP): أَدْنَىٰٓ (4:3) — اسم تفضيل for "lower".
+    Surface has Quranic dagger alif ٰ and madd ٓ; the detector folds
+    both. Pre-fix: FIIL/IV via surface heuristic."""
+    _assert_adj_comp_ism(4, 3, "أَدْنَىٰٓ")
+
+
+def t_masaq_adjcomp_ukhraa_4_102_is_ism_muarab():
+    """MASAQ F3 (ADJ_COMP): أُخْرَىٰ (4:102) — feminine comparative
+    "other". Pre-fix: FIIL/IV via surface heuristic."""
+    _assert_adj_comp_ism(4, 102, "أُخْرَىٰ")
+
+
+def t_masaq_adjcomp_yaalamu_stays_fiil_2_30():
+    """Negative regression guard: the new lexicon must NOT broaden
+    into a generic "أَ-prefix → noun" rule. Pick `تَعْلَمُونَ` from
+    2:30 — a clear 2nd-person-pl IV verb ("you-pl know") sharing the
+    root علم with `أَعْلَمُ` — and verify it stays FIIL/IV. Proves
+    the lexicon is exact-vocalized and does NOT regress genuine
+    verbs that share a root or pattern with comparative nouns."""
+    wc, asp = _l1_class_aspect_in_verse(2, 30, "تَعْلَمُونَ")
+    if wc == "__skip__":
+        print("  [skipped — 2:30 unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError("2:30 — token تَعْلَمُونَ not found")
+    assert wc == "FIIL", (
+        f"2:30 — تَعْلَمُونَ class={wc!r}, expected 'FIIL' "
+        f"(comparative-adjective lexicon must NOT convert real verbs to nouns)"
+    )
+    assert asp == "IV", (
+        f"2:30 — تَعْلَمُونَ aspect={asp!r}, expected 'IV'"
+    )
+
+
+def t_masaq_adjcomp_does_not_touch_man_family_2_138():
+    """Negative regression guard (architectural): the deferred
+    مَنْ/مَا/مِنْ/ذَا family must not be touched by the comparative-
+    adjective contract. Verify وَمَنْ at 2:138 stays at its existing
+    classification (HARF — the analyzer's current behavior) and is
+    NOT promoted to ISM_MUARAB by this contract."""
+    wc = _l1_class_for_token(2, 138, "وَمَنْ")
+    if wc in ("__skip__", "__missing__"):
+        print("  [skipped — وَمَنْ not at exact surface in 2:138]", end=" ")
+        return
+    # Acceptable: HARF (current analyzer behavior) or any other class
+    # EXCEPT a class produced by the new comparative contract. Since
+    # the contract sets ISM_MUARAB with wazn="اسم تفضيل", the assertion
+    # is that وَمَنْ does not have that specific signature. The simpler
+    # check is "not ISM_MUARAB" which is a stricter guarantee that the
+    # contract did not fire.
+    assert wc != "ISM_MUARAB", (
+        f"2:138 — وَمَنْ class={wc!r}: the comparative-adjective lexicon "
+        f"must not promote مَنْ-family tokens to ISM_MUARAB."
+    )
+
+
 # ── MASAQ diacritic-safe F3 — INTERROG_PRONOUN lexicon (كَيْفَ/كَمْ/مَتَى) ─
 
 
@@ -3812,6 +3904,17 @@ ALL = [
     # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
     ("t_1_7_an3amta_no_nahnu_implicit_agent",
      t_1_7_an3amta_no_nahnu_implicit_agent),
+    # MASAQ diacritic-safe F3 — ADJ_COMP lexicon (أَعْلَمُ/أَدْنَى/أُخْرَى)
+    ("t_masaq_adjcomp_a3lamu_2_140_is_ism_muarab",
+     t_masaq_adjcomp_a3lamu_2_140_is_ism_muarab),
+    ("t_masaq_adjcomp_adnaa_4_3_is_ism_muarab",
+     t_masaq_adjcomp_adnaa_4_3_is_ism_muarab),
+    ("t_masaq_adjcomp_ukhraa_4_102_is_ism_muarab",
+     t_masaq_adjcomp_ukhraa_4_102_is_ism_muarab),
+    ("t_masaq_adjcomp_yaalamu_stays_fiil_2_30",
+     t_masaq_adjcomp_yaalamu_stays_fiil_2_30),
+    ("t_masaq_adjcomp_does_not_touch_man_family_2_138",
+     t_masaq_adjcomp_does_not_touch_man_family_2_138),
     # MASAQ diacritic-safe F3 — INTERROG_PRONOUN lexicon (كَيْفَ/كَمْ/مَتَى)
     ("t_masaq_interrog_kayfa_2_28_is_ism_mabni",
      t_masaq_interrog_kayfa_2_28_is_ism_mabni),
@@ -3915,4 +4018,5 @@ print("  • MASAQ F3: MTL Quranic-mark fold + strict-form fallback — 7 PV/IV 
 print("  • MASAQ F3 gen_cons: naat suppressors for functional-locative prev + pronoun-suffix host")
 print("  • MASAQ F3 UninflectedVerbContract: بِئْسَ / نِعْمَ / عَسَى family (diacritic-safe lexicon)")
 print("  • MASAQ F3 InterrogPronounContract: كَيْفَ / كَمْ / لِمَ / مَتَى / أَيْنَ / أَنَّى (diacritic-safe lexicon, excludes مَنْ/مَا)")
+print("  • MASAQ F3 ComparativeAdjectiveContract: أَعْلَمُ / أَدْنَى / أُخْرَى (pre-MTL override for ambiguous أَفْعَلُ)")
 print("─" * 70)
