@@ -68,6 +68,42 @@ def _normalize_strong(s: str) -> str:
             .replace("أ", "ا"))
 
 
+def _normalize_quranic(s: str) -> str:
+    """تَطبيع علامات قرآنيَّة فَقَط (مَع الحِفاظ عَلى التَّشكيل).
+
+    F3 intermediate fallback: identical to MASAQ plain spelling but
+    keeps diacritics so vowel-based disambiguation (e.g. تَ vs تُ in
+    فَتَلَقَّى/PV vs فَتُلْقَى/IV) is preserved. Used as a tier BETWEEN
+    the existing _normalize (which folds ٰ→ا) and the diacritic-
+    stripping _normalize_strict.
+
+    Includes NFC normalization so that diacritic ordering differences
+    between MTL (often shadda-first) and Quranic surfaces (fatha-first
+    per NFC canonical order) collapse to a single key.
+
+    Why ٰ is removed (not mapped to ا): MASAQ stores plain forms
+    without the plene ا (هذا not هاذا; الرحمن not الرحمان; ذلك not
+    ذالك; استوى not استواى). The Quranic Uthmani dagger alif ٰ is
+    a recitation mark indicating the long ā already implied by the
+    base letters, so it should be dropped, not converted."""
+    import unicodedata as _ud
+    s = _ud.normalize("NFC", s or "")
+    return (s.replace("ٱ", "ا")
+              .replace("آ", "ا")
+              .replace("ٰ", "")    # dagger alif: removed
+              .replace("ٓ", "")    # madd mark
+              .replace("۟", ""))   # small high rounded zero
+
+
+def _normalize_strict(s: str) -> str:
+    """تَطبيع صارِم: _normalize_quranic + نَزع التَّشكيل.
+
+    F3 last-resort fallback. Matches MASAQ `plain` column. Gated by
+    _STRICT_AMBIG so homographs across word_class / aspect stay
+    un-certified and fall to L1 heuristics."""
+    return "".join(c for c in _normalize_quranic(s) if c not in _DIACRITICS)
+
+
 # Lazy loading
 _EXACT_INDEX: dict | None = None
 _PLAIN_INDEX: dict | None = None
@@ -75,12 +111,17 @@ _PLAIN_INDEX: dict | None = None
 
 def _load():
     global _EXACT_INDEX, _PLAIN_INDEX, _NORMALIZED_INDEX, _PLAIN_AMBIG
+    global _STRICT_INDEX, _STRICT_AMBIG, _QURANIC_INDEX, _QURANIC_AMBIG
     if _EXACT_INDEX is not None:
         return
     _EXACT_INDEX = {}
     _PLAIN_INDEX = {}
     _NORMALIZED_INDEX = {}
     _PLAIN_AMBIG = set()  # plain forms that have multiple word_classes
+    _QURANIC_INDEX = {}
+    _QURANIC_AMBIG = set()
+    _STRICT_INDEX = {}
+    _STRICT_AMBIG = set()  # strict forms with multiple (word_class, aspect)
     if not _TABLE_PATH.is_file():
         return
     with _TABLE_PATH.open(encoding="utf-8") as f:
@@ -120,10 +161,33 @@ def _load():
                     _PLAIN_INDEX[plain] = entry
                 elif existing["word_class"] != entry["word_class"]:
                     _PLAIN_AMBIG.add(plain)
+            # quranic: Quranic-mark folded but diacritics kept (F3 mid-tier)
+            quranic_key = _normalize_quranic(surf)
+            if quranic_key:
+                existing_q = _QURANIC_INDEX.get(quranic_key)
+                if existing_q is None:
+                    _QURANIC_INDEX[quranic_key] = entry
+                elif existing_q["word_class"] != entry["word_class"]:
+                    _QURANIC_AMBIG.add(quranic_key)
+            # strict: diacritic-stripped + Quranic-mark normalized (F3 last-resort)
+            strict_key = _normalize_strict(surf)
+            if strict_key:
+                existing_s = _STRICT_INDEX.get(strict_key)
+                if existing_s is None:
+                    _STRICT_INDEX[strict_key] = entry
+                else:
+                    same_class = existing_s["word_class"] == entry["word_class"]
+                    same_aspect = existing_s.get("aspect", "") == entry.get("aspect", "")
+                    if not (same_class and same_aspect):
+                        _STRICT_AMBIG.add(strict_key)
 
 
 _NORMALIZED_INDEX: dict | None = None
 _PLAIN_AMBIG: set | None = None
+_QURANIC_INDEX: dict | None = None
+_QURANIC_AMBIG: set | None = None
+_STRICT_INDEX: dict | None = None
+_STRICT_AMBIG: set | None = None
 
 
 def lookup(token: str) -> dict | None:
@@ -148,9 +212,30 @@ def lookup(token: str) -> dict | None:
         if e.get("_ambig"):
             return None
         return e
-    # لا plain-fallback — يُضَيِّع تَمييز التَّشكيل (حَقَّ vs حَقٌّ).
-    # الـheuristics في Layer 1 تَتَكَفَّل بِالـtokens الَّتي لَيس لَها
-    # تَشكيل كامِل (كالاختِبارات أَو النُّصوص خارِج القُرآن).
+    # F3 tier 3 (mid): Quranic-mark fold with diacritics preserved.
+    # Disambiguates tokens that share a plain form but differ on
+    # vocalization (e.g. فَتَلَقَّى PV vs فَتُلْقَى IV).
+    #
+    # SCOPE GATE: the F3 fallback only certifies FIIL hits. HARF /
+    # ISM-class hits via the looser normalizers would override L1
+    # heuristics that produce richer Arabic role labels (e.g. layer3
+    # emits role_phrase="حرف جر" for prep tokens; the MTL role column
+    # carries the MASAQ English tag "PREP" which downstream relation
+    # extractors don't recognize, dropping Certificate links). Restrict
+    # to the targeted family (word_class_mismatch_verb) and let other
+    # paths handle non-verbs.
+    quranic = _normalize_quranic(token)
+    if quranic and quranic not in _QURANIC_AMBIG and quranic in _QURANIC_INDEX:
+        cand = _QURANIC_INDEX[quranic]
+        if cand.get("word_class") == "FIIL":
+            return cand
+    # F3 tier 4 (last-resort): strict normalization (diacritic-stripped +
+    # Quranic marks). Same FIIL-only scope gate as tier 3.
+    strict = _normalize_strict(token)
+    if strict and strict not in _STRICT_AMBIG and strict in _STRICT_INDEX:
+        cand = _STRICT_INDEX[strict]
+        if cand.get("word_class") == "FIIL":
+            return cand
     return None
 
 

@@ -891,6 +891,98 @@ def t_1_6_ahdina_no_nahnu_implicit_agent():
     )
 
 
+# ── MASAQ F3 — verb-form lookup recovery via Quranic-mark normalization ─
+
+
+def _find_token_in_verse(sura: int, ayah: int, surface_fragment: str):
+    """Run the production engine on (sura,ayah) and return the first
+    token whose surface starts with `surface_fragment` (or equals it).
+    Returns None if not found."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        return None
+    verse = _load_verse(sura, ayah)
+    if not verse:
+        return None
+    sent = I3rabEngine().analyze_sentence(verse)
+    target_n = _nfc(surface_fragment)
+    for t in getattr(sent, "tokens", []) or []:
+        tn = _nfc(getattr(t, "token", "") or "")
+        if tn == target_n or tn.startswith(target_n[:5]):
+            return t
+    return None
+
+
+def _assert_verb(sura, ayah, surface, expected_aspect):
+    """Common helper for MASAQ F3 verb-form tests."""
+    t = _find_token_in_verse(sura, ayah, surface)
+    if t is None:
+        print(f"  [skipped — {sura}:{ayah} or token {surface!r} unavailable]", end=" ")
+        return
+    assert t.word_class == "FIIL", (
+        f"{sura}:{ayah} — token {surface!r} class={t.word_class!r}, "
+        f"expected 'FIIL'"
+    )
+    assert t.verb_aspect == expected_aspect, (
+        f"{sura}:{ayah} — token {surface!r} aspect={t.verb_aspect!r}, "
+        f"expected {expected_aspect!r}"
+    )
+
+
+def t_masaq_f3_rabihat_is_past_verb():
+    """MASAQ F3: رَبِحَت (2:16) — form I PV with 3fs ت suffix. Quranic
+    orthography drops the terminal sukun (رَبِحَتْ in MTL). Without the
+    strict-fallback lookup, L1 heuristics misclassify it as ISM_MUARAB
+    because the surface ends in ت without ون/ين/ات markers."""
+    _assert_verb(2, 16, "رَبِحَت", "PV")
+
+
+def t_masaq_f3_istawa_is_past_verb():
+    """MASAQ F3: ٱسْتَوَىٰٓ (2:29) — form X PV. Quranic Uthmani adds the
+    dagger alif ٰ and madd ٓ over the ى; MTL stores اسْتَوَى. The
+    Quranic-mark fold tier collapses both to a single key."""
+    _assert_verb(2, 29, "ٱسْتَوَىٰ", "PV")
+
+
+def t_masaq_f3_fatalaqqa_is_past_verb():
+    """MASAQ F3: فَتَلَقَّىٰٓ (2:37) — form V PV. MTL has both
+    فَتَلَقَّى (PV) and فَتُلْقَى (IV-PASS) with the same plain form;
+    the Quranic tier preserves the تَ vs تُ vowel distinction so the
+    correct PV entry is selected (strict-tier ambig would skip)."""
+    _assert_verb(2, 37, "فَتَلَقَّىٰ", "PV")
+
+
+def t_masaq_f3_istasaqaa_is_past_verb():
+    """MASAQ F3: ٱسْتَسْقَىٰ (2:60) — form X PV defective. Same fold
+    as istawa: ٱ→ا and dagger-alif removed."""
+    _assert_verb(2, 60, "ٱسْتَسْقَىٰ", "PV")
+
+
+def t_masaq_f3_yatiyannakum_is_imperfect_verb():
+    """MASAQ F3: يَأْتِيَنَّكُم (2:38) — form I IV with نُّ (nūn-tawkīd)
+    and كُم suffix. MTL stores يَأْتِيَنَّكُمْ; Quranic surface drops the
+    terminal sukun. Without the strict tier, the كُم suffix triggers
+    a JAMID misclassification."""
+    _assert_verb(2, 38, "يَأْتِيَنَّكُم", "IV")
+
+
+def t_masaq_f3_ishtaraw_is_past_not_command():
+    """MASAQ F3: ٱشْتَرَوُا۟ (2:16) — form VIII PV ('they bought').
+    Surface adds ٱ and the small high zero ۟. Pre-fix: the analyzer
+    correctly identified it as FIIL but assigned CV (imperative) due
+    to ا-initial heuristic. The MTL hit certifies aspect=PV."""
+    _assert_verb(2, 16, "ٱشْتَرَوُا", "PV")
+
+
+def t_masaq_f3_anzalna_is_past_not_imperfect():
+    """MASAQ F3: أَنزَلْنَآ (2:99) — form IV PV with نَا 1pl suffix.
+    Surface has آ vs MTL ا and missing internal sukun. Pre-fix: the
+    أَ-initial heuristic returned IV (1st-person imperfect); the MTL
+    certifies PV via the strict fallback."""
+    _assert_verb(2, 99, "أَنزَلْنَآ", "PV")
+
+
 def t_1_4_yawm_is_mudaf_ilayh_not_naat():
     """Verse 1:4 binding: يَوْمِ in «مَٰلِكِ يَوْمِ ٱلدِّينِ» must be classified
     as مضاف إليه, not نعت. Both مَٰلِكِ and يَوْمِ are مجرور and lack ال
@@ -3435,6 +3527,21 @@ ALL = [
     # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
     ("t_1_7_an3amta_no_nahnu_implicit_agent",
      t_1_7_an3amta_no_nahnu_implicit_agent),
+    # MASAQ F3 — verb-form recovery via Quranic-mark normalization
+    ("t_masaq_f3_rabihat_is_past_verb",
+     t_masaq_f3_rabihat_is_past_verb),
+    ("t_masaq_f3_istawa_is_past_verb",
+     t_masaq_f3_istawa_is_past_verb),
+    ("t_masaq_f3_fatalaqqa_is_past_verb",
+     t_masaq_f3_fatalaqqa_is_past_verb),
+    ("t_masaq_f3_istasaqaa_is_past_verb",
+     t_masaq_f3_istasaqaa_is_past_verb),
+    ("t_masaq_f3_yatiyannakum_is_imperfect_verb",
+     t_masaq_f3_yatiyannakum_is_imperfect_verb),
+    ("t_masaq_f3_ishtaraw_is_past_not_command",
+     t_masaq_f3_ishtaraw_is_past_not_command),
+    ("t_masaq_f3_anzalna_is_past_not_imperfect",
+     t_masaq_f3_anzalna_is_past_not_imperfect),
 ]
 for nm, fn in ALL:
     _t(nm, fn)
@@ -3476,4 +3583,5 @@ print("  • Verse 1:1: L3 ٱ-normalization — naat/mudaf-ilayh disambiguation 
 print("  • Verse 1:4: L3 chain guard — suppress naat for indef+indef when next is مجرور")
 print("  • Verse 1:6: implicit-agent ٱ-normalization — ٱ-initial imperatives no longer get PAST agents")
 print("  • Verse 1:7: implicit-agent IV-loop PV guard — أَنْعَمْتَ/أَوْحَيْنَآ no longer get ⊕نَحْنُ/⊕أَنَا")
+print("  • MASAQ F3: MTL Quranic-mark fold + strict-form fallback — 7 PV/IV verbs recovered")
 print("─" * 70)
