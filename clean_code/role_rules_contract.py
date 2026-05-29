@@ -114,7 +114,17 @@ def _case_def_agreement_with_prev(t, prev, ctx, tokens, i) -> bool:
     tp = _strip_diac(t.token).replace("ٱ", "ا")
     both_def = pp.startswith("ال") and tp.startswith("ال")
     both_indef = (not pp.startswith("ال")) and (not tp.startswith("ال"))
-    return both_def or both_indef
+    if not (both_def or both_indef):
+        return False
+    # Chain guard: in indef+indef pairs (both مجرور with no ال), if the
+    # next token is also مجرور, the construct is much more likely an
+    # إضافة chain (e.g. مَٰلِكِ يَوْمِ ٱلدِّينِ) than a nominal-naat. Suppress
+    # naat so rule 9 (mudaf_ilayh) handles t correctly.
+    if both_indef and t.case_id == 3 and tokens and i + 1 < len(tokens):
+        nxt = tokens[i + 1]
+        if getattr(nxt, "case_id", None) == 3:
+            return False
+    return True
 
 
 def _majroor_after_noun(t, prev, ctx, tokens, i) -> bool:

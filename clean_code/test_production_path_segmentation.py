@@ -830,6 +830,62 @@ def t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat():
     )
 
 
+def t_1_4_yawm_is_mudaf_ilayh_not_naat():
+    """Verse 1:4 binding: يَوْمِ in «مَٰلِكِ يَوْمِ ٱلدِّينِ» must be classified
+    as مضاف إليه, not نعت. Both مَٰلِكِ and يَوْمِ are مجرور and lack ال
+    so the naat rule fires by default; the chain guard suppresses naat
+    when the next token is also مجرور (signalling an إضافة chain)."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    verse = _load_verse(1, 4)
+    if not verse:
+        print("  [skipped — verse data unavailable]", end=" ")
+        return
+    sent = I3rabEngine().analyze_sentence(verse)
+    t = None
+    for tok in getattr(sent, "tokens", []) or []:
+        if _nfc(getattr(tok, "token", "") or "") == _nfc("يَوْمِ"):
+            t = tok
+            break
+    assert t is not None, "1:4 — token يَوْمِ not found"
+    role = getattr(t, "role_phrase", "") or ""
+    assert "مضاف إليه" in role, (
+        f"1:4 — يَوْمِ role={role!r}, expected to contain 'مضاف إليه'"
+    )
+    assert "نعت" not in role, (
+        f"1:4 — يَوْمِ role={role!r}, must not be 'نعت'"
+    )
+
+
+def t_1_4_addin_remains_mudaf_ilayh():
+    """Verse 1:4 regression: ٱلدِّينِ in «يَوْمِ ٱلدِّينِ» must remain
+    مضاف إليه (different definiteness from يَوْمِ — naat never applied
+    here; the chain guard must not break the existing path)."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    verse = _load_verse(1, 4)
+    if not verse:
+        print("  [skipped — verse data unavailable]", end=" ")
+        return
+    sent = I3rabEngine().analyze_sentence(verse)
+    t = None
+    for tok in getattr(sent, "tokens", []) or []:
+        if _nfc(getattr(tok, "token", "") or "") == _nfc("ٱلدِّينِ"):
+            t = tok
+            break
+    assert t is not None, "1:4 — token ٱلدِّينِ not found"
+    role = getattr(t, "role_phrase", "") or ""
+    assert "مضاف إليه" in role, (
+        f"1:4 — ٱلدِّينِ role={role!r}, expected to contain 'مضاف إليه'"
+    )
+
+
 def t_1_1_rahman_remains_naat():
     """Verse 1:1 regression: ٱلرَّحْمَٰنِ following ٱللَّهِ must remain a
     نعت (both definite, same case). The ٱ-normalization fix must not
@@ -3307,6 +3363,11 @@ ALL = [
      t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat),
     ("t_1_1_rahman_remains_naat",
      t_1_1_rahman_remains_naat),
+    # VERSEBYVERSE 1:4 — chain guard for إضافة (suppress naat when next is مجرور)
+    ("t_1_4_yawm_is_mudaf_ilayh_not_naat",
+     t_1_4_yawm_is_mudaf_ilayh_not_naat),
+    ("t_1_4_addin_remains_mudaf_ilayh",
+     t_1_4_addin_remains_mudaf_ilayh),
 ]
 for nm, fn in ALL:
     _t(nm, fn)
@@ -3345,4 +3406,5 @@ print("  • PATCH 16: L6 demonstrative abstract-reference — ذَٰلِكَ+ل
 print("  • Phase 5 / Batch A: standalone clause segmenter (A1–A6) — NOT wired to L4–L8")
 print("  • Step C Part 3: L5 NahyEventMood — وَلَا/فَلَا/لَا + IV → speech_act=prohibition")
 print("  • Verse 1:1: L3 ٱ-normalization — naat/mudaf-ilayh disambiguation for ٱللَّهِ")
+print("  • Verse 1:4: L3 chain guard — suppress naat for indef+indef when next is مجرور")
 print("─" * 70)
