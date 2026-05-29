@@ -830,6 +830,36 @@ def t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat():
     )
 
 
+def t_1_7_an3amta_no_nahnu_implicit_agent():
+    """Verse 1:7 binding: أَنْعَمْتَ is PAST 2nd-person ("You favored"),
+    addressed to Allah. The تَ suffix is the agent. The implicit-agent
+    extractor must NOT emit ⊕نَحْنُ for PV verbs whose first letter
+    looks like an IV prefix (after clitic-strip of leading أ, the
+    surface looks ن-initial → wrongly matched as ن-IV verb)."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        from relation_extractor import RelationExtractor
+    except (ImportError, OSError, PermissionError):
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    verse = _load_verse(1, 7)
+    if not verse:
+        print("  [skipped — verse data unavailable]", end=" ")
+        return
+    sent = I3rabEngine().analyze_sentence(verse)
+    rg = RelationExtractor().extract(sent)
+    bad = [
+        r for r in rg.relations
+        if r.name == "agent_of"
+        and "نحن" in _strip_diac(getattr(r, "source_surface", "") or "")
+        and "أنعمت" in _strip_diac(getattr(r, "target_surface", "") or "")
+    ]
+    assert not bad, (
+        "1:7 — ⊕نَحْنُ wrongly emitted as agent of أَنْعَمْتَ (PAST 2nd-sg). "
+        f"Bad relations: {[(r.source_surface, r.target_surface) for r in bad]}"
+    )
+
+
 def t_1_6_ahdina_no_nahnu_implicit_agent():
     """Verse 1:6 binding: ٱهْدِنَا is an imperative (CV). Its نَا suffix
     is the OBJECT pronoun («guide US»), not the subject. The implicit-
@@ -3402,6 +3432,9 @@ ALL = [
     # VERSEBYVERSE 1:6 — CV imperative must not get PAST نا → ⊕نَحْنُ
     ("t_1_6_ahdina_no_nahnu_implicit_agent",
      t_1_6_ahdina_no_nahnu_implicit_agent),
+    # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
+    ("t_1_7_an3amta_no_nahnu_implicit_agent",
+     t_1_7_an3amta_no_nahnu_implicit_agent),
 ]
 for nm, fn in ALL:
     _t(nm, fn)
@@ -3442,4 +3475,5 @@ print("  • Step C Part 3: L5 NahyEventMood — وَلَا/فَلَا/لَا + 
 print("  • Verse 1:1: L3 ٱ-normalization — naat/mudaf-ilayh disambiguation for ٱللَّهِ")
 print("  • Verse 1:4: L3 chain guard — suppress naat for indef+indef when next is مجرور")
 print("  • Verse 1:6: implicit-agent ٱ-normalization — ٱ-initial imperatives no longer get PAST agents")
+print("  • Verse 1:7: implicit-agent IV-loop PV guard — أَنْعَمْتَ/أَوْحَيْنَآ no longer get ⊕نَحْنُ/⊕أَنَا")
 print("─" * 70)

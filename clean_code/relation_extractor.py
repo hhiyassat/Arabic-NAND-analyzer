@@ -1295,7 +1295,14 @@ class RelationExtractor:
                     matched_row = row
                     break
             # المُحاوَلَة الثَّانيَة: قاعِدَة بِبادِئَة (IV)
-            if matched_row is None:
+            # Guard: skip IV-prefix matching on PAST (PV) verbs. The
+            # blind clitic-strip removes leading أ from PV form-IV
+            # verbs (أَنْعَمْتَ → "نعمت"), making them look like ن-IV verbs
+            # and emitting ⊕نَحْنُ. Past verbs encode their agent in the
+            # suffix (تَ/تُمْ/نا/...), not the prefix, so the IV loop must
+            # not fire here.
+            _v_aspect_imp = getattr(t, "verb_aspect", "") or ""
+            if matched_row is None and _v_aspect_imp != "PV":
                 for row in implicit_rules:
                     iv_pref = row.get("iv_prefix_plain", "").strip()
                     suf_pat = row.get("verb_suffix_pattern", "").strip()
