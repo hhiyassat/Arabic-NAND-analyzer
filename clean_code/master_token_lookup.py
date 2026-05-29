@@ -41,11 +41,24 @@ def _strip_all(s: str) -> str:
 
 
 def _normalize(s: str) -> str:
-    """تَطبيع شامِل: ٱ/آ/إ/أ/ٰ → ا، ـ → حَذف."""
+    """تَطبيع شامِل: ٱ/آ/إ/أ/ٰ → ا، ـ → حَذف.
+
+    Step C Part 1/2 (2026-05-29): also strip the Quranic small high
+    alif madd marker ٓ (U+0653). This combining mark is a recitation
+    annotation indicating that an adjacent long vowel is to be
+    prolonged; it carries no morphological / lexical value and is
+    NOT stored in the MASAQ CSV surface column. Without this strip,
+    corpus tokens like وَأَوْحَيْنَآ (ending in ا + ٓ) fail both
+    `_EXACT_INDEX` (CSV has وَأَوْحَيْنَا without the marker) AND the
+    `_NORMALIZED_INDEX` (the normalize step previously preserved
+    the marker). Effect is LOOKUP-ONLY — the engine still stores
+    the original surface for display.
+    """
     return ((s or "")
             .replace("ٱ", "ا")
             .replace("آ", "ا")
-            .replace("ٰ", "ا"))
+            .replace("ٰ", "ا")
+            .replace("ٓ", ""))
 
 
 def _normalize_strong(s: str) -> str:
