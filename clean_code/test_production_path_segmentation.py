@@ -773,6 +773,79 @@ def t_28_7_awhayna_remains_past():
     )
 
 
+# ── VERSEBYVERSE 1:1 — L3 إضافة vs نعت (ٱ-normalization fix) ────────
+
+
+def _l3_sentence_for_1_1():
+    """Load 1:1 and run the production L1+L3 pipeline. Returns the
+    sentence (with .tokens, each having .token / .role_phrase) or None
+    if the pipeline cannot run."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        return None
+    quran = _HERE.parent / "data" / "quran-uthmani-with-pause-mark.txt"
+    if not quran.exists():
+        return None
+    verse = None
+    with quran.open(encoding="utf-8") as f:
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) >= 3 and parts[0] == "1" and parts[1] == "1":
+                verse = parts[2]
+                break
+    if not verse:
+        return None
+    try:
+        return I3rabEngine().analyze_sentence(verse)
+    except (PermissionError, OSError):
+        return None
+
+
+def _l3_find_token(sent, surface_nfc: str):
+    target = _nfc(surface_nfc)
+    for t in getattr(sent, "tokens", []) or []:
+        if _nfc(getattr(t, "token", "") or "") == target:
+            return t
+    return None
+
+
+def t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat():
+    """Verse 1:1 binding: لفظ الجلالة ٱللَّهِ following بِسْمِ must be
+    classified as مضاف إليه, not نعت. Pre-fix, layer3 _strip_diac left
+    ٱ in place, so the naat check saw ٱللَّهِ as indefinite and rule 8
+    fired before rule 9 (mudaf_ilayh)."""
+    sent = _l3_sentence_for_1_1()
+    if sent is None:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    t = _l3_find_token(sent, "ٱللَّهِ")
+    assert t is not None, "1:1 — token ٱللَّهِ not found"
+    role = getattr(t, "role_phrase", "") or ""
+    assert "مضاف إليه" in role, (
+        f"1:1 — ٱللَّهِ role={role!r}, expected to contain 'مضاف إليه'"
+    )
+    assert "نعت" not in role, (
+        f"1:1 — ٱللَّهِ role={role!r}, must not be 'نعت'"
+    )
+
+
+def t_1_1_rahman_remains_naat():
+    """Verse 1:1 regression: ٱلرَّحْمَٰنِ following ٱللَّهِ must remain a
+    نعت (both definite, same case). The ٱ-normalization fix must not
+    break agreement-based naat for ال-prefixed pairs."""
+    sent = _l3_sentence_for_1_1()
+    if sent is None:
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    t = _l3_find_token(sent, "ٱلرَّحْمَٰنِ")
+    assert t is not None, "1:1 — token ٱلرَّحْمَٰنِ not found"
+    role = getattr(t, "role_phrase", "") or ""
+    assert "نعت" in role, (
+        f"1:1 — ٱلرَّحْمَٰنِ role={role!r}, expected to contain 'نعت'"
+    )
+
+
 # ── Phase 5 / Batch A — Standalone Clause Segmenter ─────────────────
 
 
@@ -3229,6 +3302,11 @@ ALL = [
      t_2_282_bidaynin_has_operator_meaning_edge),
     ("t_1_5_nabudu_event_has_ikhtisas_modality",
      t_1_5_nabudu_event_has_ikhtisas_modality),
+    # VERSEBYVERSE 1:1 — L3 إضافة vs نعت (ٱ-normalization)
+    ("t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat",
+     t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat),
+    ("t_1_1_rahman_remains_naat",
+     t_1_1_rahman_remains_naat),
 ]
 for nm, fn in ALL:
     _t(nm, fn)
@@ -3266,4 +3344,5 @@ print("  • PATCH 15: L6 cross-verse safety — deixis gate + مِّن-as-prepo
 print("  • PATCH 16: L6 demonstrative abstract-reference — ذَٰلِكَ+لِمَن → Zero (no nominal target)")
 print("  • Phase 5 / Batch A: standalone clause segmenter (A1–A6) — NOT wired to L4–L8")
 print("  • Step C Part 3: L5 NahyEventMood — وَلَا/فَلَا/لَا + IV → speech_act=prohibition")
+print("  • Verse 1:1: L3 ٱ-normalization — naat/mudaf-ilayh disambiguation for ٱللَّهِ")
 print("─" * 70)

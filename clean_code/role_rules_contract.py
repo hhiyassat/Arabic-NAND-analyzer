@@ -106,8 +106,12 @@ def _case_def_agreement_with_prev(t, prev, ctx, tokens, i) -> bool:
             and prev.case_id == t.case_id
             and prev.case_id is not None):
         return False
-    pp = _strip_diac(prev.token)
-    tp = _strip_diac(t.token)
+    # Normalize ٱ (U+0671 wasla alif) → ا so Quranic forms like
+    # ٱللَّهِ are correctly recognized as definite (start with ال).
+    # Without this, naat fires for بِسْمِ ٱللَّهِ via both_indef,
+    # masking the correct mudaf-ilayh classification.
+    pp = _strip_diac(prev.token).replace("ٱ", "ا")
+    tp = _strip_diac(t.token).replace("ٱ", "ا")
     both_def = pp.startswith("ال") and tp.startswith("ال")
     both_indef = (not pp.startswith("ال")) and (not tp.startswith("ال"))
     return both_def or both_indef

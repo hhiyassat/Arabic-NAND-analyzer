@@ -389,8 +389,12 @@ class RoleClassifier:
             and prev.case_id == t.case_id
             and prev.case_id is not None
         ):
-            prev_plain = _strip_diac(prev.token)
-            this_plain = _strip_diac(t.token)
+            # Normalize ٱ (U+0671 wasla alif) → ا so Quranic forms like
+            # ٱللَّهِ are correctly recognized as definite (start with ال).
+            # Without this, naat fires for بِسْمِ ٱللَّهِ via both_indef,
+            # masking the correct mudaf-ilayh classification (rule 9).
+            prev_plain = _strip_diac(prev.token).replace("ٱ", "ا")
+            this_plain = _strip_diac(t.token).replace("ٱ", "ا")
             both_def = prev_plain.startswith("ال") and this_plain.startswith("ال")
             both_indef = not prev_plain.startswith("ال") and not this_plain.startswith("ال")
             if both_def or both_indef:
