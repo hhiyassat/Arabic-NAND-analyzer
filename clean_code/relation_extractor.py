@@ -122,13 +122,15 @@ def _p7_token_starts_with_conjunction(t) -> bool:
 
 def _p7_has_iv_prefix_surface(surface_plain: str) -> bool:
     """True if a normalized verb surface starts with a مضارع prefix
-    (يَ/تَ/نَ/أَ collapsed to ي/ت/ن/أ). Used by the implicit-agent gate
-    to reject PAST-suffix rules on IV-prefixed verbs (e.g., يَكُونَا
-    must not match the past-tense `نا` rule, which would inject
-    ⊕نَحْنُ)."""
+    (يَ/تَ/نَ/أَ collapsed to ي/ت/ن/أ) — OR with the hamzat-wasl ٱ/ا
+    that heads imperatives. Used by the implicit-agent gate to reject
+    PAST-suffix rules on non-PAST verb surfaces. Without the ٱ→ا
+    normalization, ٱهْدِنَا (CV) was falling through to the PAST نا
+    rule and getting ⊕نَحْنُ as a wrong implicit agent."""
     if not surface_plain:
         return False
-    return surface_plain[:1] in ("ي", "ت", "ن", "ا") or surface_plain[:1] == "أ"
+    first = surface_plain[:1].replace("ٱ", "ا")
+    return first in ("ي", "ت", "ن", "ا") or first == "أ"
 
 
 # ============================================================================

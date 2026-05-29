@@ -830,6 +830,37 @@ def t_1_1_lafth_jalalah_is_mudaf_ilayh_not_naat():
     )
 
 
+def t_1_6_ahdina_no_nahnu_implicit_agent():
+    """Verse 1:6 binding: ٱهْدِنَا is an imperative (CV). Its نَا suffix
+    is the OBJECT pronoun («guide US»), not the subject. The implicit-
+    agent extractor must NOT emit ⊕نَحْنُ — the addressee is 2nd person.
+    Pre-fix: `_p7_has_iv_prefix_surface` did not normalize ٱ→ا, so
+    ٱهْدِنَا fell through to the PAST «نا»-suffix rule and got ⊕نَحْنُ
+    as a wrong agent. The fix treats ٱ-initial verbs as non-PAST
+    (hamzat-wasl heads imperatives, not past forms)."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+        from relation_extractor import RelationExtractor
+    except (ImportError, OSError, PermissionError):
+        print("  [skipped — pipeline unavailable]", end=" ")
+        return
+    verse = _load_verse(1, 6)
+    if not verse:
+        print("  [skipped — verse data unavailable]", end=" ")
+        return
+    sent = I3rabEngine().analyze_sentence(verse)
+    rg = RelationExtractor().extract(sent)
+    bad = [
+        r for r in rg.relations
+        if r.name == "agent_of"
+        and "نحن" in _strip_diac(getattr(r, "source_surface", "") or "")
+    ]
+    assert not bad, (
+        "1:6 — ⊕نَحْنُ wrongly emitted as agent of ٱهْدِنَا (imperative). "
+        f"Bad relations: {[(r.source_surface, r.target_surface) for r in bad]}"
+    )
+
+
 def t_1_4_yawm_is_mudaf_ilayh_not_naat():
     """Verse 1:4 binding: يَوْمِ in «مَٰلِكِ يَوْمِ ٱلدِّينِ» must be classified
     as مضاف إليه, not نعت. Both مَٰلِكِ and يَوْمِ are مجرور and lack ال
@@ -3368,6 +3399,9 @@ ALL = [
      t_1_4_yawm_is_mudaf_ilayh_not_naat),
     ("t_1_4_addin_remains_mudaf_ilayh",
      t_1_4_addin_remains_mudaf_ilayh),
+    # VERSEBYVERSE 1:6 — CV imperative must not get PAST نا → ⊕نَحْنُ
+    ("t_1_6_ahdina_no_nahnu_implicit_agent",
+     t_1_6_ahdina_no_nahnu_implicit_agent),
 ]
 for nm, fn in ALL:
     _t(nm, fn)
@@ -3407,4 +3441,5 @@ print("  • Phase 5 / Batch A: standalone clause segmenter (A1–A6) — NOT wi
 print("  • Step C Part 3: L5 NahyEventMood — وَلَا/فَلَا/لَا + IV → speech_act=prohibition")
 print("  • Verse 1:1: L3 ٱ-normalization — naat/mudaf-ilayh disambiguation for ٱللَّهِ")
 print("  • Verse 1:4: L3 chain guard — suppress naat for indef+indef when next is مجرور")
+print("  • Verse 1:6: implicit-agent ٱ-normalization — ٱ-initial imperatives no longer get PAST agents")
 print("─" * 70)
