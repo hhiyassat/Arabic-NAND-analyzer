@@ -891,6 +891,105 @@ def t_1_6_ahdina_no_nahnu_implicit_agent():
     )
 
 
+# ── MASAQ diacritic-safe F3 — UNINFLECTED_VERB lexicon ──────────────
+
+
+def _l1_class_aspect_in_verse(sura: int, ayah: int, surface_nfc_target: str):
+    """Engine run on (sura, ayah). Returns (word_class, verb_aspect) for
+    the first token whose NFC surface matches surface_nfc_target. Tuple
+    ('__skip__', '__skip__') if pipeline unavailable; ('__missing__',
+    '__missing__') if the verse loaded but the token isn't found."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        return ("__skip__", "__skip__")
+    verse = _load_verse(sura, ayah)
+    if not verse:
+        return ("__skip__", "__skip__")
+    sent = I3rabEngine().analyze_sentence(verse)
+    target = _nfc(surface_nfc_target)
+    for t in getattr(sent, "tokens", []) or []:
+        if _nfc(getattr(t, "token", "") or "") == target:
+            return (getattr(t, "word_class", "") or "",
+                    getattr(t, "verb_aspect", "") or "")
+    return ("__missing__", "__missing__")
+
+
+def _assert_uninflected_verb(sura, ayah, surface):
+    wc, asp = _l1_class_aspect_in_verse(sura, ayah, surface)
+    if wc == "__skip__":
+        print(f"  [skipped — {sura}:{ayah} unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError(f"{sura}:{ayah} — token {surface!r} not found")
+    assert wc == "FIIL", (
+        f"{sura}:{ayah} — token {surface!r} class={wc!r}, expected 'FIIL'"
+    )
+    assert asp == "PV", (
+        f"{sura}:{ayah} — token {surface!r} verb_aspect={asp!r}, expected 'PV'"
+    )
+
+
+def t_masaq_uninflected_bisamaa_2_90_is_verb():
+    """MASAQ F3 (UNINFLECTED_VERB): بِئْسَمَا (2:90) — فعل ذم جامد.
+    Surface is exact-vocalized; MTL hit with class=UNKNOWN previously
+    let the open-class heuristic default it to ISM_MUARAB."""
+    _assert_uninflected_verb(2, 90, "بِئْسَمَا")
+
+
+def t_masaq_uninflected_bisamaa_2_93_is_verb():
+    """MASAQ F3 (UNINFLECTED_VERB): بِئْسَمَا (2:93) — same form, second
+    occurrence. Regression guard."""
+    _assert_uninflected_verb(2, 93, "بِئْسَمَا")
+
+
+def t_masaq_uninflected_walabisa_2_102_is_verb():
+    """MASAQ F3 (UNINFLECTED_VERB): وَلَبِئْسَ (2:102). Pre-fix:
+    ISM_MUARAB. Tests the لَ-emphatic + بِئْسَ compound."""
+    _assert_uninflected_verb(2, 102, "وَلَبِئْسَ")
+
+
+def t_masaq_uninflected_wabisa_2_126_is_verb():
+    """MASAQ F3 (UNINFLECTED_VERB): وَبِئْسَ (2:126). Pre-fix: HARF (the
+    only target case where ClosedFunctionWordGate misrouted instead of
+    open-class fallback). The new early certifier runs BEFORE the gate,
+    so the FIIL classification is preserved."""
+    _assert_uninflected_verb(2, 126, "وَبِئْسَ")
+
+
+def t_masaq_uninflected_wa3asa_2_216_is_verb():
+    """MASAQ F3 (UNINFLECTED_VERB): وَعَسَىٰٓ (2:216) — فعل رجاء جامد.
+    Surface has Quranic ٰ (dagger alif) and ٓ (madd mark); the
+    detector folds both as recitation aids while preserving the
+    linguistic ةَ/فَ vowels."""
+    _assert_uninflected_verb(2, 216, "وَعَسَىٰٓ")
+
+
+def t_masaq_uninflected_fani3imma_2_271_is_verb():
+    """MASAQ F3 (UNINFLECTED_VERB): فَنِعِمَّا (2:271) — نِعْم + مَا
+    compound (فعل مدح جامد). L1 currently mis-segments the prefixes;
+    the detector matches the FULL token surface, so the bad segmentation
+    is bypassed for classification."""
+    _assert_uninflected_verb(2, 271, "فَنِعِمَّا")
+
+
+def t_masaq_uninflected_normal_noun_stays_noun_2_282():
+    """Negative regression guard: the new lexicon must NOT promote
+    arbitrary nouns to FIIL. Pick a stable noun from 2:282 that is
+    plainly ISM_MUARAB and verify it remains so. This proves the new
+    early certifier is a NARROW lexicon match, not a broad pattern."""
+    wc, _asp = _l1_class_aspect_in_verse(2, 282, "ٱلْحَقُّ")
+    if wc == "__skip__":
+        print("  [skipped — 2:282 unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError("2:282 — token ٱلْحَقُّ not found")
+    assert wc in {"ISM_MUARAB", "JAMID"}, (
+        f"2:282 — ٱلْحَقُّ class={wc!r}, expected ISM_MUARAB or JAMID "
+        f"(UNINFLECTED_VERB detector must NOT promote nouns to FIIL)"
+    )
+
+
 # ── MASAQ F3 — gen_cons_marked_as_naat (إضافة vs نعت suppressors) ─────
 
 
@@ -3604,6 +3703,21 @@ ALL = [
     # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
     ("t_1_7_an3amta_no_nahnu_implicit_agent",
      t_1_7_an3amta_no_nahnu_implicit_agent),
+    # MASAQ diacritic-safe F3 — UNINFLECTED_VERB lexicon (بِئْسَ/نِعْمَ/عَسَى)
+    ("t_masaq_uninflected_bisamaa_2_90_is_verb",
+     t_masaq_uninflected_bisamaa_2_90_is_verb),
+    ("t_masaq_uninflected_bisamaa_2_93_is_verb",
+     t_masaq_uninflected_bisamaa_2_93_is_verb),
+    ("t_masaq_uninflected_walabisa_2_102_is_verb",
+     t_masaq_uninflected_walabisa_2_102_is_verb),
+    ("t_masaq_uninflected_wabisa_2_126_is_verb",
+     t_masaq_uninflected_wabisa_2_126_is_verb),
+    ("t_masaq_uninflected_wa3asa_2_216_is_verb",
+     t_masaq_uninflected_wa3asa_2_216_is_verb),
+    ("t_masaq_uninflected_fani3imma_2_271_is_verb",
+     t_masaq_uninflected_fani3imma_2_271_is_verb),
+    ("t_masaq_uninflected_normal_noun_stays_noun_2_282",
+     t_masaq_uninflected_normal_noun_stays_noun_2_282),
     # MASAQ F3 — gen_cons_marked_as_naat (إضافة vs نعت suppressors)
     ("t_masaq_gencons_2_97_yadayhi_not_naat",
      t_masaq_gencons_2_97_yadayhi_not_naat),
@@ -3673,4 +3787,5 @@ print("  • Verse 1:6: implicit-agent ٱ-normalization — ٱ-initial imperativ
 print("  • Verse 1:7: implicit-agent IV-loop PV guard — أَنْعَمْتَ/أَوْحَيْنَآ no longer get ⊕نَحْنُ/⊕أَنَا")
 print("  • MASAQ F3: MTL Quranic-mark fold + strict-form fallback — 7 PV/IV verbs recovered")
 print("  • MASAQ F3 gen_cons: naat suppressors for functional-locative prev + pronoun-suffix host")
+print("  • MASAQ F3 UninflectedVerbContract: بِئْسَ / نِعْمَ / عَسَى family (diacritic-safe lexicon)")
 print("─" * 70)

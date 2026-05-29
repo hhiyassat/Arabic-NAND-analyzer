@@ -37,6 +37,50 @@ def _strip_diac(s: str) -> str:
     return "".join(c for c in (s or "") if c not in _DIAC)
 
 
+# ── UninflectedVerbContract — جامد verbs (بِئْسَ / نِعْمَ / عَسَى families) ─
+# Diacritic-safe lexical detector (2026-05-29). The MTL has rows for these
+# surfaces but tags them word_class=UNKNOWN, so the lookup hit is
+# unusable; the downstream open-class heuristic then defaults to
+# ISM_MUARAB (or HARF for وَبِئْسَ specifically). Inserting an early
+# lexical certifier closes 8 cases identified in the diacritic-safe
+# MASAQ sweep (Sample + Surah-2 batches).
+#
+# Forms are stored with all linguistic diacritics preserved.
+# Quranic-only marks (ٱ→ا, آ→ا, ٰ, ٓ, ۟) are folded at lookup time
+# to handle Uthmani surface variability (e.g., عَسَى vs عَسَىٰٓ).
+_UNINFLECTED_VERB_FORMS = {
+    # بِئْسَ family — فعل الذم
+    "بِئْسَ", "بِئْسَمَا",
+    "وَبِئْسَ", "وَبِئْسَمَا", "فَبِئْسَ", "فَبِئْسَمَا",
+    "لَبِئْسَ", "وَلَبِئْسَ", "فَلَبِئْسَ",
+    # نِعْمَ family — فعل المدح
+    "نِعْمَ", "نِعِمَّا",
+    "وَنِعْمَ", "فَنِعْمَ", "وَنِعِمَّا", "فَنِعِمَّا",
+    # عَسَى family — فعل الرجاء
+    "عَسَى", "وَعَسَى", "فَعَسَى",
+}
+
+
+def _is_uninflected_verb(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, but with
+    linguistic diacritics preserved) matches a known جامد verb.
+    Diacritic-safe per the project architectural rule: vowel marks
+    are NEVER stripped — only Quranic recitation aids (ٰ, ٓ, ۟) and
+    the wasla/madda letter variants (ٱ, آ) are folded so the analyzer's
+    Uthmani surface matches the MSA lexicon entries."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _UNINFLECTED_VERB_FORMS
+
+
 # Heuristic: verbal wazn prefix → verb aspect
 # Imperfect: starts with يَ/تَ/أَ/نَ (vocalized) + has فْعَل/فْعُل/فْعِل interior
 # Perfect:   starts with فَعَ/فَعِ/فَعُ patterns
@@ -513,6 +557,22 @@ class WordClassClassifier:
             result["proof_kind"] = "Zero"
             result["proof_contract"] = "empty_input"
             result["proof_blockers"] = ["no_input"]
+            return result
+
+        # === STEP 0.5: UninflectedVerbContract — جامد verb lexicon ===
+        # MASAQ diacritic-safe F3 (2026-05-29): MTL has بِئْسَ/نِعْمَ/عَسَى
+        # family rows tagged class=UNKNOWN. Without an early certifier,
+        # control falls into the open-class heuristic (→ ISM_MUARAB) or
+        # ClosedFunctionWordGate (→ HARF for وَبِئْسَ specifically). The
+        # lexicon match is exact-vocalized with Quranic-only mark folds
+        # ONLY — linguistic vowel diacritics are never stripped.
+        if _is_uninflected_verb(token):
+            result["word_class"] = "FIIL"
+            result["verb_aspect"] = "PV"
+            result["wazn"] = "فعل جامد"
+            result["source"] = "uninflected_verb_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "UninflectedVerbContract:v1"
             return result
 
         plain = _strip_diac(token)
