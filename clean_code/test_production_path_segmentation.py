@@ -891,6 +891,83 @@ def t_1_6_ahdina_no_nahnu_implicit_agent():
     )
 
 
+# ── MASAQ F3 — gen_cons_marked_as_naat (إضافة vs نعت suppressors) ─────
+
+
+def _l3_role_in_verse(sura: int, ayah: int, surface: str):
+    """Run the engine on (sura, ayah) and return the role_phrase of the
+    first token whose surface equals `surface`. Returns "__skip__" when
+    the engine is unavailable, "__missing__" when the verse loads but
+    the token isn't found."""
+    try:
+        from i3rab_engine.engine import I3rabEngine
+    except (ImportError, OSError, PermissionError):
+        return "__skip__"
+    verse = _load_verse(sura, ayah)
+    if not verse:
+        return "__skip__"
+    sent = I3rabEngine().analyze_sentence(verse)
+    target = _nfc(surface)
+    for t in getattr(sent, "tokens", []) or []:
+        if _nfc(getattr(t, "token", "") or "") == target:
+            return getattr(t, "role_phrase", "") or ""
+    return "__missing__"
+
+
+def _assert_not_naat(sura, ayah, surface):
+    role = _l3_role_in_verse(sura, ayah, surface)
+    if role == "__skip__":
+        print(f"  [skipped — {sura}:{ayah} unavailable]", end=" ")
+        return
+    if role == "__missing__":
+        raise AssertionError(f"{sura}:{ayah} — token {surface!r} not found")
+    assert "نعت" not in role, (
+        f"{sura}:{ayah} — token {surface!r} role={role!r}, "
+        f"expected not to contain 'نعت' (gen_cons should suppress naat)"
+    )
+
+
+def t_masaq_gencons_2_97_yadayhi_not_naat():
+    """MASAQ F3 (gen_cons): بَيْنَ يَدَيْهِ — يَدَيْهِ has pronoun suffix هـ
+    AND the prev (بَيْنَ) is a functional locative ظَرف; the structure is
+    إضافة, not نعت."""
+    _assert_not_naat(2, 97, "يَدَيْهِ")
+
+
+def t_masaq_gencons_2_136_ahad_not_naat():
+    """MASAQ F3 (gen_cons): بَيْنَ أَحَدٍ — prev بَيْنَ is functional locative
+    ظَرف, so أَحَدٍ is مضاف-إليه, not نعت."""
+    _assert_not_naat(2, 136, "أَحَدٍ")
+
+
+def t_masaq_gencons_2_144_wajhika_not_naat():
+    """MASAQ F3 (gen_cons): تَقَلُّبَ وَجْهِكَ — وَجْهِكَ has pronoun suffix كَ;
+    pronoun-attached nouns are definite-by-possession and form إضافة
+    with prev, not نعت."""
+    _assert_not_naat(2, 144, "وَجْهِكَ")
+
+
+def t_masaq_gencons_2_164_mawtiha_not_naat():
+    """MASAQ F3 (gen_cons): بَعْدَ مَوْتِهَا — prev بَعْدَ is functional
+    locative ظَرف AND مَوْتِهَا has pronoun suffix هَا. Double signal: this
+    is an إضافة, not نعت."""
+    _assert_not_naat(2, 164, "مَوْتِهَا")
+
+
+def t_1_4_idafa_chain_regression_remains_fixed():
+    """Regression guard: the original 1:4 fix for مَٰلِكِ يَوْمِ ٱلدِّينِ
+    (3-token إضافة chain) must remain in place after the new gen_cons
+    suppressors are added in the same predicate."""
+    role = _l3_role_in_verse(1, 4, "يَوْمِ")
+    if role == "__skip__":
+        print("  [skipped — 1:4 unavailable]", end=" ")
+        return
+    assert "مضاف إليه" in role, (
+        f"1:4 regression — يَوْمِ role={role!r}, expected 'مضاف إليه' "
+        f"(chain guard from 1:4 fix must remain)"
+    )
+
+
 # ── MASAQ F3 — verb-form lookup recovery via Quranic-mark normalization ─
 
 
@@ -3527,6 +3604,17 @@ ALL = [
     # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
     ("t_1_7_an3amta_no_nahnu_implicit_agent",
      t_1_7_an3amta_no_nahnu_implicit_agent),
+    # MASAQ F3 — gen_cons_marked_as_naat (إضافة vs نعت suppressors)
+    ("t_masaq_gencons_2_97_yadayhi_not_naat",
+     t_masaq_gencons_2_97_yadayhi_not_naat),
+    ("t_masaq_gencons_2_136_ahad_not_naat",
+     t_masaq_gencons_2_136_ahad_not_naat),
+    ("t_masaq_gencons_2_144_wajhika_not_naat",
+     t_masaq_gencons_2_144_wajhika_not_naat),
+    ("t_masaq_gencons_2_164_mawtiha_not_naat",
+     t_masaq_gencons_2_164_mawtiha_not_naat),
+    ("t_1_4_idafa_chain_regression_remains_fixed",
+     t_1_4_idafa_chain_regression_remains_fixed),
     # MASAQ F3 — verb-form recovery via Quranic-mark normalization
     ("t_masaq_f3_rabihat_is_past_verb",
      t_masaq_f3_rabihat_is_past_verb),
@@ -3584,4 +3672,5 @@ print("  • Verse 1:4: L3 chain guard — suppress naat for indef+indef when ne
 print("  • Verse 1:6: implicit-agent ٱ-normalization — ٱ-initial imperatives no longer get PAST agents")
 print("  • Verse 1:7: implicit-agent IV-loop PV guard — أَنْعَمْتَ/أَوْحَيْنَآ no longer get ⊕نَحْنُ/⊕أَنَا")
 print("  • MASAQ F3: MTL Quranic-mark fold + strict-form fallback — 7 PV/IV verbs recovered")
+print("  • MASAQ F3 gen_cons: naat suppressors for functional-locative prev + pronoun-suffix host")
 print("─" * 70)

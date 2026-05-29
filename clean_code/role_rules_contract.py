@@ -124,6 +124,36 @@ def _case_def_agreement_with_prev(t, prev, ctx, tokens, i) -> bool:
         nxt = tokens[i + 1]
         if getattr(nxt, "case_id", None) == 3:
             return False
+    # MASAQ F3 (2026-05-29) — gen_cons_marked_as_naat suppressors.
+    # Two narrow predicate guards that close 2-token إضافة pairs the
+    # original chain guard didn't catch.
+    #
+    # Guard A — functional-locative prev heads إضافة.
+    # Locative ظَروف (بَيْنَ، بَعْدَ، عِنْدَ، تَحْتَ، فَوْقَ، قَبْلَ، ...) never
+    # carry نعت adjectives in the same case slot; they head إضافة. The
+    # detector is reused from layer3.py's PATCH 4.5 functional-locative
+    # lexicon (data-driven; no hardcoded list here).
+    try:
+        from i3rab_engine.layer3 import _is_functional_locative_noun
+        if _is_functional_locative_noun(prev):
+            return False
+    except ImportError:
+        pass
+    # Guard B — pronoun-suffix on current signals إضافة, not نعت.
+    # A noun with an attached possessive pronoun (هـ، ها، كَ، كم، نا،
+    # ي، ...) is classically definite-by-possession and is itself مضاف
+    # to the pronoun. Its outer relation to prev is مضاف-إليه, not نعت.
+    # The both_indef branch above looks at surface ال only, so it
+    # misses possessive definiteness; this guard closes that gap.
+    _PRON_SUFFIXES_PLAIN = {
+        "ه", "ها", "هم", "هما", "هن",
+        "ك", "كم", "كما", "كن",
+        "نا", "ي",
+    }
+    for sfx in (getattr(t, "suffixes", None) or []):
+        sfx_str = sfx if isinstance(sfx, str) else (sfx[0] if sfx else "")
+        if _strip_diac(sfx_str) in _PRON_SUFFIXES_PLAIN:
+            return False
     return True
 
 
