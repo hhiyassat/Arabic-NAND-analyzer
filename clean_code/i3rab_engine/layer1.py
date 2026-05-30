@@ -131,6 +131,52 @@ def _is_interrog_pronoun(token: str) -> bool:
     return s in _INTERROG_PRONOUN_FORMS
 
 
+# ── ForeignProperNounContract — جَهَنَّم family ──────────────────────
+# Diacritic-safe lexical detector (2026-05-30). MTL has FOREIGN-tagged
+# rows for جَهَنَّم variants but with class=UNKNOWN, so control falls
+# through to the open-class wazn aligner which defaults to ISM_MUARAB
+# with a stretched wazn match (فَفَعَّل). The schema-correct target is
+# AALAM (اسم عَلَم — proper noun). L3 second-pass treats AALAM via the
+# same `_assign_ism_role` path as ISM_MUARAB, so this is purely a
+# label-improvement: L4/L5/L6 are not affected.
+#
+# IMPORTANT — جَهَنَّم has NO verb/relative/adjective alternate reading
+# in Quranic Arabic. The static lexicon is safe; no contextual
+# disambiguation needed (unlike the deliberately-deferred أَعْلَمُ case).
+#
+# Scope: جَهَنَّم variants ONLY. Other foreign nouns observed in MASAQ
+# (إِسْتَبْرَقٍ, سِجِّيلٍ, ٱلتَّنُّورُ) are deliberately NOT in this batch
+# pending per-form safety review.
+_FOREIGN_PROPER_NOUN_FORMS = {
+    # Nominative
+    "جَهَنَّمُ", "وَجَهَنَّمُ", "فَجَهَنَّمُ",
+    # Accusative (also diptote-genitive without PREP — جَهَنَّم is
+    # مَمنوع من الصَّرف so its genitive marker is -َ not -ِ)
+    "جَهَنَّمَ", "وَجَهَنَّمَ", "فَجَهَنَّمَ",
+    # PREP + diptote-genitive (-َ ending on prep variants)
+    "لِجَهَنَّمَ", "بِجَهَنَّمَ",
+}
+
+
+def _is_foreign_proper_noun(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, linguistic
+    diacritics preserved) matches a known foreign proper-noun form
+    in the جَهَنَّم family. Same diacritic-safe pattern as
+    `_is_uninflected_verb`, `_is_interrog_pronoun`, and
+    `_is_comparative_adj`."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _FOREIGN_PROPER_NOUN_FORMS
+
+
 # ── ComparativeAdjectiveContract — اسم تَفْضِيل lexicon ────────────
 # Diacritic-safe lexical detector (2026-05-30). Comparative/superlative
 # nouns on the أَفْعَل/فُعْلَى/أَفْعَى patterns get misclassified as 1st-
@@ -707,6 +753,22 @@ class WordClassClassifier:
             result["source"] = "interrog_pronoun_lexicon"
             result["proof_kind"] = "Certificate"
             result["proof_contract"] = "InterrogPronounContract:v1"
+            return result
+
+        # === STEP 0.7: ForeignProperNounContract — جَهَنَّم family ===
+        # MASAQ diacritic-safe F3 (2026-05-30): MTL has FOREIGN-tagged
+        # rows for جَهَنَّم variants but class=UNKNOWN. Without an early
+        # certifier, the open-class wazn aligner defaults to ISM_MUARAB
+        # with a stretched فَفَعَّل wazn. The schema-correct target is
+        # AALAM (اسم عَلَم). L3 routes AALAM via the same `_assign_ism_role`
+        # path as ISM_MUARAB, so this is purely a label improvement —
+        # L4/L5/L6 are unaffected. Scope: جَهَنَّم variants ONLY.
+        if _is_foreign_proper_noun(token):
+            result["word_class"] = "AALAM"
+            result["wazn"] = "اسم أعجمي"
+            result["source"] = "foreign_proper_noun_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "ForeignProperNounContract:v1"
             return result
 
         plain = _strip_diac(token)

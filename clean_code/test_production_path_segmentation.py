@@ -891,6 +891,101 @@ def t_1_6_ahdina_no_nahnu_implicit_agent():
     )
 
 
+# ── MASAQ diacritic-safe F3 — ForeignProperNoun (جَهَنَّم family only) ─
+
+
+def _assert_foreign_aalam(sura, ayah, surface):
+    """Assert that the given surface is classified as AALAM by L1."""
+    wc, _asp = _l1_class_aspect_in_verse(sura, ayah, surface)
+    if wc == "__skip__":
+        print(f"  [skipped — {sura}:{ayah} unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError(f"{sura}:{ayah} — token {surface!r} not found")
+    assert wc == "AALAM", (
+        f"{sura}:{ayah} — token {surface!r} class={wc!r}, "
+        f"expected 'AALAM' (foreign-proper-noun lexicon)"
+    )
+
+
+def t_masaq_foreign_jahannamu_2_206_is_aalam():
+    """MASAQ F3 (FOREIGN — جَهَنَّم family): جَهَنَّمُ (2:206, nominative).
+    Pre-fix: ISM_MUARAB with stretched wazn فَفَعَّل. The schema-correct
+    target is AALAM (اسم عَلَم) — exact-vocalized lexicon, no polysemy."""
+    _assert_foreign_aalam(2, 206, "جَهَنَّمُ")
+
+
+def t_masaq_foreign_jahannama_3_12_is_aalam():
+    """MASAQ F3 (FOREIGN — جَهَنَّم family): جَهَنَّمَ (3:12, accusative)."""
+    _assert_foreign_aalam(3, 12, "جَهَنَّمَ")
+
+
+def t_masaq_foreign_normal_noun_stays_noun_2_282():
+    """Negative regression guard: the new lexicon must NOT promote
+    arbitrary nouns to AALAM. `ٱلْحَقُّ` from 2:282 is a clear common
+    noun and should remain ISM_MUARAB/JAMID. Proves the foreign-noun
+    detector is a NARROW جَهَنَّم-only lexicon."""
+    wc, _asp = _l1_class_aspect_in_verse(2, 282, "ٱلْحَقُّ")
+    if wc == "__skip__":
+        print("  [skipped — 2:282 unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError("2:282 — token ٱلْحَقُّ not found")
+    assert wc in {"ISM_MUARAB", "JAMID"}, (
+        f"2:282 — ٱلْحَقُّ class={wc!r}, expected ISM_MUARAB or JAMID "
+        f"(foreign-proper-noun lexicon must not promote common nouns)"
+    )
+
+
+def t_masaq_foreign_does_not_touch_a3lamu_2_30():
+    """Negative regression guard: the foreign-noun contract must not
+    touch the deliberately-deferred ADJ_COMP polysemy. أَعْلَمُ in 2:30
+    is a 1st-person IV verb ("I know") and must stay FIIL/IV."""
+    wc, asp = _l1_class_aspect_in_verse(2, 30, "أَعْلَمُ")
+    if wc == "__skip__":
+        print("  [skipped — 2:30 unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError("2:30 — token أَعْلَمُ not found")
+    assert wc == "FIIL", (
+        f"2:30 — أَعْلَمُ class={wc!r}, expected 'FIIL' "
+        f"(foreign-noun lexicon must not bleed into ADJ_COMP territory)"
+    )
+    assert asp == "IV", (
+        f"2:30 — أَعْلَمُ aspect={asp!r}, expected 'IV'"
+    )
+
+
+def t_masaq_foreign_does_not_touch_man_family_2_138():
+    """Negative architectural guard: the deferred مَنْ/مَا/مِنْ/ذَا
+    family must not be touched. وَمَنْ at 2:138 stays at its existing
+    classification (HARF — analyzer's current behavior)."""
+    wc = _l1_class_for_token(2, 138, "وَمَنْ")
+    if wc in ("__skip__", "__missing__"):
+        print("  [skipped — وَمَنْ not at exact surface in 2:138]", end=" ")
+        return
+    assert wc != "AALAM", (
+        f"2:138 — وَمَنْ class={wc!r}: the foreign-noun lexicon must not "
+        f"promote مَنْ-family tokens to AALAM."
+    )
+
+
+def t_masaq_foreign_no_other_foreign_nouns_yet_11_82():
+    """Scope guard: the lexicon is جَهَنَّم-only. Other FOREIGN-tagged
+    nouns observed in MASAQ (إِسْتَبْرَقٍ, سِجِّيلٍ, ٱلتَّنُّورُ) are
+    deliberately NOT in scope this batch. Verify سِجِّيلٍ at 11:82
+    retains its non-AALAM classification — proves the lexicon doesn't
+    over-broaden into the wider FOREIGN family."""
+    wc = _l1_class_for_token(11, 82, "سِجِّيلٍ")
+    if wc in ("__skip__", "__missing__"):
+        print("  [skipped — سِجِّيلٍ not at exact surface in 11:82]", end=" ")
+        return
+    assert wc != "AALAM", (
+        f"11:82 — سِجِّيلٍ class={wc!r}: foreign-noun lexicon must be "
+        f"جَهَنَّم-only this batch; other FOREIGN forms should be untouched."
+    )
+
+
 # ── MASAQ diacritic-safe F3 — ADJ_COMP lexicon (أَعْلَمُ/أَدْنَى/أُخْرَى) ─
 
 
@@ -3940,6 +4035,19 @@ ALL = [
     # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
     ("t_1_7_an3amta_no_nahnu_implicit_agent",
      t_1_7_an3amta_no_nahnu_implicit_agent),
+    # MASAQ diacritic-safe F3 — ForeignProperNoun (جَهَنَّم family only)
+    ("t_masaq_foreign_jahannamu_2_206_is_aalam",
+     t_masaq_foreign_jahannamu_2_206_is_aalam),
+    ("t_masaq_foreign_jahannama_3_12_is_aalam",
+     t_masaq_foreign_jahannama_3_12_is_aalam),
+    ("t_masaq_foreign_normal_noun_stays_noun_2_282",
+     t_masaq_foreign_normal_noun_stays_noun_2_282),
+    ("t_masaq_foreign_does_not_touch_a3lamu_2_30",
+     t_masaq_foreign_does_not_touch_a3lamu_2_30),
+    ("t_masaq_foreign_does_not_touch_man_family_2_138",
+     t_masaq_foreign_does_not_touch_man_family_2_138),
+    ("t_masaq_foreign_no_other_foreign_nouns_yet_11_82",
+     t_masaq_foreign_no_other_foreign_nouns_yet_11_82),
     # MASAQ diacritic-safe F3 — ADJ_COMP lexicon (أَدْنَى/أُخْرَى only)
     # NOTE — أَعْلَمُ-family entries were removed on 2026-05-30 after
     # the first-5000-ayah validation found a polysemy regression
@@ -4061,4 +4169,5 @@ print("  • MASAQ F3 gen_cons: naat suppressors for functional-locative prev + 
 print("  • MASAQ F3 UninflectedVerbContract: بِئْسَ / نِعْمَ / عَسَى family (diacritic-safe lexicon)")
 print("  • MASAQ F3 InterrogPronounContract: كَيْفَ / كَمْ / لِمَ / مَتَى / أَيْنَ / أَنَّى (diacritic-safe lexicon, excludes مَنْ/مَا)")
 print("  • MASAQ F3 ComparativeAdjectiveContract: أَدْنَى / أُخْرَى only — أَعْلَمُ removed 2026-05-30 (polysemy regression)")
+print("  • MASAQ F3 ForeignProperNounContract: جَهَنَّم family only (8 vocalized forms → AALAM)")
 print("─" * 70)
