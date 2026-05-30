@@ -120,6 +120,17 @@ def _lookup_in_volume(volume_module, word: str, volume_num: int,
         # مَصدَر العَقد + الصَّفّ
         source_row = f"volume{volume_num}/{rec.get('source_file', '')}:topic={rec.get('topic_id', '')}"
 
+        # MAANI Batch B (2026-05-29) — AuthorPositionToProofKind.
+        # Exact-match downgrade only: when Samarrai explicitly marks a row
+        # as a view he *reports* (does not endorse), emit the claim as
+        # Hypothesis rather than Certificate. Every other value of
+        # author_position — "preferred", empty, em-dash, or any corruption
+        # (e.g. a surah:ayah string that landed in the wrong column) —
+        # falls through to the match-type's default proof_kind (fail-open).
+        # No fuzzy matching. No prose parsing. No data repair.
+        row_author = (rec.get("author_position", "") or "").strip()
+        row_proof_kind = "Hypothesis" if row_author == "reported" else proof_kind
+
         claims.append(SamarraiClaim(
             word=word,
             vocalized_form=rec.get("vocalized_form", ""),
@@ -137,7 +148,7 @@ def _lookup_in_volume(volume_module, word: str, volume_num: int,
             confidence=final_conf,
             author_position=rec.get("author_position", ""),
             # MC fields
-            proof_kind=proof_kind,
+            proof_kind=row_proof_kind,
             contract=contract,
             blockers=list(blockers),
             match_type=match_type,
