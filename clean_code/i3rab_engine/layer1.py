@@ -145,12 +145,22 @@ def _is_interrog_pronoun(token: str) -> bool:
 # heuristic. Genuine 1st-person verbs (أَكْتُبُ, أَدْعُو, أُحِبُّ) and
 # 3rd-person verbs (يَعْلَمُ, تَعْلَمُونَ) remain unaffected.
 _ADJ_COMP_FORMS = {
-    # أَعْلَمُ family — "more/most knowing"
-    "أَعْلَمُ", "وَأَعْلَمُ", "فَأَعْلَمُ",
     # أَدْنَى family — "lower/nearer"
     "أَدْنَى", "وَأَدْنَى", "فَأَدْنَى",
     # أُخْرَى family — "other" (feminine comparative)
     "أُخْرَى", "وَأُخْرَى", "فَأُخْرَى",
+    # NOTE — the أَعْلَمُ family (أَعْلَمُ / وَأَعْلَمُ / فَأَعْلَمُ) was
+    # previously here but was REMOVED on 2026-05-30 after the
+    # first-5000-ayah diacritic-safe MASAQ validation revealed that
+    # أَعْلَمُ is genuinely ambiguous in Quranic Arabic:
+    #   • اسم تَفْضِيل: "more/most knowing" (e.g. اللَّهُ أَعْلَمُ)
+    #   • 1st-person sg IV verb: "I know" (e.g. إِنِّى أَعْلَمُ in 2:30)
+    # The static exact-vocalized lexicon cannot disambiguate; including
+    # أَعْلَمُ here introduced 21 new IV→ISM_MUARAB mismatches against
+    # MASAQ. أَدْنَى and أُخْرَى remain because they are unambiguously
+    # comparative-adjective forms with no 1st-person verb reading.
+    # Future work: a contextual disambiguator (preceding إِنِّى/إِنَّا
+    # → IV verb, else ADJ_COMP) would be needed to safely re-add أَعْلَمُ.
 }
 
 

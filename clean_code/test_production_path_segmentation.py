@@ -918,12 +918,48 @@ def _assert_adj_comp_ism(sura, ayah, surface):
     )
 
 
-def t_masaq_adjcomp_a3lamu_2_140_is_ism_muarab():
-    """MASAQ F3 (ADJ_COMP): أَعْلَمُ (2:140) — اسم تفضيل (comparative).
-    Pre-fix: FIIL/IV because MTL has class=FIIL for this surface
-    (MASAQ data quirk for ambiguous أَفْعَلُ pattern). The pre-MTL
-    lexicon match overrides."""
-    _assert_adj_comp_ism(2, 140, "أَعْلَمُ")
+def t_masaq_adjcomp_a3lamu_stays_fiil_2_30():
+    """Regression cleanup (2026-05-30): the أَعْلَمُ family was REMOVED
+    from _ADJ_COMP_FORMS after the first-5000-ayah validation showed
+    21 new IV→ISM_MUARAB mismatches. أَعْلَمُ is genuinely ambiguous —
+    in 2:30 it is the 1st-person sg IV verb "I know" (إِنِّى أَعْلَمُ).
+    Static lexicon cannot disambiguate, so we restore the analyzer's
+    pre-fix behaviour for this surface and verify it stays FIIL/IV."""
+    wc, asp = _l1_class_aspect_in_verse(2, 30, "أَعْلَمُ")
+    if wc == "__skip__":
+        print("  [skipped — 2:30 unavailable]", end=" ")
+        return
+    if wc == "__missing__":
+        raise AssertionError("2:30 — token أَعْلَمُ not found")
+    assert wc == "FIIL", (
+        f"2:30 — أَعْلَمُ class={wc!r}, expected 'FIIL' "
+        f"(verb context; static ADJ_COMP lexicon must not include أَعْلَمُ)"
+    )
+    assert asp == "IV", (
+        f"2:30 — أَعْلَمُ aspect={asp!r}, expected 'IV'"
+    )
+
+
+def t_masaq_adjcomp_a3lamu_stays_fiil_2_33():
+    """Regression cleanup (2026-05-30): same family as above. 2:33
+    contains both أَعْلَمُ and وَأَعْلَمُ as 1st-person verbs in
+    إِنِّى أَعْلَمُ مَا لَا تَعْلَمُونَ-style constructions. Verify
+    both retain FIIL/IV after the partial revert."""
+    for surf in ("أَعْلَمُ", "وَأَعْلَمُ"):
+        wc, asp = _l1_class_aspect_in_verse(2, 33, surf)
+        if wc == "__skip__":
+            print(f"  [skipped — 2:33 unavailable for {surf!r}]", end=" ")
+            return
+        if wc == "__missing__":
+            # Either form may or may not appear in 2:33 at the exact
+            # vocalised surface — skip silently rather than fail.
+            continue
+        assert wc == "FIIL", (
+            f"2:33 — {surf!r} class={wc!r}, expected 'FIIL'"
+        )
+        assert asp == "IV", (
+            f"2:33 — {surf!r} aspect={asp!r}, expected 'IV'"
+        )
 
 
 def t_masaq_adjcomp_adnaa_4_3_is_ism_muarab():
@@ -3904,9 +3940,15 @@ ALL = [
     # VERSEBYVERSE 1:7 — PV verb must not get IV-prefix implicit agent
     ("t_1_7_an3amta_no_nahnu_implicit_agent",
      t_1_7_an3amta_no_nahnu_implicit_agent),
-    # MASAQ diacritic-safe F3 — ADJ_COMP lexicon (أَعْلَمُ/أَدْنَى/أُخْرَى)
-    ("t_masaq_adjcomp_a3lamu_2_140_is_ism_muarab",
-     t_masaq_adjcomp_a3lamu_2_140_is_ism_muarab),
+    # MASAQ diacritic-safe F3 — ADJ_COMP lexicon (أَدْنَى/أُخْرَى only)
+    # NOTE — أَعْلَمُ-family entries were removed on 2026-05-30 after
+    # the first-5000-ayah validation found a polysemy regression
+    # (IV verb "I know" vs ADJ_COMP "more knowing"). The two tests
+    # below are the regression cleanup guards.
+    ("t_masaq_adjcomp_a3lamu_stays_fiil_2_30",
+     t_masaq_adjcomp_a3lamu_stays_fiil_2_30),
+    ("t_masaq_adjcomp_a3lamu_stays_fiil_2_33",
+     t_masaq_adjcomp_a3lamu_stays_fiil_2_33),
     ("t_masaq_adjcomp_adnaa_4_3_is_ism_muarab",
      t_masaq_adjcomp_adnaa_4_3_is_ism_muarab),
     ("t_masaq_adjcomp_ukhraa_4_102_is_ism_muarab",
@@ -4018,5 +4060,5 @@ print("  • MASAQ F3: MTL Quranic-mark fold + strict-form fallback — 7 PV/IV 
 print("  • MASAQ F3 gen_cons: naat suppressors for functional-locative prev + pronoun-suffix host")
 print("  • MASAQ F3 UninflectedVerbContract: بِئْسَ / نِعْمَ / عَسَى family (diacritic-safe lexicon)")
 print("  • MASAQ F3 InterrogPronounContract: كَيْفَ / كَمْ / لِمَ / مَتَى / أَيْنَ / أَنَّى (diacritic-safe lexicon, excludes مَنْ/مَا)")
-print("  • MASAQ F3 ComparativeAdjectiveContract: أَعْلَمُ / أَدْنَى / أُخْرَى (pre-MTL override for ambiguous أَفْعَلُ)")
+print("  • MASAQ F3 ComparativeAdjectiveContract: أَدْنَى / أُخْرَى only — أَعْلَمُ removed 2026-05-30 (polysemy regression)")
 print("─" * 70)
