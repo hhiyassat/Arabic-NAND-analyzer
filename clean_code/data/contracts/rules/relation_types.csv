@@ -16,3 +16,5 @@ priority,name,kind,role_source,role_target,note
 15,harf_jarr_of,prep_phrase,اسم_مجرور,حرف_جر,الِاسم المَجرور — مَفعول لِحَرف الجَرّ
 16,verb_in_clause,clause_anchor,FIIL,—,الفِعل = مِحوَر الجُملة الفِعليَّة
 17,topic_anchor,clause_anchor,مبتدأ,—,المُبتَدأ = مِحوَر الجُملة الِاسميَّة
+18,condition_tool_of,conditional,أداة_شرط,FIIL,أداة الشرط تدل على فعل الشرط
+19,jawab_shart_of,conditional,جواب_شرط,FIIL,جواب الشرط يرتبط بفعل الشرط

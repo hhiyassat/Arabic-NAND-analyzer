@@ -36,6 +36,10 @@ sys.path.insert(0, str(_HERE))
 from contracts_loader import _load_rows
 from relation_schema import EntityNode, Relation, RelationGraph
 
+# Phase 5 Batch B: this is the sole authorized production importer of
+# phase5_clause_segmenter (enforced by test_production_path_segmentation.py).
+from phase5_clause_segmenter import Phase5Clause, segment_clauses_from_surfaces
+
 
 CONTRACT_NAME = "RelationExtractor:v1"
 
@@ -833,7 +837,89 @@ class RelationExtractor:
         # ── Phase C 100%: post-detection لِسَدّ ما يَفوت i3rab ──
         self._post_detect_missed_relations(g, tokens)
 
+        # ── Phase 5 Batch B: condition/jawab relations bridged from Phase 5 ──
+        self._p13_condition_jawab_from_phase5(g, sent, tokens)
+
         return g
+
+    def _p13_condition_jawab_from_phase5(self, g, sent, tokens) -> None:
+        """Bridge Phase 5 condition/condition_answer_command clauses
+        into L4 condition_tool_of and jawab_shart_of relations.
+
+        Block-and-skip when Phase 5 output is absent or token-index
+        reconciliation fails. No manual fallback re-detection.
+        """
+        if not tokens:
+            return
+        surfaces = [getattr(t, "token", "") or "" for t in tokens]
+        verse_ref = getattr(sent, "verse_ref", "") or ""
+        try:
+            clauses = segment_clauses_from_surfaces(surfaces, verse_ref)
+        except Exception:  # noqa: BLE001
+            return
+        if not clauses or not all(isinstance(c, Phase5Clause) for c in clauses):
+            return
+
+        by_id = {c.clause_id: c for c in clauses}
+        n = len(tokens)
+
+        for c in clauses:
+            if c.type != "condition_answer_command":
+                continue
+            if not c.parent_clause_id or c.parent_clause_id not in by_id:
+                continue
+            parent = by_id[c.parent_clause_id]
+            if parent.type != "condition":
+                continue
+
+            if not (0 <= parent.start_token_index <= parent.end_token_index < n):
+                continue
+            if not (0 <= c.start_token_index <= c.end_token_index < n):
+                continue
+
+            cond_tool_idx = parent.start_token_index
+
+            cond_verb_idx = None
+            for i in range(parent.start_token_index, parent.end_token_index + 1):
+                if getattr(tokens[i], "word_class", "") == "FIIL":
+                    cond_verb_idx = i
+                    break
+            if cond_verb_idx is None:
+                continue
+
+            jawab_verb_idx = None
+            for i in range(c.start_token_index, c.end_token_index + 1):
+                if getattr(tokens[i], "word_class", "") == "FIIL":
+                    jawab_verb_idx = i
+                    break
+            if jawab_verb_idx is None:
+                continue
+
+            g.add_relation(self._build_relation(
+                name="condition_tool_of",
+                kind_type="conditional",
+                source_id=f"t{cond_tool_idx}",
+                target_id=f"t{cond_verb_idx}",
+                role_kind="Certificate",
+                source_of_claim=(
+                    f"phase5:{parent.clause_id}.head={parent.head_token} + "
+                    f"ConditionalScopeContract:{parent.confidence}"
+                ),
+                operator=parent.head_token,
+            ))
+
+            g.add_relation(self._build_relation(
+                name="jawab_shart_of",
+                kind_type="conditional",
+                source_id=f"t{jawab_verb_idx}",
+                target_id=f"t{cond_verb_idx}",
+                role_kind="Certificate",
+                source_of_claim=(
+                    f"phase5:{c.clause_id}.parent={parent.clause_id} + "
+                    f"introduced_by={c.introduced_by} + {c.source}"
+                ),
+                operator=c.introduced_by,
+            ))
 
     # ──────────────────────────────────────────────────────────
     # POST-DETECTION (Phase C 100% — heuristic rules)

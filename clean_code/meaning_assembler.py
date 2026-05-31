@@ -225,6 +225,8 @@ class MeaningAssembler:
                 "inna_topic_of", "inna_comment_of",
                 "kana_topic_of", "kana_comment_of",
                 "vocative_of", "substitute_of", "coordinate_of",
+                # Phase 5 Batch B — conditional structure (bridged from Phase 5)
+                "condition_tool_of", "jawab_shart_of",
             }
             graph.add_edge(MeaningEdge(
                 edge_id=f"rel_{r.name}_{r.source_id}",

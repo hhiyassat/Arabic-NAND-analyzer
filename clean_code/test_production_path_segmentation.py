@@ -1787,7 +1787,9 @@ def t_phase5_clause_segmenter_not_imported_by_production_path():
         here / "i3rab_engine" / "layer2.py",
         here / "i3rab_engine" / "layer3.py",
         here / "i3rab_engine" / "engine.py",
-        here / "relation_extractor.py",
+        # relation_extractor.py: authorized Phase 5 Batch B consumer
+        # (positive guard t_phase5_clause_segmenter_consumed_only_by_relation_extractor
+        # asserts it is the ONLY production module that imports Phase 5).
         here / "event_extractor.py",
         here / "resolution_engine.py",
         here / "reasoning_engine.py",
@@ -1800,7 +1802,7 @@ def t_phase5_clause_segmenter_not_imported_by_production_path():
     # function exports defined in clean_code/phase5_clause_segmenter.py.
     phase5_markers = _re.compile(
         r"\b(phase5_clause_segmenter|Phase5Clause|Phase5ClauseGraph"
-        r"|segment_clauses_from_surfaces|build_clause_graph)\b"
+        r"|segment_clauses_from_surfaces|segment_clauses|build_clause_graph)\b"
     )
     bad = []
     for fp in production_files:
@@ -1815,6 +1817,39 @@ def t_phase5_clause_segmenter_not_imported_by_production_path():
     assert not bad, (
         f"Phase 5 Batch A — production module(s) reference the Phase 5 "
         f"clause segmenter; isolation broken: {bad}"
+    )
+
+
+def t_phase5_clause_segmenter_consumed_only_by_relation_extractor():
+    """Phase 5 Batch B positive guard. Asserts that `relation_extractor.py`
+    is the ONLY production .py file under clean_code/ that references
+    Phase 5 surface symbols. Catches accidental future imports in any
+    module not currently named in the negative guard's production_files
+    list. The Phase 5 module itself and all test_*.py files are excluded."""
+    import re as _re
+    here = _HERE
+    phase5_markers = _re.compile(
+        r"\b(phase5_clause_segmenter|Phase5Clause|Phase5ClauseGraph"
+        r"|segment_clauses_from_surfaces|segment_clauses|build_clause_graph)\b"
+    )
+    matches = []
+    for fp in here.rglob("*.py"):
+        name = fp.name
+        if name == "phase5_clause_segmenter.py":
+            continue
+        if name.startswith("test_"):
+            continue
+        if "__pycache__" in fp.parts:
+            continue
+        try:
+            txt = fp.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if phase5_markers.search(txt):
+            matches.append(fp.relative_to(here).as_posix())
+    assert matches == ["relation_extractor.py"], (
+        f"Phase 5 Batch B — only relation_extractor.py is allowed to import "
+        f"Phase 5 surface symbols; found: {matches}"
     )
 
 
@@ -4001,6 +4036,8 @@ ALL = [
      t_phase5_2_196_prohibition_tahliqu),
     ("t_phase5_clause_segmenter_not_imported_by_production_path",
      t_phase5_clause_segmenter_not_imported_by_production_path),
+    ("t_phase5_clause_segmenter_consumed_only_by_relation_extractor",
+     t_phase5_clause_segmenter_consumed_only_by_relation_extractor),
     # PATCH 5 — L5 LamAlAmrMoodPropagation + TimeScopeGate
     ("t_lam_al_amr_events_are_command_or_jussive",
      t_lam_al_amr_events_are_command_or_jussive),
