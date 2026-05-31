@@ -56,6 +56,50 @@ def _heading(title: str, emoji: str = "📍") -> str:
     return f"\n{emoji} {title}\n{SEPARATOR}"
 
 
+# ─────────────────────────────────────────────────────────────────────
+# DISPLAY-ONLY explanatory layer (Phase 5 / Batch A follow-up).
+# Pure display: does NOT modify any L1/L2/L3/L4/L5/L6/L7/L8 decision,
+# graph node, edge, relation, event, or resolution. Adds Arabic notes
+# to clarify the technical kind labels (Certificate / Hypothesis /
+# Zero / Entropy / بِلا مَرجِع) so a reader unfamiliar with the
+# theoretical basis can understand what each line means and does not
+# mean. Toggle off with EXPLAIN_OUTPUT = False.
+# ─────────────────────────────────────────────────────────────────────
+
+EXPLAIN_OUTPUT = True
+
+
+def _explain(line: str) -> None:
+    """Print a single explanatory note prefixed by `الشرح:` if the
+    EXPLAIN_OUTPUT flag is on. No-op otherwise. Pure display."""
+    if EXPLAIN_OUTPUT:
+        print(f"      └─ الشرح: {line}")
+
+
+def _reason(line: str) -> None:
+    """Like `_explain` but prefixed by `السبب:` — used for L6 Zero
+    explanations where the reader benefits from knowing why the
+    resolver chose NOT to commit. Pure display."""
+    if EXPLAIN_OUTPUT:
+        print(f"      └─ السبب: {line}")
+
+
+def _print_legend() -> None:
+    """Short Arabic legend explaining the four kind labels and the
+    «بِلا مَرجِع» convention. Printed once at the head of the L6
+    section so the reader sees it before encountering the technical
+    output."""
+    if not EXPLAIN_OUTPUT:
+        return
+    print("  📘 مفتاح القراءة:")
+    print("     ✓ Certificate = نتيجة مدعومة بدليل قوي أو قاعدة مباشرة.")
+    print("     ? Hypothesis  = احتمال لغوي مقبول لكنه غير محسوم.")
+    print("     ✗ Zero        = لا توجد نتيجة آمنة؛ النظام فضّل عدم التخمين.")
+    print("     «بِلا مَرجِع» = لم يجد النظام مرجعًا آمنًا داخل التحليل الحالي،")
+    print("                     وليس هذا حكمًا بأن النص بلا معنى.")
+    print()
+
+
 def show_morph(text: str):
     """L0-L2: normalizer + segmenter + root + wazn."""
     print(_heading("L1 — التَّقطيع (Segmentation) + L2 — الصَّرف (Morphology)", "🔤"))
@@ -93,6 +137,16 @@ def show_samarrai(text: str):
     try:
         from samarrai_analyzer import analyze
         ta = analyze(text)
+        # PATCH 4 (2026-05-26) — Certified Operator Gate.
+        # Filter KB.SAM claims against the production segmenter so that
+        # operator meanings (الكاف لِلتَّشبيه / واو القَسَم / السين تَنفيس / ...)
+        # are emitted only when the corresponding clitic is actually
+        # certified by L1 prefix/suffix tags. See samarrai_certified_operator_gate.py.
+        try:
+            from samarrai_certified_operator_gate import gate_text_analysis
+            gate_text_analysis(ta)
+        except Exception:
+            pass  # gate unavailable → fall back to ungated KB.SAM
         for wa in ta.words:
             if not wa.claims:
                 continue
@@ -146,6 +200,9 @@ def show_events(text: str, sent, rg):
             if e.patient: print(f"      patient={e.patient}")
             if e.location: print(f"      location={e.location}")
             if e.tense != "unknown": print(f"      tense={e.tense}")
+            # PATCH 5 — show mood / speech_act when CommandLamEventMood fired.
+            if getattr(e, "mood", ""): print(f"      mood={e.mood}")
+            if getattr(e, "speech_act", ""): print(f"      speech_act={e.speech_act}")
             if e.time_value: print(f"      time={e.time_value}")
             if hasattr(e, "subject") and e.subject:
                 sb = e.state_before
@@ -158,17 +215,35 @@ def show_events(text: str, sent, rg):
 def show_resolution(sent, eg=None, prior_context=None):
     """L6 — Resolution: Anaphora + Deixis + Relative + Bridging + Transformation + Detached."""
     print(_heading("L6 — التَّعيين (Resolution — 6 type)", "🎯"))
+    _print_legend()
     try:
         from resolution_engine import ResolutionEngine
         res = ResolutionEngine().resolve(sent, eg, prior_context=prior_context or [])
         if not res.resolutions:
             print("  لا تَعيينات مَكشوفَة")
+            _explain("لم يستخرج النظام أي ضمائر/أسماء موصولة/إشارات قابلة للتعيين في هذه الآية.")
             return
         for r in res.resolutions:
             sym = "✓" if r.kind == "Certificate" else ("?" if r.kind == "Hypothesis" else "✗")
             tgt = r.target_surface if r.has_target else "بِلا مَرجِع"
             alts = f" (+{len(r.candidates)-1} alts)" if len(r.candidates) > 1 else ""
             print(f"  {sym} {r.resolution_type:18s}: {r.referent} → {tgt}{alts}")
+            # Per-line explanation when the resolver returned Zero
+            # ("بِلا مَرجِع"). Pure display: r.kind / r.candidates are
+            # NOT inspected destructively, only read.
+            if not r.has_target or r.kind == "Zero":
+                rtype = r.resolution_type
+                if rtype == "anaphora":
+                    _reason("لم يوجد مرجع آمن للضمير ضمن النطاق الحالي؛ "
+                            "يحتاج ذلك إلى طبقة الجمل/السياق أو ربط الضمير المستتر لاحقًا.")
+                elif rtype == "relative":
+                    _reason("لم يُربط الاسم الموصول باسم سابق لأن الربط غير آمن حاليًا؛ "
+                            "يُفضّل النظام تركه بلا مرجع بدلًا من ربط خاطئ.")
+                elif rtype == "deixis":
+                    _reason("لم يُعيَّن مرجع آمن لاسم الإشارة؛ قد يشير إلى مضمون سابق "
+                            "أو إلى قضية كاملة لا إلى اسم مفرد.")
+                else:
+                    _reason("النظام فضّل عدم اقتراح مرجع غير آمن في هذه الحالة.")
     except Exception as e:
         print(f"  ⚠ تَخَطّي: {e}")
 
@@ -217,12 +292,19 @@ def show_meaning(text: str):
         graph = MeaningAssembler().assemble(text)
         s = graph.stats()
         print(f"  العُقَد: {s['nodes']} ({s['certificate_nodes']}C + {s['hypothesis_nodes']}H)")
+        _explain("العقد هي وحدات المعنى المستخرجة؛ C تعني موثوقة نسبيًا، وH تعني احتمالية.")
         print(f"  الرَّوابِط: {s['edges']} ({s['certificate_edges']}C + {s['hypothesis_edges']}H)")
+        _explain("الروابط هي العلاقات بين وحدات المعنى، مثل فاعل/مفعول/زمن/حدث.")
         print(f"  التَّغطيَة: {s['coverage_pct']}%")
+        _explain("نسبة تقريبية لما دخل في شبكة المعنى من عناصر الآية، ولا تعني اكتمال التحليل.")
         print(f"  Entropy (الغُموض): {s['entropy']}")
+        _explain("الغموض هنا يقيس التعارض داخل الشبكة الحالية؛ "
+                 "0.0 يعني عدم وجود تعارض ظاهر، ولا يعني أن التحليل كامل.")
         contradictions_count = s['contradictions']
         cons_text = 'نَعَم ✓' if s['is_consistent'] else f'لا — {contradictions_count} تَناقُض'
         print(f"  مُتَّسِق: {cons_text}")
+        _explain("أي أن الشبكة الحالية لا تحتوي تناقضًا داخليًا واضحًا "
+                 "بعد استبعاد الروابط غير الآمنة.")
         if graph.contradictions:
             print(f"\n  التَّناقُضات:")
             for c in graph.contradictions:
@@ -254,6 +336,42 @@ def show_reasoning_interactive(text: str):
             ans = a.answer if a.answer else a.rejected_reason
             print(f"  {scope} {q}")
             print(f"      {sym} [{a.kind}] {ans[:80] if ans else ''}")
+            # Per-question Arabic explanation (display-only). The
+            # answer object is NOT mutated; we only read q + a.kind +
+            # a.answer to choose the right note.
+            _q = q.strip()
+            ans_txt = ans or ""
+            if _q.startswith("مَن الفاعِل"):
+                _explain("هذه قائمة فاعلين محتملين مستخرجة من العلاقات الحالية؛ "
+                         "إذا ظهرت كـ Hypothesis فهي غير نهائية.")
+            elif _q.startswith("ماذا حَدَث"):
+                _explain("هذه قائمة أحداث/أفعال مستخرجة من النص، "
+                         "وليست تفسيرًا كاملًا للآية.")
+            elif _q.startswith("أَين حَدَث") or _q.startswith("أين حَدَث"):
+                if a.kind == "Zero":
+                    _explain("لم يجد النظام مكانًا صريحًا آمنًا في شبكة المعنى الحالية.")
+                else:
+                    _explain("هذه عناصر مكان مستخرجة من علاقات حروف الجر/الظروف؛ "
+                            "وليست بالضرورة المكان التفسيري للحدث.")
+            elif _q.startswith("متى حَدَث"):
+                if "when_future" in ans_txt:
+                    _explain("استُنتج الزمن من أدوات مثل «إذا» أو السياق الشرطي، "
+                            "وقد يُقيَّد لاحقًا بنطاق الجملة.")
+                elif a.kind == "Zero":
+                    _explain("لا يوجد تعبير زمني صريح آمن؛ معلومات الزمن النحوية "
+                            "(ماضٍ/مضارع/أمر) لا تُعدّ تعبيرًا زمنيًا في حد ذاتها.")
+                else:
+                    _explain("الزمن المستخرج هنا قيمة دلالية لا مجرد تصنيف نحوي.")
+            elif "تَسَلسُل" in _q:
+                _explain("هذا ترتيب تقني للأحداث المستخرجة، وقد يكون أقرب إلى ترتيب "
+                         "الظهور النصي لا الترتيب التفسيري النهائي.")
+            elif "تَحَوَّل" in _q:
+                if a.kind == "Zero":
+                    _explain("لم يُكشف عن فعل تحويلي في النص (مثل صار/أصبح)؛ "
+                            "النظام يفضّل عدم اختلاق تحوّل.")
+            elif "تَفسير" in _q:
+                _explain("النظام لا يقدّم تفسيرًا شرعيًا أو دينيًا؛ "
+                         "نطاقه هنا تحليل لغوي/تقني فقط.")
     except Exception as e:
         print(f"  ⚠ تَخَطّي: {e}")
 

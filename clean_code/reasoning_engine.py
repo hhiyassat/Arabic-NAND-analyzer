@@ -137,6 +137,15 @@ class ReasoningEngine:
         Strategy: نَمُرّ عَلى الـ types بِالـ priority.
         لِكُلّ type نَفحَص هَل trigger يَظهَر كَ كَلِمَة مُستَقِلَّة في السُّؤال
         (لَيس substring — مَنع «ما» مِن مُطابَقَة «لِماذا»).
+
+        PATCH 6 (2026-05-28) — Compound-question routing.
+        Before the per-trigger priority loop, recognize compound
+        question forms that the trigger-set alone routes incorrectly:
+          • «ماذا حَدَث؟» / «ما حَدَث؟»   → events     (not patients)
+          • «ما تَسَلسُل ...؟» / «التسلسل»  → sequence    (not patients via ما)
+          • «إلى ماذا تَحَوَّلَ ...؟» / «صار إلى» → transformation (not patients via ماذا)
+        This keeps the CSV unchanged and routes compound forms before
+        the single-trigger pattern can mis-route them.
         """
         q_plain = _normalize(question)
         # تَقسيم بِالمَسافات + علامات التَّرقيم
@@ -144,6 +153,29 @@ class ReasoningEngine:
         q_words = set(_re.split(r"[\s؟?،,.!]+", q_plain))
         q_words.discard("")
         types = _load_query_types()
+
+        # ── PATCH 6: compound-question routing ──────────────────
+        # Detect حَدَث (root: ح-د-ث) in the question to identify
+        # "what happened" / "what events" intent.
+        has_ma_or_madha = bool(q_words & {"ما", "ماذا"})
+        has_happened = any(w in q_words for w in ("حدث", "حدثت", "احداث", "الاحداث"))
+        has_sequence = any(w in q_words for w in ("تسلسل", "ترتيب"))
+        has_transform = any(w in q_words for w in ("تحول", "تحولت", "صار", "صارت", "تتحول"))
+        has_ila = "الى" in q_words or "إِلَى" in q_words
+
+        if has_ma_or_madha and has_sequence:
+            return Query(raw_text=question, query_type="sequence",
+                         trigger_word="ما+تَسَلسُل", answer_strategy="find_sequence",
+                         is_in_scope=True)
+        if (has_ma_or_madha and has_transform) or (has_ila and has_ma_or_madha):
+            return Query(raw_text=question, query_type="transformation",
+                         trigger_word="ماذا+تَحَوَّل", answer_strategy="find_transformation",
+                         is_in_scope=True)
+        if has_ma_or_madha and has_happened:
+            return Query(raw_text=question, query_type="what_event",
+                         trigger_word="ماذا+حَدَث", answer_strategy="find_events",
+                         is_in_scope=True)
+        # ────────────────────────────────────────────────────────
 
         for t in types:
             trigger_p = t["trigger_plain"]
@@ -205,6 +237,8 @@ class ReasoningEngine:
             "find_explicit_cause": self._find_explicit_cause,
             "find_sequence": self._find_sequence,
             "find_transformation": self._find_transformation,
+            # PATCH 6 — new strategy for "ماذا حَدَث؟" (events, not patients)
+            "find_events": self._find_events,
         }
         strategy = strategy_map.get(query.answer_strategy)
         if not strategy:
@@ -286,42 +320,80 @@ class ReasoningEngine:
         )
 
     def _find_time(self, query: Query, graph: MeaningGraph, question: str) -> Answer:
+        """PATCH 6 — Answer-Type Gate: temporal expressions ONLY.
+
+        Returns scoped time_value entries (when_future, past, then, now,
+        ...). Tense (past/present/command) is NOT a time expression —
+        it is grammatical aspect. If only tense exists with no time
+        adverb, return Zero (do not emit `tense:*` as a time answer).
+        """
         times = []
         evidence = []
+        tense_only = []
         for n in graph.nodes:
             if n.node_type in ("event", "transformation"):
                 t = n.attributes.get("time_value")
                 if t:
                     times.append(t)
                     evidence.append(n.node_id)
-                tense = n.attributes.get("tense")
-                if tense and tense != "unknown":
-                    times.append(f"tense:{tense}")
-                    evidence.append(n.node_id)
+                else:
+                    tense = n.attributes.get("tense")
+                    if tense and tense != "unknown":
+                        tense_only.append(tense)
+        times = self._dedupe_preserve_order(times)
         if not times:
+            # No real temporal expression — clearly label tense as
+            # metadata, do NOT return it as the main answer.
+            if tense_only:
+                tenses = self._dedupe_preserve_order(tense_only)
+                return Answer(
+                    query=query, kind="Zero",
+                    contract=self.CONTRACT_ANSWER,
+                    rejected_reason=(
+                        f"لا تَعبير زَمَنيّ صَريح في النَّصّ "
+                        f"(وُجِدَ tense metadata فَقَط: {', '.join(tenses)})"
+                    ),
+                )
             return Answer(
                 query=query, kind="Zero",
                 contract=self.CONTRACT_ANSWER,
                 rejected_reason="لا زَمَن صَريح في النَّصّ",
             )
         return Answer(
-            query=query, kind="Hypothesis",
+            query=query, kind="Certificate" if len(times) == 1 else "Hypothesis",
             contract=self.CONTRACT_ANSWER,
-            answer=" / ".join(set(times)),
+            answer=" / ".join(times),
             evidence=evidence,
         )
 
     def _find_location(self, query: Query, graph: MeaningGraph, question: str) -> Answer:
-        # Locative-type edges built by harf_jarr_relations.csv: in_location,
-        # on_surface, direction_to, from_source. The location/مكان is the noun
-        # (source of the edge) — we skip ends that are HARF or prepositions.
-        LOC_EDGE_TYPES = {"in_location", "on_surface", "direction_to", "from_source"}
+        """PATCH 6 — Answer-Type Gate: true place expressions ONLY.
+
+        Sources accepted:
+          • in_location (في), on_surface (على) — strong place edges
+          • L3 role=ظرف مكان (locative-noun stems like بَيْنَ, عِندَ)
+
+        Sources NOT accepted (pre-PATCH-6 they bled in via direction_to /
+        from_source on temporal / entity nouns):
+          • direction_to (إلى) — ambiguous: temporal أَجَل / spatial مكان
+          • from_source (مِن)  — ambiguous: source-of-people / source-of-place
+
+        Also reject known temporal nouns (أَجَل / يَوم / ساعَة / شَهر / سَنَة /
+        وَقت) even if they appear in a place-edge end.
+        """
+        STRONG_LOC_EDGES = {"in_location", "on_surface"}
         SKIP_SURFACES = {"في", "فِي", "على", "عَلى", "عَلَىٰ", "إلى", "إِلى",
                          "من", "مِن", "عن", "عَن"}
+        TEMPORAL_NOUN_ROOTS = {
+            "اجل", "أجل", "يوم", "ساعة", "شهر", "سنة", "وقت", "حين",
+            "ليل", "نهار", "صباح", "مساء", "عصر",
+        }
         locations = []
         evidence = []
+
+        # Source 1 — strong place edges only
         for e in graph.edges:
-            if e.edge_type not in LOC_EDGE_TYPES:
+            if e.edge_type not in STRONG_LOC_EDGES:
                 continue
             for end in (e.source, e.target):
                 node = graph.get_node(end)
@@ -330,11 +402,28 @@ class ReasoningEngine:
                 wc = node.attributes.get("word_class", "") if node.attributes else ""
                 if wc == "HARF":
                     continue
-                surf = node.surface
+                surf = node.surface or ""
+                if not surf or surf in SKIP_SURFACES:
+                    continue
+                # Reject temporal nouns by plain-text root match
+                plain = _normalize(surf)
+                if any(t in plain for t in TEMPORAL_NOUN_ROOTS):
+                    continue
+                locations.append(surf)
+                evidence.append(e.edge_id)
+                break
+
+        # Source 2 — L3-certified locative nouns (role=ظرف مكان)
+        for n in graph.nodes:
+            if n.node_type != "entity":
+                continue
+            role = (n.attributes.get("role_phrase", "") or "") if n.attributes else ""
+            if "ظرف مكان" in role:
+                surf = n.surface or ""
                 if surf and surf not in SKIP_SURFACES:
                     locations.append(surf)
-                    evidence.append(e.edge_id)
-                    break
+                    evidence.append(n.node_id)
+
         locations = self._dedupe_preserve_order(locations)
         if not locations:
             return Answer(
@@ -347,6 +436,47 @@ class ReasoningEngine:
         answer = " / ".join(head) + (f" (+{rest} آخَرين)" if rest > 0 else "")
         return Answer(
             query=query, kind="Certificate" if len(locations) == 1 else "Hypothesis",
+            contract=self.CONTRACT_ANSWER,
+            answer=answer,
+            evidence=evidence[:5],
+        )
+
+    def _find_events(self, query: Query, graph: MeaningGraph, question: str) -> Answer:
+        """PATCH 6 — strategy for "ماذا حَدَث؟": return event/action labels only.
+
+        Source: graph nodes with node_type in (event, transformation).
+        Label: prefer verb_surface (the actual verb), fall back to the
+        node's surface or type field. Returned in verse order.
+        """
+        events = sorted(
+            [n for n in graph.nodes if n.node_type in ("event", "transformation")],
+            key=lambda n: n.position,
+        )
+        if not events:
+            return Answer(
+                query=query, kind="Zero",
+                contract=self.CONTRACT_ANSWER,
+                rejected_reason="لا أَحداث مَكشوفَة",
+            )
+        labels = []
+        evidence = []
+        for n in events:
+            label = ((n.attributes or {}).get("verb_surface") or n.surface or n.attributes.get("type") if n.attributes else None) or n.surface
+            if label:
+                labels.append(label)
+                evidence.append(n.node_id)
+        labels = self._dedupe_preserve_order(labels)
+        if not labels:
+            return Answer(
+                query=query, kind="Zero",
+                contract=self.CONTRACT_ANSWER,
+                rejected_reason="أَحداث مَكشوفَة لَكِن بِدون labels",
+            )
+        head = labels[:5]
+        rest = len(labels) - len(head)
+        answer = " / ".join(head) + (f" (+{rest} آخَرين)" if rest > 0 else "")
+        return Answer(
+            query=query, kind="Certificate" if len(labels) == 1 else "Hypothesis",
             contract=self.CONTRACT_ANSWER,
             answer=answer,
             evidence=evidence[:5],
@@ -429,7 +559,9 @@ class ReasoningEngine:
         )
 
     def _find_sequence(self, query: Query, graph: MeaningGraph, question: str) -> Answer:
-        """Multi-event reasoning: ما الَّذي حَدَثَ ثُمّ ماذا؟"""
+        """PATCH 6 — Multi-event reasoning: ordered events in verse order,
+        joined with → arrows. Must differ structurally from the
+        find_events answer (which uses / separators)."""
         events = sorted(
             [n for n in graph.nodes if n.node_type in ("event", "transformation")],
             key=lambda n: n.position
@@ -440,12 +572,26 @@ class ReasoningEngine:
                 contract=self.CONTRACT_ANSWER,
                 rejected_reason="حَدَث واحِد فَقَط — لا تَسَلسُل",
             )
-        seq = " → ".join(e.surface for e in events)
+        # PATCH 6 — prefer verb_surface labels (not node.surface which
+        # is the noun-tagged stem). Cap at 8 to keep display compact.
+        labels = []
+        for n in events:
+            label = ((n.attributes or {}).get("verb_surface") or n.surface)
+            labels.append(label)
+        labels_dedup = []
+        seen = set()
+        for l in labels:
+            if l and l not in seen:
+                seen.add(l)
+                labels_dedup.append(l)
+        head = labels_dedup[:8]
+        rest = len(labels_dedup) - len(head)
+        seq = " → ".join(head) + (f" → (+{rest})" if rest > 0 else "")
         return Answer(
             query=query, kind="Hypothesis",
             contract=self.CONTRACT_ANSWER,
             answer=seq,
-            evidence=[e.node_id for e in events],
+            evidence=[e.node_id for e in events][:8],
         )
 
     def _find_transformation(self, query: Query, graph: MeaningGraph, question: str) -> Answer:

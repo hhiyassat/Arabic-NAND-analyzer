@@ -36,8 +36,191 @@ sys.path.insert(0, str(_HERE))
 from contracts_loader import _load_rows
 from relation_schema import EntityNode, Relation, RelationGraph
 
+# Phase 5 Batch B: this is the sole authorized production importer of
+# phase5_clause_segmenter (enforced by test_production_path_segmentation.py).
+from phase5_clause_segmenter import Phase5Clause, segment_clauses_from_surfaces
+
 
 CONTRACT_NAME = "RelationExtractor:v1"
+
+
+# ============================================================================
+# PATCH 7 (2026-05-28) — L4 Relation Safety Gates
+# ============================================================================
+#
+# Block obviously invalid relations before they pollute the MeaningGraph
+# (which L8 reads). Each gate is a small predicate; emission sites in
+# the main extractor consult them with an early `continue`. No relation
+# is invented here — only filtered.
+
+_DIACRITICS = "ًٌٍَُِّْـٰٓ"
+
+
+def _p7_strip(s: str) -> str:
+    s = "".join(c for c in (s or "") if c not in _DIACRITICS)
+    return s.replace("ٱ", "ا").replace("أ", "ا").replace("إ", "ا").replace("آ", "ا")
+
+
+# Temporal / conditional particles that L3 sometimes mis-labels as
+# مفعول به. They are ظَرف / أَداة شَرط, never a true verb patient.
+_P7_TEMPORAL_OR_CONDITIONAL_PARTICLES = {
+    "اذا", "اذ", "لما", "متى", "حين", "حينما", "ايان", "كلما",
+    "حيث", "حيثما",
+}
+
+
+def _p7_is_temporal_or_conditional_particle(t) -> bool:
+    """True if token is إِذَا / إِذ / لَمَّا / مَتى / حيث / كُلَّما / ... or
+    if its wazn field literally contains 'ظرف' or 'شرط'."""
+    surf = _p7_strip(getattr(t, "token", "") or getattr(t, "surface", ""))
+    if surf in _P7_TEMPORAL_OR_CONDITIONAL_PARTICLES:
+        return True
+    wazn = getattr(t, "wazn", "") or ""
+    if "ظرف" in wazn or "شرط" in wazn:
+        return True
+    return False
+
+
+def _p7_token_has_prep_prefix(t) -> bool:
+    """True if the segmenter peeled بِ/لِ/كِ as a PREP prefix on this token.
+    Used to block possessor_of emission on prepositional-phrase nouns
+    (بِكُلِّ is جار+مجرور, not a مضاف-إليه candidate for the next noun)."""
+    prefix_tags = getattr(t, "prefix_tags", None) or []
+    if "PREP" in prefix_tags:
+        return True
+    # Fallback for tokens that don't carry prefix_tags: re-segment.
+    surface = getattr(t, "token", "") or getattr(t, "surface", "")
+    if not surface:
+        return False
+    try:
+        from segmenter import segment as _segment  # type: ignore
+        seg = _segment(surface, normalize_input=True)
+        return "PREP" in (seg.prefix_tags or [])
+    except Exception:
+        return False
+
+
+def _p7_is_jalalah(t) -> bool:
+    """True if the token is لَفظ الجَلالَة (ٱللَّه / اللَّه, in any case).
+    The i3rab engine sometimes classifies it as JALALAH and sometimes
+    as JAMID with wazn='لفظ الجلالة' (depending on position/MASAQ feed),
+    so we check word_class, wazn, AND a stem/surface fallback."""
+    if getattr(t, "word_class", "") == "JALALAH":
+        return True
+    wazn = getattr(t, "wazn", "") or ""
+    if "جلال" in wazn:
+        return True
+    stem = getattr(t, "stem", "") or getattr(t, "token", "") or getattr(t, "surface", "") or ""
+    stem_plain = _p7_strip(stem)
+    return stem_plain in ("الله", "اللاه", "اله") or stem_plain.endswith("الله")
+
+
+def _p7_token_starts_with_conjunction(t) -> bool:
+    """True if the token starts with وَ / فَ (CONJ-peeled prefix)."""
+    prefix_tags = getattr(t, "prefix_tags", None) or []
+    if "CONJ" in prefix_tags:
+        return True
+    surface = getattr(t, "token", "") or ""
+    return surface.startswith(("وَ", "فَ", "و", "ف"))
+
+
+def _p7_has_iv_prefix_surface(surface_plain: str) -> bool:
+    """True if a normalized verb surface starts with a مضارع prefix
+    (يَ/تَ/نَ/أَ collapsed to ي/ت/ن/أ) — OR with the hamzat-wasl ٱ/ا
+    that heads imperatives. Used by the implicit-agent gate to reject
+    PAST-suffix rules on non-PAST verb surfaces. Without the ٱ→ا
+    normalization, ٱهْدِنَا (CV) was falling through to the PAST نا
+    rule and getting ⊕نَحْنُ as a wrong implicit agent."""
+    if not surface_plain:
+        return False
+    first = surface_plain[:1].replace("ٱ", "ا")
+    return first in ("ي", "ت", "ن", "ا") or first == "أ"
+
+
+# ============================================================================
+# PATCH 12 (2026-05-28) — L4 Remaining Relation Cleanup
+# ============================================================================
+#
+# Four narrow safety filters on top of PATCH 7:
+#   • Block possessor_of when the target is a locative ظَرف noun
+#     (ٱللَّهِ → عِندَ should not be possessor_of; ٱللَّهِ is the
+#     complement of the locative, not the مالك of عِندَ).
+#   • Block attribute_of when the TARGET has a PREP prefix
+#     (شَىْءٍ → بِكُلِّ should not be attribute_of; شَىْءٍ is مضاف
+#     إِليه inside the PP, not a نعت of the PP head).
+#   • Block ism_of_kana when the source token starts with فَ
+#     (فَرَجُلٌ is the apodosis جواب الشرط after «إن لم يكونا...»,
+#     not the اسم of يَكُونَا).
+#   • Block patient2_of when (a) the verb's root is NOT in the
+#     ditransitive-verbs set, OR (b) a coordinator (أَوْ/و) sits
+#     between the first patient and the candidate (الكَلِمَتان حال
+#     مَعطوفَتان لا مَفعولان مُختَلِفان).
+
+
+def _p12_target_is_locative_zarf(target_token) -> bool:
+    """True if the target of a possessor_of relation is a locative
+    ظَرف noun (e.g., عِندَ). Reads role_phrase set by L3."""
+    if target_token is None:
+        return False
+    role = getattr(target_token, "role_phrase", "") or ""
+    if "ظرف مكان" in role or "ظرف زمان" in role:
+        return True
+    # Surface fallback for tokens whose role wasn't filled yet
+    surf = _p7_strip(getattr(target_token, "token", "") or "")
+    if surf in {"عند", "بين", "تحت", "فوق", "قبل", "بعد",
+                "امام", "خلف", "وراء", "مع"}:
+        return True
+    return False
+
+
+def _p12_target_has_prep_prefix(target_token) -> bool:
+    """True iff the TARGET token carries a PREP-peeled prefix
+    (بِ / لِ / كِ). Used to block attribute_of from a نعت candidate
+    to a PP-headed noun."""
+    if target_token is None:
+        return False
+    return _p7_token_has_prep_prefix(target_token)
+
+
+def _p12_source_is_apodosis_fa(source_token) -> bool:
+    """True if the source surface starts with فَ — apodosis marker
+    of a conditional (جواب الشرط). Used to block ism_of_kana from
+    apodosis-headed nouns like فَرَجُلٌ → يَكُونَا."""
+    surf = getattr(source_token, "token", "") or ""
+    # Diacritic-sensitive: فَـ (fatha) is the apodosis/conjunction
+    # marker; do NOT match فُـ (which is part of native words like
+    # فُسُوقٌ; that case is the segmenter's false CONJ peel, but the
+    # apodosis fa is always فَـ).
+    return surf.startswith(("فَ",))
+
+
+# Ditransitive-verb roots — verbs that genuinely take two objects.
+_P12_DITRANS_ROOTS = {
+    "عطي", "كسو", "لبس", "علم", "ظنن", "حسب",
+    "خيل", "زعم", "وجد", "جعل", "اتخذ", "ري",
+}
+
+# Coordinators that separate parallel حال/صفة, NOT distinct patients.
+_P12_COORD_SURFACES_PLAIN = {"او", "و", "ام", "بل", "ثم", "ف"}
+
+
+def _p12_should_skip_patient2(verb_root: str, tokens, first_patient_pos: int,
+                                candidate_pos: int) -> bool:
+    """True if patient2_of(candidate → verb) should be blocked because:
+       (a) verb root is NOT in the ditransitive-verbs set, OR
+       (b) a coordinator (أَوْ / و / أم / ...) sits between the first
+           patient position and the candidate position (the two nouns
+           are coordinated حال/صفة, not two distinct patients).
+    """
+    if (verb_root or "").strip() not in _P12_DITRANS_ROOTS:
+        return True
+    for j in range(first_patient_pos + 1, candidate_pos):
+        if 0 <= j < len(tokens):
+            tw = getattr(tokens[j], "token", "") or ""
+            plain = _p7_strip(tw).strip()
+            if plain in _P12_COORD_SURFACES_PLAIN:
+                return True
+    return False
 
 
 # ============================================================================
@@ -229,6 +412,14 @@ class RelationExtractor:
                         _is_defective = _dv.is_defective
                     except ImportError:
                         _dv = None
+                    # PATCH 12 — block ism_of_kana when the source is an
+                    # apodosis-headed noun (فَرَجُلٌ in «إن لم يكونا
+                    # رجلين فرجل ...»). The فَ is the جواب-of-conditional
+                    # marker; the noun starts a new sentence and is NOT
+                    # the اسم of the prior كان-class verb.
+                    if (_is_defective and _dv is not None
+                            and _p12_source_is_apodosis_fa(t)):
+                        _is_defective = False
                     if _is_defective and _dv is not None:
                         # كان وَأَخواتُها — هَذا اسم كان لا فاعل
                         g.add_relation(self._build_relation(
@@ -289,6 +480,17 @@ class RelationExtractor:
             # MC FIX 2026-05-25: DefectiveVerbContract — لَو الفِعل ناقِص،
             # المَنصوب هُو خَبَر كان لا مَفعول.
             elif role_n in ("مفعول_به", "مفعولٌ_به", "مفعول"):
+                # PATCH 7 — L4 Relation Safety Gate.
+                # (a) Temporal/conditional particles (إِذَا, إِذ, لَمَّا, ...)
+                #     are mis-labelled "مفعول به" by L3 sometimes. They are
+                #     ظَرف / أَداة شَرط, never a true verb patient.
+                # (b) HARF / particle tokens are never patients.
+                if _p7_is_temporal_or_conditional_particle(t):
+                    last_noun_idx = i
+                    continue
+                if t.word_class == "HARF":
+                    last_noun_idx = i
+                    continue
                 # PatientWindowContract (R): تَقديم المَفعول.
                 # لَو الـtoken الحاليّ مَنصوب وَ مَسبوق بِفاء/واو
                 # وَ يَلِيه فِعل مُباشَرَة → الفِعل التالي هُوَ الناصِب،
@@ -352,6 +554,24 @@ class RelationExtractor:
 
             # مضاف إليه → possessor_of(token, prev_noun)
             elif role_n in ("مضاف_إليه", "مضافٌ_إليه"):
+                # PATCH 7 — L4 Relation Safety Gate (PP-not-إضافة).
+                # If the token carries a PREP-peeled prefix (بِ / لِ / كِ),
+                # it is the noun of a جار+مجرور phrase, NOT a مضاف-إليه
+                # to whatever last_noun_idx happens to be. Example from
+                # 2:282: بِكُلِّ شَىْءٍ — بِكُلِّ should NOT become
+                # possessor_of وَٱللَّهُ; it's an adverbial PP.
+                if _p7_token_has_prep_prefix(t):
+                    last_noun_idx = i
+                    continue
+                # PATCH 12 — block possessor_of when the TARGET is a
+                # locative ظَرف noun (عِندَ / بَيْنَ / تَحْتَ / فَوْقَ).
+                # «عِندَ ٱللَّهِ» — ٱللَّهِ is the مَعمول of the locative,
+                # NOT a possessor of عِندَ. Emitting possessor_of here
+                # would mislead L5/L6/L8 ("does Allah possess عِندَ?").
+                if last_noun_idx is not None and last_noun_idx != i:
+                    if _p12_target_is_locative_zarf(tokens[last_noun_idx]):
+                        last_noun_idx = i
+                        continue
                 if last_noun_idx is not None and last_noun_idx != i:
                     g.add_relation(self._build_relation(
                         name="possessor_of",
@@ -368,17 +588,37 @@ class RelationExtractor:
             elif role_n == "نعت":
                 if last_noun_idx is not None and last_noun_idx != i:
                     _emit_attr = True
-                    try:
-                        from attribute_agreement_contract import evaluate_attribute
-                        _av = evaluate_attribute(
-                            x_token=t, y_token=tokens[last_noun_idx],
-                            x_idx=i, y_idx=last_noun_idx,
-                            all_tokens=tokens,
-                        )
-                        if _av.kind == "Zero":
-                            _emit_attr = False
-                    except ImportError:
-                        pass
+                    # PATCH 7 — L4 Relation Safety Gate (jalalah-attribute loop).
+                    # وَٱللَّهُ following ٱللَّهُ across a clause is a coordinated
+                    # subject of a new clause, not a نعت of the prior لَفظ
+                    # الجَلالَة. Block when BOTH source and target are JALALAH
+                    # AND source carries a CONJ prefix (وَ / فَ).
+                    if (
+                        _p7_is_jalalah(t)
+                        and _p7_is_jalalah(tokens[last_noun_idx])
+                        and _p7_token_starts_with_conjunction(t)
+                    ):
+                        _emit_attr = False
+                    # PATCH 12 — block attribute_of when the TARGET is
+                    # a PP-headed noun (بِكُلِّ). شَىْءٍ → بِكُلِّ is
+                    # mis-emitted because شَىْءٍ has role=نعت (case
+                    # agreement with بِكُلِّ); but inside «بِكُلِّ
+                    # شَىْءٍ» the شَىْءٍ is مُضاف-إِليه to كُلِّ, not a
+                    # نعت of the whole PP head.
+                    if _emit_attr and _p12_target_has_prep_prefix(tokens[last_noun_idx]):
+                        _emit_attr = False
+                    if _emit_attr:
+                        try:
+                            from attribute_agreement_contract import evaluate_attribute
+                            _av = evaluate_attribute(
+                                x_token=t, y_token=tokens[last_noun_idx],
+                                x_idx=i, y_idx=last_noun_idx,
+                                all_tokens=tokens,
+                            )
+                            if _av.kind == "Zero":
+                                _emit_attr = False
+                        except ImportError:
+                            pass
                     if _emit_attr:
                         g.add_relation(self._build_relation(
                             name="attribute_of",
@@ -597,7 +837,89 @@ class RelationExtractor:
         # ── Phase C 100%: post-detection لِسَدّ ما يَفوت i3rab ──
         self._post_detect_missed_relations(g, tokens)
 
+        # ── Phase 5 Batch B: condition/jawab relations bridged from Phase 5 ──
+        self._p13_condition_jawab_from_phase5(g, sent, tokens)
+
         return g
+
+    def _p13_condition_jawab_from_phase5(self, g, sent, tokens) -> None:
+        """Bridge Phase 5 condition/condition_answer_command clauses
+        into L4 condition_tool_of and jawab_shart_of relations.
+
+        Block-and-skip when Phase 5 output is absent or token-index
+        reconciliation fails. No manual fallback re-detection.
+        """
+        if not tokens:
+            return
+        surfaces = [getattr(t, "token", "") or "" for t in tokens]
+        verse_ref = getattr(sent, "verse_ref", "") or ""
+        try:
+            clauses = segment_clauses_from_surfaces(surfaces, verse_ref)
+        except Exception:  # noqa: BLE001
+            return
+        if not clauses or not all(isinstance(c, Phase5Clause) for c in clauses):
+            return
+
+        by_id = {c.clause_id: c for c in clauses}
+        n = len(tokens)
+
+        for c in clauses:
+            if c.type != "condition_answer_command":
+                continue
+            if not c.parent_clause_id or c.parent_clause_id not in by_id:
+                continue
+            parent = by_id[c.parent_clause_id]
+            if parent.type != "condition":
+                continue
+
+            if not (0 <= parent.start_token_index <= parent.end_token_index < n):
+                continue
+            if not (0 <= c.start_token_index <= c.end_token_index < n):
+                continue
+
+            cond_tool_idx = parent.start_token_index
+
+            cond_verb_idx = None
+            for i in range(parent.start_token_index, parent.end_token_index + 1):
+                if getattr(tokens[i], "word_class", "") == "FIIL":
+                    cond_verb_idx = i
+                    break
+            if cond_verb_idx is None:
+                continue
+
+            jawab_verb_idx = None
+            for i in range(c.start_token_index, c.end_token_index + 1):
+                if getattr(tokens[i], "word_class", "") == "FIIL":
+                    jawab_verb_idx = i
+                    break
+            if jawab_verb_idx is None:
+                continue
+
+            g.add_relation(self._build_relation(
+                name="condition_tool_of",
+                kind_type="conditional",
+                source_id=f"t{cond_tool_idx}",
+                target_id=f"t{cond_verb_idx}",
+                role_kind="Certificate",
+                source_of_claim=(
+                    f"phase5:{parent.clause_id}.head={parent.head_token} + "
+                    f"ConditionalScopeContract:{parent.confidence}"
+                ),
+                operator=parent.head_token,
+            ))
+
+            g.add_relation(self._build_relation(
+                name="jawab_shart_of",
+                kind_type="conditional",
+                source_id=f"t{jawab_verb_idx}",
+                target_id=f"t{cond_verb_idx}",
+                role_kind="Certificate",
+                source_of_claim=(
+                    f"phase5:{c.clause_id}.parent={parent.clause_id} + "
+                    f"introduced_by={c.introduced_by} + {c.source}"
+                ),
+                operator=c.introduced_by,
+            ))
 
     # ──────────────────────────────────────────────────────────
     # POST-DETECTION (Phase C 100% — heuristic rules)
@@ -734,6 +1056,16 @@ class RelationExtractor:
                 if not is_nasb:
                     continue
                 if f"t{j}" in patients:
+                    continue
+                # PATCH 12 — patient2_of safety gate.
+                # The original heuristic over-fires: it labels ANY
+                # second منصوب-tanwin noun after a verb as patient2_of,
+                # even when (a) the verb is NOT ditransitive, and
+                # (b) the two nouns are coordinated حال/صفة separated
+                # by أَوْ / و (صَغِيرًا أَوْ كَبِيرًا → both are size
+                # حال, not two distinct patients).
+                if _p12_should_skip_patient2(verb_root, tokens,
+                                              first_patient_pos, j):
                     continue
                 # override: نَحذِف أَيّ attribute_of لِهذا الـ token (لأنّه مَفعول ثانٍ)
                 g.relations = [r for r in g.relations
@@ -1029,17 +1361,34 @@ class RelationExtractor:
             # السِّياسَة: اللاحِقَة الصَّريحَة (PAST: تُم، نا، وا) أَولَى مِن البادِئَة
             # لِأَنَّها تُحَدِّد الشَّخص/العَدَد بِلا غُموض.
             matched_row = None
+            # PATCH 7 — implicit-agent guard.
+            # Do NOT apply PAST-suffix rules (تُم / نا / وا) when the verb
+            # surface starts with an IV prefix (ي/ت/ن/أ). Target case:
+            # يَكُونَا (dual jussive with نَا dual-marker, kept attached by
+            # PATCH 3C) was wrongly matching the past-suffix `نا` rule
+            # and getting ⊕نَحْنُ as implicit agent. Same defensive
+            # behavior for ت-prefixed verbs ending in ـتُم / ـتُمَا / etc.
+            _has_iv_prefix = _p7_has_iv_prefix_surface(surface_plain)
             # المُحاوَلَة الأولى: قاعِدَة بِلاحِقَة فَقَط (PAST)
             for row in implicit_rules:
                 iv_pref = row.get("iv_prefix_plain", "").strip()
                 suf_pat = row.get("verb_suffix_pattern", "").strip()
                 if iv_pref or not suf_pat:
                     continue
+                if _has_iv_prefix:
+                    continue  # PATCH 7: skip PAST rules on IV-prefixed verbs
                 if surface_plain.endswith(suf_pat):
                     matched_row = row
                     break
             # المُحاوَلَة الثَّانيَة: قاعِدَة بِبادِئَة (IV)
-            if matched_row is None:
+            # Guard: skip IV-prefix matching on PAST (PV) verbs. The
+            # blind clitic-strip removes leading أ from PV form-IV
+            # verbs (أَنْعَمْتَ → "نعمت"), making them look like ن-IV verbs
+            # and emitting ⊕نَحْنُ. Past verbs encode their agent in the
+            # suffix (تَ/تُمْ/نا/...), not the prefix, so the IV loop must
+            # not fire here.
+            _v_aspect_imp = getattr(t, "verb_aspect", "") or ""
+            if matched_row is None and _v_aspect_imp != "PV":
                 for row in implicit_rules:
                     iv_pref = row.get("iv_prefix_plain", "").strip()
                     suf_pat = row.get("verb_suffix_pattern", "").strip()
@@ -1239,7 +1588,11 @@ class RelationExtractor:
             v_surface = getattr(v_token, "token", "") or "" if v_token else ""
             v_lemma = getattr(v_token, "lemma", "") or "" if v_token else ""
             _dv = check_defective_verb(v_surface, lemma_hint=v_lemma)
-            if _dv.is_defective and not is_implicit:
+            # PATCH 12 — also reject ism_of_kana routing here when the
+            # source noun is apodosis-headed (فَرَجُلٌ → يَكُونَا).
+            _p12_skip_kana = (x_token is not None
+                              and _p12_source_is_apodosis_fa(x_token))
+            if _dv.is_defective and not is_implicit and not _p12_skip_kana:
                 # كان وَأَخواتُها → ism_of_kana لا agent_of
                 return Relation(
                     name=_dv.topic_relation or "ism_of_kana",
@@ -1253,6 +1606,10 @@ class RelationExtractor:
                     ),
                     contract="DefectiveVerbContract:v1",
                 )
+            if _dv.is_defective and _p12_skip_kana:
+                # apodosis-headed noun, not ism — return None so no
+                # ism_of_kana relation is added.
+                return None
         except ImportError:
             pass
 

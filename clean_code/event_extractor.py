@@ -131,6 +131,181 @@ def is_time_adverb(word: str) -> Optional[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────
+# PATCH 5 (2026-05-27) — TimeScopeGate + CommandLamEventMood helpers
+# ─────────────────────────────────────────────────────────────────
+
+# Quranic / standard pause marks that bound a clause for time-scope
+# purposes. A time-adverb cannot project its time_value across one of
+# these markers. NFC-normalized.
+_CLAUSE_BREAK_CHARS = {
+    "ۖ", "ۗ", "ۘ", "ۙ", "ۚ", "ۛ",  # ۖ ۗ ۘ ۙ ۚ ۛ
+    "ۜ", "۝", "۞",                                  # ۜ ۝ ۞
+    "،", "؛", ".", "؟", "!",
+}
+
+
+def _is_clause_break(token_surface: str) -> bool:
+    """True if the token is purely punctuation/pause that ends a clause."""
+    if not token_surface:
+        return False
+    s = _nfc(token_surface).strip()
+    if not s:
+        return False
+    return all(ch in _CLAUSE_BREAK_CHARS for ch in s)
+
+
+def _build_pause_before(sent_text: str, tokens) -> set[int]:
+    """Return a set of token indices `i` such that a clause-break
+    pause-mark appears in `sent_text` immediately before tokens[i].
+
+    Needed because the i3rab tokenizer drops pause marks before they
+    reach `sent.tokens`, so we recover that information by walking
+    `sent.text` whitespace-split pieces and aligning them to tokens.
+    """
+    pause_before: set[int] = set()
+    if not sent_text or not tokens:
+        return pause_before
+    pieces = _nfc(sent_text).split()
+    # Token surfaces (NFC-normalized) in order
+    token_surfaces = [
+        _nfc(getattr(t, "token", "") or getattr(t, "surface", "")) for t in tokens
+    ]
+    ti = 0  # cursor into tokens
+    seen_pause = False
+    for piece in pieces:
+        # Pure pause/punctuation piece? mark next token as pause-preceded
+        if all(ch in _CLAUSE_BREAK_CHARS for ch in piece) and piece:
+            seen_pause = True
+            continue
+        # Otherwise this piece should match the next token surface. If
+        # alignment drifts (the tokenizer may merge/split differently)
+        # we just continue; mis-alignment only weakens the gate, never
+        # over-filters time_values.
+        if ti < len(token_surfaces) and piece == token_surfaces[ti]:
+            if seen_pause:
+                pause_before.add(ti)
+                seen_pause = False
+            ti += 1
+        else:
+            # Try to advance ti past any tokens that don't match (rare).
+            # If we skip tokens here, we lose pause info for them — but
+            # the conservative outcome (no time_value) is fine.
+            if ti < len(token_surfaces):
+                ti += 1
+    return pause_before
+
+
+def _find_scoped_time_value(tokens, verb_idx: int,
+                             pause_before: set[int]) -> Optional[str]:
+    """PATCH 5 — TimeScopeGate.
+
+    Walk left from `verb_idx` looking for a time-adverb. Stop when we
+    cross a pause-mark boundary (any index k where k ∈ pause_before
+    while we're scanning back from verb_idx to k). If a time-adverb
+    is found within the unbroken left-window, return its time_value;
+    otherwise None.
+
+    This replaces the previous global `sentence_time_value` default
+    (which attached the same time_value to every event in the verse,
+    including past events outside the إذا scope).
+    """
+    for j in range(verb_idx, 0, -1):
+        # Crossing into token j means stepping from j to j-1; if j is
+        # marked as preceded by a pause, the scope ends here.
+        if j in pause_before:
+            return None
+        tj = tokens[j - 1]
+        tw = getattr(tj, "token", "") or getattr(tj, "surface", "")
+        if _is_clause_break(tw):
+            return None
+        entry = is_time_adverb(tw)
+        if entry:
+            return entry.get("value") or None
+    return None
+
+
+def _detect_command_lam_mood(token) -> tuple[str, str]:
+    """PATCH 5 — CommandLamEventMood.
+
+    If the verb token carries LAM_AL_AMR in its production-path prefix
+    tags, return (mood, speech_act) = ("jussive_command", "command").
+    Otherwise return ("", "").
+
+    The prefix tags are set by the segmenter (PATCH 1) — this function
+    only READS them; no segmentation change.
+    """
+    prefixes = getattr(token, "prefixes", None) or []
+    # Token may carry parallel prefix_tags via i3rab pipeline; fall back
+    # to inferring from prefix forms if tags missing.
+    prefix_tags = getattr(token, "prefix_tags", None) or []
+    if "LAM_AL_AMR" in prefix_tags:
+        return "jussive_command", "command"
+    # Fallback: re-segment via production segmenter on the surface form
+    # (used when the i3rab token doesn't carry prefix_tags explicitly).
+    surface = getattr(token, "token", "") or getattr(token, "surface", "")
+    if surface:
+        try:
+            from segmenter import segment as _segment  # type: ignore
+            seg = _segment(surface, normalize_input=True)
+            if "LAM_AL_AMR" in (seg.prefix_tags or []):
+                return "jussive_command", "command"
+        except Exception:
+            pass
+    return "", ""
+
+
+# Step C Part 3 — diacritic-stripped + hamza-normalised forms of the
+# negation particle لا that opens لا-النَّاهيَة constructions. وَلَا /
+# فَلَا / لَا all collapse to these plain forms after diacritic strip.
+_NAHY_PREV_SURFACES_PLAIN = {"ولا", "فلا", "لا"}
+
+
+def _detect_la_nahy_mood(token, prev_token) -> tuple[str, str]:
+    """Step C Part 3 (2026-05-29) — NahyEventMood. Companion to PATCH
+    5's CommandLamEventMood for the لا-النَّاهيَة construction.
+
+    Fires when:
+      (a) prev_token surface (diacritic-stripped + hamza-normalised)
+          is one of {ولا, فلا, لا}, AND
+      (b) prev_token's L3 word_class is HARF, AND
+      (c) current token is an imperfect verb (word_class=FIIL AND
+          verb_aspect=IV, OR has IMPERF_PREF in its prefix tags).
+
+    On hit returns (mood, speech_act) = ("jussive_prohibition",
+    "prohibition"). Otherwise returns ("", "").
+
+    Pure read: inspects existing token attributes only. No
+    segmentation, no relation, no upstream mutation.
+    """
+    if prev_token is None:
+        return "", ""
+    # (a) prev_token surface check
+    prev_surf = getattr(prev_token, "token", "") or getattr(prev_token, "surface", "") or ""
+    if not prev_surf:
+        return "", ""
+    _DIAC = "ًٌٍَُِّْـٰٓ"
+    prev_plain = "".join(c for c in _nfc(prev_surf) if c not in _DIAC)
+    prev_plain = (prev_plain
+                  .replace("ٱ", "ا").replace("أ", "ا")
+                  .replace("إ", "ا").replace("آ", "ا"))
+    if prev_plain not in _NAHY_PREV_SURFACES_PLAIN:
+        return "", ""
+    # (b) prev_token must be a HARF (the negation particle, not a noun
+    # whose plain form happens to collapse to "لا").
+    if getattr(prev_token, "word_class", "") != "HARF":
+        return "", ""
+    # (c) current token must be an imperfect verb.
+    if getattr(token, "word_class", "") != "FIIL":
+        return "", ""
+    aspect = getattr(token, "verb_aspect", "") or ""
+    if aspect != "IV":
+        prefix_tags = getattr(token, "prefix_tags", None) or []
+        if "IMPERF_PREF" not in prefix_tags:
+            return "", ""
+    return "jussive_prohibition", "prohibition"
+
+
+# ─────────────────────────────────────────────────────────────────
 # Tense detection (مِن صيغَة الفِعل)
 # ─────────────────────────────────────────────────────────────────
 
@@ -247,14 +422,17 @@ class EventExtractor:
         graph = EventGraph(source_text=getattr(sent, "text", ""))
         tokens = sent.tokens
 
-        # كَشف ظُروف الزَّمان في الجُملَة (لِكُلّ الأَحداث)
-        sentence_time_value = None
-        for tok in tokens:
-            tw = getattr(tok, "token", "") or getattr(tok, "surface", "")
-            time_entry = is_time_adverb(tw)
-            if time_entry:
-                sentence_time_value = time_entry["value"]
-                break
+        # PATCH 5 (2026-05-27) — TimeScopeGate.
+        # The previous behavior found the FIRST time-adverb in the verse
+        # and attached its time_value to EVERY event (sentence-global).
+        # That made past events like تَدَايَنتُم / عَلَّمَهُ / دُعُوا /
+        # تَبَايَعْتُمْ all surface as time=when_future just because the
+        # verse opens with إِذَا. PATCH 5 replaces the global default
+        # with a per-verb scope lookup (see _find_scoped_time_value).
+        # The i3rab tokenizer drops Quranic pause marks (ۚ ۖ ۗ ...)
+        # before they reach sent.tokens, so we recover their positions
+        # by re-aligning sent.text against tokens.
+        pause_before = _build_pause_before(getattr(sent, "text", ""), tokens)
 
         # 1. ابحَث عَن كُلّ الأَفعال (FIIL أَو in transformation lexicon)
         for i, t in enumerate(tokens):
@@ -302,6 +480,29 @@ class EventExtractor:
             # 4. كَشف الزَّمَن مِن صيغَة الفِعل
             tense = detect_tense(t)
 
+            # PATCH 5 — TimeScopeGate per-verb. Find the nearest
+            # preceding time-adverb in the same clause (no pause-mark
+            # between it and the verb). Past events do NOT inherit
+            # when_future from a future-conditional adverb unless they
+            # are inside that adverb's scope.
+            scoped_time = _find_scoped_time_value(tokens, i, pause_before)
+
+            # PATCH 5 — CommandLamEventMood. LAM_AL_AMR prefix → mark
+            # mood + speech_act so downstream readers can distinguish
+            # jussive command (وَلْيَكْتُب) from indicative present
+            # (يَكْتُبُ).
+            mood_value, speech_act_value = _detect_command_lam_mood(t)
+            # Step C Part 3 — NahyEventMood: لا-النَّاهيَة construction
+            # (وَلَا / فَلَا / لَا + imperfect verb). If LAM_AL_AMR
+            # didn't fire, check whether the prior token is a لا-class
+            # negation HARF in front of an imperfect verb; if so, mark
+            # mood=jussive_prohibition.
+            if not mood_value:
+                _prev_tok = tokens[i - 1] if i > 0 else None
+                _nahy_mood, _nahy_sa = _detect_la_nahy_mood(t, _prev_tok)
+                if _nahy_mood:
+                    mood_value, speech_act_value = _nahy_mood, _nahy_sa
+
             # 5. تَوَقُّع الـ frame مِن verb_frames_loader
             frame_roles: list = []
             try:
@@ -321,11 +522,13 @@ class EventExtractor:
                 patient=patient,
                 patient2=patient2,
                 instrument=instrument,
-                time=time_val or sentence_time_value,
+                time=time_val or scoped_time,
                 location=location,
                 manner=manner,
                 tense=tense,
-                time_value=sentence_time_value,
+                mood=mood_value,
+                speech_act=speech_act_value,
+                time_value=scoped_time,
                 frame_observed=frame_roles,
                 source_of_claim=f"verb_position:{i} + word_class:{t.word_class}",
             )

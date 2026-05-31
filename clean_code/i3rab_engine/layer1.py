@@ -37,6 +37,197 @@ def _strip_diac(s: str) -> str:
     return "".join(c for c in (s or "") if c not in _DIAC)
 
 
+# ── UninflectedVerbContract — جامد verbs (بِئْسَ / نِعْمَ / عَسَى families) ─
+# Diacritic-safe lexical detector (2026-05-29). The MTL has rows for these
+# surfaces but tags them word_class=UNKNOWN, so the lookup hit is
+# unusable; the downstream open-class heuristic then defaults to
+# ISM_MUARAB (or HARF for وَبِئْسَ specifically). Inserting an early
+# lexical certifier closes 8 cases identified in the diacritic-safe
+# MASAQ sweep (Sample + Surah-2 batches).
+#
+# Forms are stored with all linguistic diacritics preserved.
+# Quranic-only marks (ٱ→ا, آ→ا, ٰ, ٓ, ۟) are folded at lookup time
+# to handle Uthmani surface variability (e.g., عَسَى vs عَسَىٰٓ).
+_UNINFLECTED_VERB_FORMS = {
+    # بِئْسَ family — فعل الذم
+    "بِئْسَ", "بِئْسَمَا",
+    "وَبِئْسَ", "وَبِئْسَمَا", "فَبِئْسَ", "فَبِئْسَمَا",
+    "لَبِئْسَ", "وَلَبِئْسَ", "فَلَبِئْسَ",
+    # نِعْمَ family — فعل المدح
+    "نِعْمَ", "نِعِمَّا",
+    "وَنِعْمَ", "فَنِعْمَ", "وَنِعِمَّا", "فَنِعِمَّا",
+    # عَسَى family — فعل الرجاء
+    "عَسَى", "وَعَسَى", "فَعَسَى",
+}
+
+
+def _is_uninflected_verb(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, but with
+    linguistic diacritics preserved) matches a known جامد verb.
+    Diacritic-safe per the project architectural rule: vowel marks
+    are NEVER stripped — only Quranic recitation aids (ٰ, ٓ, ۟) and
+    the wasla/madda letter variants (ٱ, آ) are folded so the analyzer's
+    Uthmani surface matches the MSA lexicon entries."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _UNINFLECTED_VERB_FORMS
+
+
+# ── InterrogPronounContract — اسم استفهام مبني lexicon ──────────────
+# Diacritic-safe lexical detector (2026-05-30). MTL has رows for these
+# surfaces but tags them word_class=UNKNOWN; the ClosedFunctionWordGate
+# then routes them as HARF particles. Classical Arabic grammar treats
+# these as ISM_MABNI (اسم استفهام مبني) — indeclinable interrogative
+# nouns. Inserting an early lexical certifier closes 7 cases identified
+# in the diacritic-safe MASAQ sweep.
+#
+# IMPORTANT — مَنْ / مَا / مِنْ / ذَا are deliberately EXCLUDED from
+# this lexicon. Those surfaces have context-dependent readings
+# (NEG/REL/COND/INTERROG) and need contextual disambiguation, not a
+# static lexicon. They are tracked under the separate وَمَا/مَا family.
+#
+# Linguistic vowel diacritics are preserved. Only Quranic-only marks
+# (ٱ→ا, آ→ا, ٰ, ٓ, ۟) are folded at lookup time (handles e.g.,
+# مَتَى ↔ مَتَىٰ between MASAQ MSA and Quranic Uthmani spellings).
+_INTERROG_PRONOUN_FORMS = {
+    # كَيْفَ family — "how?"
+    "كَيْفَ", "وَكَيْفَ", "فَكَيْفَ",
+    # كَمْ family — "how many/much?"
+    "كَمْ", "وَكَمْ", "فَكَمْ",
+    # لِمَ family — "why?" (لِ + ماَ-interrog elided to لِمَ)
+    "لِمَ", "وَلِمَ", "فَلِمَ",
+    # مَتَى family — "when?"
+    "مَتَى", "وَمَتَى", "فَمَتَى",
+    # أَيْنَ family — "where?"
+    "أَيْنَ", "وَأَيْنَ", "فَأَيْنَ",
+    # أَنَّى family — "how/whence?"
+    "أَنَّى", "وَأَنَّى", "فَأَنَّى",
+}
+
+
+def _is_interrog_pronoun(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, linguistic
+    diacritics preserved) matches a known interrogative-pronoun form
+    (اسم استفهام مبني). Same diacritic-safe pattern as
+    `_is_uninflected_verb`."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _INTERROG_PRONOUN_FORMS
+
+
+# ── ForeignProperNounContract — جَهَنَّم family ──────────────────────
+# Diacritic-safe lexical detector (2026-05-30). MTL has FOREIGN-tagged
+# rows for جَهَنَّم variants but with class=UNKNOWN, so control falls
+# through to the open-class wazn aligner which defaults to ISM_MUARAB
+# with a stretched wazn match (فَفَعَّل). The schema-correct target is
+# AALAM (اسم عَلَم — proper noun). L3 second-pass treats AALAM via the
+# same `_assign_ism_role` path as ISM_MUARAB, so this is purely a
+# label-improvement: L4/L5/L6 are not affected.
+#
+# IMPORTANT — جَهَنَّم has NO verb/relative/adjective alternate reading
+# in Quranic Arabic. The static lexicon is safe; no contextual
+# disambiguation needed (unlike the deliberately-deferred أَعْلَمُ case).
+#
+# Scope: جَهَنَّم variants ONLY. Other foreign nouns observed in MASAQ
+# (إِسْتَبْرَقٍ, سِجِّيلٍ, ٱلتَّنُّورُ) are deliberately NOT in this batch
+# pending per-form safety review.
+_FOREIGN_PROPER_NOUN_FORMS = {
+    # Nominative
+    "جَهَنَّمُ", "وَجَهَنَّمُ", "فَجَهَنَّمُ",
+    # Accusative (also diptote-genitive without PREP — جَهَنَّم is
+    # مَمنوع من الصَّرف so its genitive marker is -َ not -ِ)
+    "جَهَنَّمَ", "وَجَهَنَّمَ", "فَجَهَنَّمَ",
+    # PREP + diptote-genitive (-َ ending on prep variants)
+    "لِجَهَنَّمَ", "بِجَهَنَّمَ",
+}
+
+
+def _is_foreign_proper_noun(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, linguistic
+    diacritics preserved) matches a known foreign proper-noun form
+    in the جَهَنَّم family. Same diacritic-safe pattern as
+    `_is_uninflected_verb`, `_is_interrog_pronoun`, and
+    `_is_comparative_adj`."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _FOREIGN_PROPER_NOUN_FORMS
+
+
+# ── ComparativeAdjectiveContract — اسم تَفْضِيل lexicon ────────────
+# Diacritic-safe lexical detector (2026-05-30). Comparative/superlative
+# nouns on the أَفْعَل/فُعْلَى/أَفْعَى patterns get misclassified as 1st-
+# person-sg IV verbs by the surface heuristic (`_looks_like_verb_by_surface`
+# matches أَ-prefix + ≥4 letters). For أَعْلَمُ specifically the MTL has
+# rows tagged class=FIIL (MASAQ data quirk for the ambiguous أَفْعَلُ
+# pattern), so MTL itself returns the wrong answer. This contract
+# must therefore run BEFORE MTL — the lexicon is exact-vocalized and
+# narrow so the pre-MTL override is safe.
+#
+# IMPORTANT — exact-vocalized lexicon only. No "أَ-prefix → noun"
+# heuristic. Genuine 1st-person verbs (أَكْتُبُ, أَدْعُو, أُحِبُّ) and
+# 3rd-person verbs (يَعْلَمُ, تَعْلَمُونَ) remain unaffected.
+_ADJ_COMP_FORMS = {
+    # أَدْنَى family — "lower/nearer"
+    "أَدْنَى", "وَأَدْنَى", "فَأَدْنَى",
+    # أُخْرَى family — "other" (feminine comparative)
+    "أُخْرَى", "وَأُخْرَى", "فَأُخْرَى",
+    # NOTE — the أَعْلَمُ family (أَعْلَمُ / وَأَعْلَمُ / فَأَعْلَمُ) was
+    # previously here but was REMOVED on 2026-05-30 after the
+    # first-5000-ayah diacritic-safe MASAQ validation revealed that
+    # أَعْلَمُ is genuinely ambiguous in Quranic Arabic:
+    #   • اسم تَفْضِيل: "more/most knowing" (e.g. اللَّهُ أَعْلَمُ)
+    #   • 1st-person sg IV verb: "I know" (e.g. إِنِّى أَعْلَمُ in 2:30)
+    # The static exact-vocalized lexicon cannot disambiguate; including
+    # أَعْلَمُ here introduced 21 new IV→ISM_MUARAB mismatches against
+    # MASAQ. أَدْنَى and أُخْرَى remain because they are unambiguously
+    # comparative-adjective forms with no 1st-person verb reading.
+    # Future work: a contextual disambiguator (preceding إِنِّى/إِنَّا
+    # → IV verb, else ADJ_COMP) would be needed to safely re-add أَعْلَمُ.
+}
+
+
+def _is_comparative_adj(token: str) -> bool:
+    """True if the surface (after NFC + Quranic-mark fold, linguistic
+    diacritics preserved) matches a known اسم تَفْضِيل form. Same
+    diacritic-safe pattern as `_is_uninflected_verb` and
+    `_is_interrog_pronoun`."""
+    import unicodedata as _ud
+    if not token:
+        return False
+    s = _ud.normalize("NFC", token)
+    s = (s.replace("ٱ", "ا")     # wasla alif → alif
+           .replace("آ", "ا")     # alif madda → alif
+           .replace("ٰ", "")      # dagger alif: recitation aid
+           .replace("ٓ", "")      # madd mark: recitation aid
+           .replace("۟", "")      # small high zero: recitation aid
+           .replace("ـ", ""))     # tatweel: visual only
+    return s in _ADJ_COMP_FORMS
+
+
 # Heuristic: verbal wazn prefix → verb aspect
 # Imperfect: starts with يَ/تَ/أَ/نَ (vocalized) + has فْعَل/فْعُل/فْعِل interior
 # Perfect:   starts with فَعَ/فَعِ/فَعُ patterns
@@ -329,6 +520,72 @@ class WordClassClassifier:
         return result
 
     def classify(self, token: str) -> dict:
+        """PATCH 11 wrapper. Calls `_classify_raw` (the original logic
+        unchanged) then applies narrow per-surface overrides for 3 known
+        2:282 misclassifications:
+          • عِندَ        → force class=ISM_MUARAB (locative ظَرف, not HARF)
+          • أَلَّا       → fix wazn=`حرف نصب + لا` (was: حرف تحضيض)
+          • وَأَشْهِدُوٓا → force verb_aspect=CV (was: IV; CSV has CV per MASAQ
+                          but exact-surface miss because of ٓ pause-mark)
+        إِذَا's role is fixed in layer3.py (the L1 class is already correct
+        via PATCH 3E)."""
+        result = self._classify_raw(token)
+        return self._p11_post_classify(token, result)
+
+    def _p11_post_classify(self, token: str, result: dict) -> dict:
+        """Apply PATCH 11 narrow overrides. Reads only the existing
+        result dict + the input surface; no segmenter/MTL changes."""
+        if not token:
+            return result
+        import unicodedata as _ud
+        nfc = _ud.normalize("NFC", token)
+        # Strip diacritics + small alif maddah / sukun / pause marks
+        # so surface-variant matching survives MASAQ orthography.
+        _EXTRA_MARKS = "ًٌٍَُِّْـٰٓۚۖۗۘۙۛۜ۟۠ۢۤۥۦ"
+        stripped = "".join(c for c in nfc if c not in _EXTRA_MARKS)
+        norm = (stripped
+                .replace("ٱ", "ا").replace("أ", "ا")
+                .replace("إ", "ا").replace("آ", "ا"))
+
+        # Override 1: عِندَ is a locative functional noun (ظَرف مَكان),
+        # NOT a حَرف. closed_function_word_gate tags it as HARF for
+        # "relation routing", but L3 then renders it as `class=HARF |
+        # role=حرف` which is linguistically wrong (and L4/L5/L8 lose
+        # the locative signal). Override to ISM_MUARAB so PATCH 4.5's
+        # _is_functional_locative_noun gate assigns role=ظرف مكان.
+        if norm == "عند" and result.get("word_class") == "HARF":
+            result["word_class"] = "ISM_MUARAB"
+            result.setdefault("proof_blockers", []).append(
+                "patch11:inda_locative_noun_override_harf_to_ism"
+            )
+
+        # Override 2: أَلَّا wazn. The CSV row tags wazn=حرف تحضيض from
+        # MASAQ, which is wrong in the 2:282 contexts where أَلَّا is
+        # the assimilation أَن (HARF_NASB) + لا (NAFI). The L1
+        # segmenter already peels it correctly (PATCH 3D); the wazn
+        # label should reflect that.
+        if norm == "الا" and (result.get("wazn") or "") == "حرف تحضيض":
+            result["wazn"] = "حرف نصب + لا"
+            result.setdefault("proof_blockers", []).append(
+                "patch11:alla_wazn_is_subjunc_la_not_tahdid"
+            )
+
+        # Override 3: وَأَشْهِدُوٓا / فَأَشْهِدُوٓا — CV imperative.
+        # MASAQ lists these as aspect=CV (verbs of command), but the
+        # exact-surface lookup misses because the verse spelling has
+        # the small alif maddah ٓ that the CSV row lacks. Without MTL
+        # certifying, verb_form_contract falls back to surface
+        # heuristics and labels them IV (mudāriʿ) because they start
+        # with أَ + sukun. Force CV when surface is one of these.
+        if norm in ("واشهدوا", "فاشهدوا") and result.get("verb_aspect") in ("IV", ""):
+            result["verb_aspect"] = "CV"
+            result.setdefault("proof_blockers", []).append(
+                "patch11:wa_ashhidu_is_imperative_cv_per_masaq"
+            )
+
+        return result
+
+    def _classify_raw(self, token: str) -> dict:
         """Classify a token into a WordClass with proof-theoretic metadata.
 
         Returns dict with:
@@ -394,6 +651,25 @@ class WordClassClassifier:
             pass
 
         # ═════════════════════════════════════════════════════════════
+        # === STEP -0.5: ComparativeAdjectiveContract — اسم تَفْضِيل ═
+        # ═════════════════════════════════════════════════════════════
+        # MASAQ diacritic-safe F3 (2026-05-30): runs BEFORE MTL because
+        # MTL has rows for أَعْلَمُ tagged class=FIIL (MASAQ data quirk
+        # for the ambiguous أَفْعَلُ pattern shared between اسم تَفْضِيل
+        # and 1st-sg IV verb). Without the pre-MTL override, MTL would
+        # short-circuit with the wrong FIIL answer. The lexicon is
+        # exact-vocalized + Quranic-mark fold; linguistic vowel
+        # diacritics are never stripped.
+        if _is_comparative_adj(token):
+            result["word_class"] = "ISM_MUARAB"
+            result["verb_aspect"] = ""
+            result["wazn"] = "اسم تفضيل"
+            result["source"] = "comparative_adjective_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "ComparativeAdjectiveContract:v1"
+            return result
+
+        # ═════════════════════════════════════════════════════════════
         # === STEP 0: MasterTokenLookup — قَبل كُلّ شَيء (MASAQ-backed)
         # ═════════════════════════════════════════════════════════════
         # تَوصيَة المُستَخدِم 2026-05-25 (الحَلّ الشامِل):
@@ -403,7 +679,28 @@ class WordClassClassifier:
             from master_token_lookup import lookup as _mtl_lookup
             _ml = _mtl_lookup(token)
             if _ml and _ml.get("word_class") and _ml["word_class"] != "UNKNOWN":
-                result["word_class"] = _ml["word_class"]
+                # PATCH 3E (2026-05-26) — FunctionalNounIdafaContract.
+                # MASAQ is internally inconsistent for ظُروف + pronoun
+                # forms: it tags بَيْنَكُمْ as word_class=HARF but role=
+                # ADV_PLCE (adverb-of-place — a NOUN function). Treating
+                # word_class as HARF makes L3 say class=HARF which is
+                # linguistically false (ظَرف is an ism, not a particle).
+                # When MASAQ says HARF + locative-noun role, override
+                # word_class to ISM_MUARAB. Keep MASAQ's role/case for
+                # downstream layers.
+                _LOCATIVE_NOUN_ROLES = {
+                    "ADV_PLCE",      # adverb of place (ظَرف مَكان)
+                    "ADV_TIME",      # adverb of time (ظَرف زَمان)
+                }
+                _ml_word_class = _ml["word_class"]
+                _ml_role = _ml.get("role", "")
+                if _ml_word_class == "HARF" and _ml_role in _LOCATIVE_NOUN_ROLES:
+                    _ml_word_class = "ISM_MUARAB"
+                    result.setdefault("proof_blockers", []).append(
+                        f"masaq_harf_overridden_to_ism: role={_ml_role} "
+                        f"(ظَرف is a noun, not a particle)"
+                    )
+                result["word_class"] = _ml_word_class
                 result["source"] = _ml["source"]
                 if _ml.get("root"):
                     result["root"] = _ml["root"]
@@ -426,6 +723,52 @@ class WordClassClassifier:
             result["proof_kind"] = "Zero"
             result["proof_contract"] = "empty_input"
             result["proof_blockers"] = ["no_input"]
+            return result
+
+        # === STEP 0.5: UninflectedVerbContract — جامد verb lexicon ===
+        # MASAQ diacritic-safe F3 (2026-05-29): MTL has بِئْسَ/نِعْمَ/عَسَى
+        # family rows tagged class=UNKNOWN. Without an early certifier,
+        # control falls into the open-class heuristic (→ ISM_MUARAB) or
+        # ClosedFunctionWordGate (→ HARF for وَبِئْسَ specifically). The
+        # lexicon match is exact-vocalized with Quranic-only mark folds
+        # ONLY — linguistic vowel diacritics are never stripped.
+        if _is_uninflected_verb(token):
+            result["word_class"] = "FIIL"
+            result["verb_aspect"] = "PV"
+            result["wazn"] = "فعل جامد"
+            result["source"] = "uninflected_verb_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "UninflectedVerbContract:v1"
+            return result
+
+        # === STEP 0.6: InterrogPronounContract — اسم استفهام مبني ===
+        # MASAQ diacritic-safe F3 (2026-05-30): MTL hits these surfaces
+        # with class=UNKNOWN, so they fall into ClosedFunctionWordGate
+        # and get routed as HARF. Classical grammar treats كَيْفَ، كَمْ،
+        # لِمَ، مَتَى، أَيْنَ، أَنَّى as ISM_MABNI (اسم استفهام مبني).
+        # Lexicon excludes مَنْ/مَا/مِن/ذَا — those have ambiguous
+        # readings and need contextual disambiguation, not static lookup.
+        if _is_interrog_pronoun(token):
+            result["word_class"] = "ISM_MABNI"
+            result["source"] = "interrog_pronoun_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "InterrogPronounContract:v1"
+            return result
+
+        # === STEP 0.7: ForeignProperNounContract — جَهَنَّم family ===
+        # MASAQ diacritic-safe F3 (2026-05-30): MTL has FOREIGN-tagged
+        # rows for جَهَنَّم variants but class=UNKNOWN. Without an early
+        # certifier, the open-class wazn aligner defaults to ISM_MUARAB
+        # with a stretched فَفَعَّل wazn. The schema-correct target is
+        # AALAM (اسم عَلَم). L3 routes AALAM via the same `_assign_ism_role`
+        # path as ISM_MUARAB, so this is purely a label improvement —
+        # L4/L5/L6 are unaffected. Scope: جَهَنَّم variants ONLY.
+        if _is_foreign_proper_noun(token):
+            result["word_class"] = "AALAM"
+            result["wazn"] = "اسم أعجمي"
+            result["source"] = "foreign_proper_noun_lexicon"
+            result["proof_kind"] = "Certificate"
+            result["proof_contract"] = "ForeignProperNounContract:v1"
             return result
 
         plain = _strip_diac(token)

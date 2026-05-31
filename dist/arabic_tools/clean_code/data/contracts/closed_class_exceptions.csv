@@ -1,4 +1,0 @@
-stripped_form,mode,exact_form,actual_split,note
-لله,exclude,,HARF_JARR:لِ|JALALAH:اللَّهِ,fused token (لِ + اللَّه) — لا يجب أن يدخل قائمة الحروف المجرَّدة لئلا يطغى على اسم الجلالة
-رب,exact_only,رُبَّ,,رُبَّ حرف جر شبيه بالزائد بِضمّة وشدّة؛ رَبّ بِفتحة اسم — لا يجوز تجريد التطابق
-ال,exclude,,HARF_TARIF:ال,أداة التعريف — تعامَل في الـ normalizer لا في القائمة المغلقة

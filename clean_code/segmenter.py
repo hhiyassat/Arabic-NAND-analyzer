@@ -508,9 +508,22 @@ def _rule_conjunction(st: _State) -> _State:
     rest = "".join(rest_chars)
     if _count_letters(rest) < _MIN_STEM_LETTERS:
         return st
-    # First-consonant-sukun check: noun-marker, refuse CONJ strip
+    # First-consonant-sukun check: noun-marker, refuse CONJ strip.
+    # PATCH 1 (2026-05-26) — surgical exception for lam-al-amr:
+    # if the rest starts with لْ + (يَ/تَ/نَ/أَ), it's a jussive command
+    # construction (وَلْيَكْتُب, فَلْيَكْتُبْ etc.), not a noun. Allow CONJ
+    # peel so the lam_al_amr rule downstream can recognize it.
+    # Counter-examples preserved (still refused):
+    #   فَوْق  → rest_chars[0]=و, not ل → still refused
+    #   وَقْت  → rest_chars[0]=ق, not ل → still refused
     if len(rest_chars) >= 2 and rest_chars[1] == SUKUN:
-        return st
+        is_lam_al_amr_pattern = (
+            len(rest_chars) >= 3
+            and rest_chars[0] == LAM
+            and rest_chars[2] in _IV_PREFIXES_WITH_HAMZA
+        )
+        if not is_lam_al_amr_pattern:
+            return st
     has_tanwin = any(c in s for c in (TANWIN_FATHA, "ٌ", "ٍ"))
     rest_plain = _strip_diacritics(rest)
     # 3-letter noun + tanwin alif: ف/و is likely root letter, not CONJ.
@@ -699,6 +712,18 @@ def _rule_prep_clitic(st: _State) -> _State:
                 if rest_chars_check[k] == ALIF:
                     allowed = False
                     break
+    # PATCH 3B (2026-05-26) — FalseLamPrefixInLexicalStem refusal.
+    # If the residual body's SECOND character is SHADDA, the لِ/بِ/كِ was
+    # part of a lexical stem with internal gemination, not a true clitic.
+    # Targets وَلِيُّهُۥ (lit. وَ + وَلِيّ + هُ): after CONJ-peel of وَ
+    # the body is لِيُّهُۥ; without this check, لِ would be peeled as PREP
+    # leaving stem يُّهُۥ which starts with ي + shadda — structurally
+    # impossible as a fresh stem (shadda must double a non-initial letter).
+    rest_chars_for_shadda = list(rest)
+    if (allowed
+            and len(rest_chars_for_shadda) >= 2
+            and rest_chars_for_shadda[1] == SHADDA):
+        allowed = False
     if allowed:
         # PREP ب/ل + noun (including hamza-initial like بِآيَاتِ، بِأَمْرٍ).
         prefix_form = "".join(chars[:i])
@@ -744,7 +769,12 @@ _MULTI_LETTER_PREPS = (
     "لدى", "لدن", "مع",
     # Locative noun-prepositions (MASAQ consistently splits these + pronoun)
     "تحت", "فوق", "قبل", "بعد", "أمام", "خلف", "وراء",
-    "عند", "بين",
+    "عند",
+    # PATCH 3A (2026-05-26) — بين removed: it is a functional locative
+    # noun (ظَرف), not a HARF JARR. Peeling it as PREP made L3 classify
+    # بَيْنَكُمْ as HARF. After this removal, the pronoun_suffix rule
+    # peels كم/هم/etc., leaving stem=بَيْنَ which the closed-class lexicon
+    # already recognizes correctly.
 )
 
 
@@ -837,9 +867,87 @@ def _rule_article(st: _State) -> _State:
     return st
 
 
+def _normalize_for_closed_class_lookup(s: str) -> str:
+    """Lookup-only normalization for `_is_closed_class` (PATCH 2A).
+
+    The legacy `_CLOSED_CLASS_LEXEMES` set was authored with bare alef ا
+    and yaa ي. Quranic Uthmani uses alef-wasla ٱ and alef-maksura ى at
+    the word start / end. Without this normalization, lookups fail for
+    common forms like ٱلَّذِى, ٱلَّتِى, ٱلَّذَانِ — which the user's
+    PATCH 2 acceptance explicitly targets.
+
+    Mappings (lookup only — does NOT modify the returned token):
+      ٱ (U+0671 alef-wasla)   → ا (U+0627 alef)
+      آ (U+0622 alef-madda)   → ا
+      ى (U+0649 alef-maksura) → ي (U+064A yaa)
+      أ / إ                    → ا
+    """
+    if not s:
+        return s
+    return (s.replace("ٱ", "ا")
+             .replace("آ", "ا")
+             .replace("أ", "ا")
+             .replace("إ", "ا")
+             .replace("ى", "ي"))
+
+
+# PATCH 2B (2026-05-26) — demonstrative-with-addressee compounds CSV cache.
+# ذَلِكُمْ / ذَٰلِكُمْ / تِلْكُمْ / أُولَئِكُمْ etc. are atomic units
+# (addressee marker is part of the demonstrative, not a separate POSS_PRON).
+# The legacy `_CLOSED_CLASS_LEXEMES` only contains singular ذلك / تلك;
+# this CSV fills the gap without inline data growth.
+_DEMONSTRATIVE_COMPOUNDS_CACHE: set | None = None
+
+
+def _load_demonstrative_compounds() -> set:
+    """Lazy CSV loader for demonstrative compounds (PATCH 2B).
+
+    The CSV stores plain forms using bare alef ا. The loader also adds
+    alef-wasla / hamza-alef variants so that `_strip_diacritics()` output
+    (which preserves hamza-on-alef) still matches.
+    """
+    global _DEMONSTRATIVE_COMPOUNDS_CACHE
+    if _DEMONSTRATIVE_COMPOUNDS_CACHE is not None:
+        return _DEMONSTRATIVE_COMPOUNDS_CACHE
+    import csv as _csv
+    from pathlib import Path as _Path
+    out: set = set()
+    path = (_Path(__file__).resolve().parent
+            / "data" / "contracts" / "lists" / "demonstrative_compounds.csv")
+    if path.is_file():
+        with path.open(encoding="utf-8") as f:
+            for row in _csv.DictReader(f):
+                wp = (row.get("word_plain") or "").strip()
+                if not wp:
+                    continue
+                out.add(wp)
+                # Hamza variants (CSV is bare-alef; strip may leave أ)
+                if wp.startswith("ا"):
+                    out.add("أ" + wp[1:])
+                    out.add("إ" + wp[1:])
+    _DEMONSTRATIVE_COMPOUNDS_CACHE = out
+    return out
+
+
 def _is_closed_class(text: str) -> bool:
-    """True if text (after diacritic strip) is a closed-class lexeme."""
-    return _strip_diacritics(text) in _CLOSED_CLASS_LEXEMES
+    """True if text (after diacritic strip + lookup normalization) is a
+    closed-class lexeme.
+
+    PATCH 2A (2026-05-26): added `_normalize_for_closed_class_lookup` so
+    forms like ٱلَّذِى resolve via the legacy set which stores ا/ي.
+
+    PATCH 2B (2026-05-26): consults `demonstrative_compounds.csv` so
+    ذَٰلِكُمْ / تِلْكُمْ etc. are recognized as atomic units (no
+    POSS_PRON peel of the addressee marker).
+    """
+    plain = _strip_diacritics(text)
+    plain_norm = _normalize_for_closed_class_lookup(plain)
+    if plain in _CLOSED_CLASS_LEXEMES or plain_norm in _CLOSED_CLASS_LEXEMES:
+        return True
+    compounds = _load_demonstrative_compounds()
+    if plain in compounds or plain_norm in compounds:
+        return True
+    return False
 
 
 def _rule_future_particle(st: _State) -> _State:
@@ -1033,9 +1141,13 @@ def _rule_iv_prefix(st: _State) -> _State:
     Singular IV verbs (يَشَاءُ، يَقُولُ) are NOT caught — they're handled
     downstream by wazn_matcher's variant pipeline.
     """
-    # Refuse if any blocking prefix was already stripped
+    # Refuse if any blocking prefix was already stripped.
+    # PATCH 1 (2026-05-26): added LAM_AL_AMR — when the jussive command
+    # particle was peeled, the verb's يَ/تَ/نَ/أَ stays attached to the
+    # stem (the mood is already determined; over-peeling produces a
+    # noisy 3-segment prefix list that downstream code doesn't expect).
     for _, tag in st.prefixes:
-        if tag in {"DET", "IMPERF_PREF"}:
+        if tag in {"DET", "IMPERF_PREF", "LAM_AL_AMR"}:
             return st
     s = st.body
     if len(s) < 4:
@@ -1051,6 +1163,15 @@ def _rule_iv_prefix(st: _State) -> _State:
     plain = _strip_diacritics(s)
     # Proper-noun denylist refusal: yaḥyā, etc.
     if plain in _NO_STRIP_PROPER_NOUNS:
+        return st
+    # PATCH 2C (2026-05-26) — past-2nd-person hard block.
+    # Words ending in تم / تما / تن (perfective 2-person subject suffixes)
+    # cannot also start with imperfect prefix تَ/يَ/نَ/أَ. Form VI past
+    # tokens like تَدَايَنتُم and تَبَايَعْتُمْ otherwise get the leading
+    # تَ wrongly peeled as IMPERF_PREF.
+    # نا / وا are NOT included (they are ambiguous past/imperfect plural).
+    _PAST_2P_UNAMBIGUOUS = ("تم", "تما", "تن")
+    if any(plain.endswith(suf) for suf in _PAST_2P_UNAMBIGUOUS):
         return st
     has_verb_ending = any(plain.endswith(m) for m in _VERB_SUBJECT_MARKERS_PLAIN)
     # Tanwin refusal: word ending in ـاً/ـٌ/ـٍ is an indefinite noun.
@@ -1271,6 +1392,18 @@ def _rule_pronoun_suffix(st: _State) -> _State:
         # but allow ≥2 when shadda-assim is present (covers أَنَّهُ → أن + ه).
         one_letter_threshold = 2 if has_shadda_assim else 3
         if n_letters == 1 and _count_letters(s) - n_letters < one_letter_threshold:
+            continue
+        # PATCH 3C (2026-05-26) — DualVerbSuffixContract.
+        # Refuse peeling نَا as POSS_PRON when:
+        #   (a) IMPERF_PREF was already peeled (we're inside an imperfect verb),
+        #   (b) the residual stem would have < 3 letters (verb body too short).
+        # Target: يَكُونَا (يَ + كُونَا). Without this guard, نَا is peeled
+        # as POSS_PRON leaving stem=كُو (2 letters, semantically invalid).
+        # نَا here is the dual subject marker (after deletion of nūn), not
+        # the 1st-pl possessive pronoun.
+        if (suf == "نا"
+                and has_iv_prefix
+                and _count_letters(s) - n_letters < 3):
             continue
         # Refuse 1-letter pronoun strip when the last consonant has shadda
         # AND the word ends in a case-marker damma/kasra (النَّبِيُّ).
@@ -1599,9 +1732,69 @@ class SegmentationResult:
         return "".join(self.prefixes) + self.stem + "".join(self.suffixes)
 
 
+def _rule_lam_al_amr(st: _State) -> _State:
+    """PATCH 1 — Strip jussive command particle لْ (lam al-amr).
+
+    Pattern after conjunction strip: لْ + (يـ/تـ/نـ/أـ) + verb stem
+    Examples from Quran 2:282:
+      وَلْيَكْتُب → conjunction(وَ) + lam_al_amr(لْ) + stem يَكْتُب
+      فَلْيَكْتُبْ → conjunction(فَ) + lam_al_amr(لْ) + stem يَكْتُبْ
+      وَلْيُمْلِلِ → conjunction(وَ) + lam_al_amr(لْ) + stem يُمْلِلِ
+      فَلْيُمْلِلْ → conjunction(فَ) + lam_al_amr(لْ) + stem يُمْلِلْ
+      وَلْيَتَّقِ → conjunction(وَ) + lam_al_amr(لْ) + stem يَتَّقِ
+
+    Strict requirements (PATCH 1 scope — kasra-form lam-al-amr is OUT
+    OF SCOPE for this patch):
+      1. lam must carry SUKUN (لْ). This prevents the rule from firing on:
+         - وَلِيّ (لِ with kasra — lexical, handled by future PATCH 3)
+         - لِسانٌ, لَيلٌ (لِ/لَ at word start — different lexical roots)
+      2. The lam must be followed by an imperfect-prefix letter (ي/ت/ن/أ)
+         carrying a vowel.
+      3. The verb body after stripping must be ≥ 3 letters.
+      4. May fire only after CONJ has been peeled (or with no prior
+         prefix). Refuses if any non-CONJ prefix is present.
+
+    The IV prefix (يَ/تَ/نَ/أَ) is intentionally LEFT attached to the
+    stem — _rule_iv_prefix is extended in this PATCH to refuse firing
+    when LAM_AL_AMR was already peeled (the verb mood is already
+    determined).
+    """
+    # Refuse if a non-CONJ prefix was already stripped.
+    for _, tag in st.prefixes:
+        if tag != "CONJ":
+            return st
+    s = st.body
+    chars = list(s)
+    # Need: ل + ْ + (ي/ت/ن/أ) + diacritic + at least 2 more letters.
+    if len(chars) < 5:
+        return st
+    if chars[0] != LAM:
+        return st
+    if chars[1] != SUKUN:
+        return st
+    if chars[2] not in _IV_PREFIXES_WITH_HAMZA:
+        return st
+    if chars[3] not in DIACRITICS:
+        return st
+    # The remaining stem (chars[2:]) must be a viable verb body (≥3 letters).
+    rest = "".join(chars[2:])
+    if _count_letters(rest) < 3:
+        return st
+    # Peel just the لْ — the IV-prefix-letter stays attached to the stem.
+    pref = "".join(chars[:2])  # "لْ"
+    st.body = rest
+    st.add_prefix(pref, "LAM_AL_AMR", "lam_al_amr")
+    return st
+
+
 # === Pipeline ===
+# PATCH 1 (2026-05-26): lam_al_amr inserted immediately after conjunction,
+# so the وَ/فَ peels first, then لْ is recognized on the remaining body.
+# Runs BEFORE iv_prefix so iv_prefix's refuse-set (which now blocks
+# when LAM_AL_AMR is present) can prevent over-peeling of the verb's يَ.
 _PREFIX_RULES = [
     ("conjunction",            _rule_conjunction),
+    ("lam_al_amr",             _rule_lam_al_amr),  # PATCH 1
     ("vocative_particle",      _rule_vocative_particle),
     ("interrog_alif",          _rule_interrog_alif),
     ("emphatic_lam",           _rule_emphatic_lam),
@@ -1663,11 +1856,22 @@ def segment(text: str, *, normalize_input: bool = True) -> SegmentationResult:
     if assim is not None:
         if len(assim) == 2:
             seg1, seg2 = assim
+            # PATCH 3D (2026-05-26) — AllaCompoundContract.
+            # Per-entry tag map: most 2-segment assimilations are PREP+stem
+            # (e.g., مما = مِن + ما where مِن is HARF_JARR), but أَلَّا
+            # is أَن + لا where أَن is HARF_NASB (subjunctive particle),
+            # NOT a preposition. Tag accordingly.
+            _ASSIM_FIRST_SEG_TAG = {
+                "ألا": "HARF_NASB",  # أَن + لا (subjunctive negation)
+                # All other entries default to PREP (existing behavior)
+            }
+            plain_for_tag = _strip_diacritics(norm)
+            first_tag = _ASSIM_FIRST_SEG_TAG.get(plain_for_tag, "PREP")
             return SegmentationResult(
                 original=text, normalized=norm,
                 prefixes=[seg1], stem=seg2, suffixes=[],
-                prefix_tags=["PREP"], suffix_tags=[],
-                audit=[f"assimilation:{seg1}+{seg2}"],
+                prefix_tags=[first_tag], suffix_tags=[],
+                audit=[f"assimilation:{seg1}+{seg2}:{first_tag}"],
             )
         elif len(assim) == 3:
             seg1, seg2, seg3 = assim
@@ -1794,6 +1998,14 @@ def _rule_pronoun_suffix_multi_only(st: _State) -> None:
             continue
         n_letters = len(suf)
         if _count_letters(s) - n_letters < _MIN_STEM_LETTERS:
+            continue
+        # PATCH 3C (2026-05-26) — DualVerbSuffixContract (phase-2 mirror).
+        # Same guard as in _rule_pronoun_suffix: don't peel نَا as POSS_PRON
+        # when IMPERF_PREF was peeled and residual would be < 3 letters.
+        # يَكُونَا (dual jussive) keeps نَا attached as dual marker.
+        if (suf == "نا"
+                and has_iv_prefix
+                and _count_letters(s) - n_letters < 3):
             continue
         stem, suffix = _split_at_letter_index_from_end(s, n_letters)
         st.body = stem

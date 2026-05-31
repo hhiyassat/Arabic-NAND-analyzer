@@ -35,6 +35,11 @@ class Event:
     manner: Optional[str] = None                   # الكَيفيَّة (حال)
     result: Optional[str] = None                   # النَّتيجَة
     tense: str = "unknown"                          # past / present / future / command
+    # PATCH 5 (2026-05-27) — mood + speech_act distinguish jussive
+    # command (لام الأمر) from plain indicative present, even when the
+    # surface tense is "present". Default "" = unspecified.
+    mood: str = ""                                  # indicative / jussive_command / jussive_prohibition / ""
+    speech_act: str = ""                            # command / request / declarative / ""
     time_value: Optional[str] = None               # قِيمَة الزَّمَن المُحَدَّدَة (yesterday، now...)
     frame_observed: list = field(default_factory=list)  # الأَدوار المُشاهَدَة مِن verb_frames
     # ─── MC metadata ────────────────────────────

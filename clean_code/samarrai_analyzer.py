@@ -120,6 +120,17 @@ def _lookup_in_volume(volume_module, word: str, volume_num: int,
         # مَصدَر العَقد + الصَّفّ
         source_row = f"volume{volume_num}/{rec.get('source_file', '')}:topic={rec.get('topic_id', '')}"
 
+        # MAANI Batch B (2026-05-29) — AuthorPositionToProofKind.
+        # Exact-match downgrade only: when Samarrai explicitly marks a row
+        # as a view he *reports* (does not endorse), emit the claim as
+        # Hypothesis rather than Certificate. Every other value of
+        # author_position — "preferred", empty, em-dash, or any corruption
+        # (e.g. a surah:ayah string that landed in the wrong column) —
+        # falls through to the match-type's default proof_kind (fail-open).
+        # No fuzzy matching. No prose parsing. No data repair.
+        row_author = (rec.get("author_position", "") or "").strip()
+        row_proof_kind = "Hypothesis" if row_author == "reported" else proof_kind
+
         claims.append(SamarraiClaim(
             word=word,
             vocalized_form=rec.get("vocalized_form", ""),
@@ -137,7 +148,7 @@ def _lookup_in_volume(volume_module, word: str, volume_num: int,
             confidence=final_conf,
             author_position=rec.get("author_position", ""),
             # MC fields
-            proof_kind=proof_kind,
+            proof_kind=row_proof_kind,
             contract=contract,
             blockers=list(blockers),
             match_type=match_type,
@@ -492,6 +503,67 @@ def _looks_like_verb_pattern(wa: WordAnalysis) -> bool:
             or word.endswith(("تُ", "تَ", "تِ", "نا", "وا")))
 
 
+# PATCH 5.7 (2026-05-28) — WawQasamDisambiguationGuard.
+# Short Quranic imperatives whose plain form (after وَ-strip) doesn't
+# match any of the structural verb-pattern heuristics below. Examples:
+#   قُل (3-letter root with damma on first, sukun on last) — extremely
+#   frequent in Quran but doesn't start with يَ/تَ/نَ/أَ or end with a
+#   verbal suffix.
+_SHORT_IMPERATIVES_WAW_GUARD = {
+    "قُل", "قُلْ", "خُذْ", "خُذ", "كُلْ", "كُل",
+    "قِفْ", "قِف", "رِدْ", "رِد", "نَمْ", "نَم",
+    "هَبْ", "هَب", "عِدْ", "عِد",
+}
+
+
+def _waw_word_residue_is_verb(wa: WordAnalysis) -> bool:
+    """PATCH 5.7 — return True iff the وَ-prefixed token's residue
+    (after stripping the leading وَ/و) looks like a verb form.
+
+    Triggers on:
+      • imperfect prefix (يَ/يُ/تَ/تُ/نَ/نُ/أَ/أُ)
+      • lam-al-amr (residue starts with لْ)
+      • form-VIII / I imperative with hamzat-wasl (ٱ/ا) — but NOT the
+        definite article (residue[1] == 'ل' is whitelisted)
+      • past verb suffixes (ـوا / ـتُمْ / ـتُمَا / ـنَا / ...)
+      • short Quranic imperatives lexicon (قُل، خُذ، كُل، ...)
+
+    Used by `is_sentence_start_with_majroor` to reject false-positive
+    qasam injection on verb-headed verses like وَقُل / وَٱتَّقُوا /
+    وَأَشْهِدُوا / وَٱسْتَشْهِدُوا. Does NOT block real qasam: residues
+    like ٱلشَّمْسِ / الشَّمسِ / ضُحَاهَا fall through (definite-article
+    whitelist or no verb-pattern match).
+    """
+    word = wa.word or ""
+    if word.startswith("وَ"):
+        residue = word[2:]
+    elif word.startswith("و"):
+        residue = word[1:]
+    else:
+        residue = word
+    if not residue:
+        return False
+
+    # Imperfect prefix (mudāriʿ)
+    if residue[:2] in ("يَ","يُ","تَ","تُ","نَ","نُ","أَ","أُ"):
+        return True
+    if residue[:1] in ("ي","ت","ن"):
+        return True
+    # Lam-al-amr verb form
+    if residue.startswith(("لْ",)):
+        return True
+    # Form VIII / I imperative with hamzat-wasl, EXCLUDING definite article ٱل
+    if residue[:1] in ("ٱ","ا") and len(residue) >= 3 and residue[1:2] != "ل":
+        return True
+    # Past-tense person suffixes
+    if residue.endswith(("تُ","تَ","تِ","نا","وا","تُمْ","تُمَا","تُنَّ","تَا","نَ")):
+        return True
+    # Short imperative lexicon
+    if residue in _SHORT_IMPERATIVES_WAW_GUARD:
+        return True
+    return False
+
+
 _WAW_TOPIC_PREFIXES = ("PREP_WAW", "QASAM", "WAW_", "و")
 
 
@@ -550,6 +622,14 @@ def _disambiguate_waw(ta: TextAnalysis) -> None:
 
             elif check == "is_sentence_start_with_majroor":
                 if i == 0 and i + 1 < len(ta.words):
+                    # PATCH 5.7 (2026-05-28) — WawQasamDisambiguationGuard.
+                    # Reject qasam injection when the وَ-word itself is a
+                    # verb. وَ here is عَطف/استئناف, not قَسَم. Targets
+                    # verses like 24:31 «وَقُل لِّلْمُؤْمِنَٰتِ» where the
+                    # next-word kasra (لِّلْمُؤْمِنَٰتِ) was falsely treated
+                    # as a majroor noun signalling qasam.
+                    if _waw_word_residue_is_verb(wa):
+                        continue
                     next_word = ta.words[i + 1].word
                     if next_word.endswith(("ِ", "ٍ", "ي")):
                         chosen_topic = preferred

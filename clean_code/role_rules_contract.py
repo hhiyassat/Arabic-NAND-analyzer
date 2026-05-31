@@ -106,11 +106,55 @@ def _case_def_agreement_with_prev(t, prev, ctx, tokens, i) -> bool:
             and prev.case_id == t.case_id
             and prev.case_id is not None):
         return False
-    pp = _strip_diac(prev.token)
-    tp = _strip_diac(t.token)
+    # Normalize ٱ (U+0671 wasla alif) → ا so Quranic forms like
+    # ٱللَّهِ are correctly recognized as definite (start with ال).
+    # Without this, naat fires for بِسْمِ ٱللَّهِ via both_indef,
+    # masking the correct mudaf-ilayh classification.
+    pp = _strip_diac(prev.token).replace("ٱ", "ا")
+    tp = _strip_diac(t.token).replace("ٱ", "ا")
     both_def = pp.startswith("ال") and tp.startswith("ال")
     both_indef = (not pp.startswith("ال")) and (not tp.startswith("ال"))
-    return both_def or both_indef
+    if not (both_def or both_indef):
+        return False
+    # Chain guard: in indef+indef pairs (both مجرور with no ال), if the
+    # next token is also مجرور, the construct is much more likely an
+    # إضافة chain (e.g. مَٰلِكِ يَوْمِ ٱلدِّينِ) than a nominal-naat. Suppress
+    # naat so rule 9 (mudaf_ilayh) handles t correctly.
+    if both_indef and t.case_id == 3 and tokens and i + 1 < len(tokens):
+        nxt = tokens[i + 1]
+        if getattr(nxt, "case_id", None) == 3:
+            return False
+    # MASAQ F3 (2026-05-29) — gen_cons_marked_as_naat suppressors.
+    # Two narrow predicate guards that close 2-token إضافة pairs the
+    # original chain guard didn't catch.
+    #
+    # Guard A — functional-locative prev heads إضافة.
+    # Locative ظَروف (بَيْنَ، بَعْدَ، عِنْدَ، تَحْتَ، فَوْقَ، قَبْلَ، ...) never
+    # carry نعت adjectives in the same case slot; they head إضافة. The
+    # detector is reused from layer3.py's PATCH 4.5 functional-locative
+    # lexicon (data-driven; no hardcoded list here).
+    try:
+        from i3rab_engine.layer3 import _is_functional_locative_noun
+        if _is_functional_locative_noun(prev):
+            return False
+    except ImportError:
+        pass
+    # Guard B — pronoun-suffix on current signals إضافة, not نعت.
+    # A noun with an attached possessive pronoun (هـ، ها، كَ، كم، نا،
+    # ي، ...) is classically definite-by-possession and is itself مضاف
+    # to the pronoun. Its outer relation to prev is مضاف-إليه, not نعت.
+    # The both_indef branch above looks at surface ال only, so it
+    # misses possessive definiteness; this guard closes that gap.
+    _PRON_SUFFIXES_PLAIN = {
+        "ه", "ها", "هم", "هما", "هن",
+        "ك", "كم", "كما", "كن",
+        "نا", "ي",
+    }
+    for sfx in (getattr(t, "suffixes", None) or []):
+        sfx_str = sfx if isinstance(sfx, str) else (sfx[0] if sfx else "")
+        if _strip_diac(sfx_str) in _PRON_SUFFIXES_PLAIN:
+            return False
+    return True
 
 
 def _majroor_after_noun(t, prev, ctx, tokens, i) -> bool:

@@ -48,6 +48,7 @@ CSV_FILES = [
     ("fail_naib", "fail_naib_meanings.csv"),
     ("mafool_bih", "mafool_bih_meanings.csv"),
     ("mafool_mutlaq", "mafool_mutlaq_meanings.csv"),
+    ("transform_verbs", "transform_verbs_meanings.csv"),
 ]
 
 
