@@ -175,6 +175,17 @@ class ReasoningEngine:
             return Query(raw_text=question, query_type="what_event",
                          trigger_word="ماذا+حَدَث", answer_strategy="find_events",
                          is_in_scope=True)
+        # Closure Batch A: «ما جَواب الشَّرط؟» compound routing.
+        # The CSV trigger «جَواب_الشَّرط» is multi-word; q_words splits
+        # on whitespace so the underscore form never matches. This
+        # handler routes the compound form directly.
+        has_jawab = "جواب" in q_words
+        has_shart = "الشرط" in q_words
+        if has_ma_or_madha and has_jawab and has_shart:
+            return Query(raw_text=question, query_type="conditional_answer",
+                         trigger_word="ما+جَواب+الشَّرط",
+                         answer_strategy="find_jawab_shart",
+                         is_in_scope=True)
         # ────────────────────────────────────────────────────────
 
         for t in types:
@@ -239,6 +250,8 @@ class ReasoningEngine:
             "find_transformation": self._find_transformation,
             # PATCH 6 — new strategy for "ماذا حَدَث؟" (events, not patients)
             "find_events": self._find_events,
+            # Closure Batch A — L8 consumption of Phase 5 Batch B edges
+            "find_jawab_shart": self._find_jawab_shart,
         }
         strategy = strategy_map.get(query.answer_strategy)
         if not strategy:
@@ -634,6 +647,62 @@ class ReasoningEngine:
             query=query, kind="Certificate",
             contract=self.CONTRACT_ANSWER,
             answer=" / ".join(causes),
+        )
+
+    def _find_jawab_shart(self, query: Query, graph: MeaningGraph, question: str) -> Answer:
+        """Find the jawab of the conditional from existing L4/L7 edges
+        (jawab_shart_of). Pure consumption — no token scan, no Phase 5
+        call, no new edge creation. Certificate-or-Zero only: never
+        emit Hypothesis from this strategy.
+        """
+        jawab_edges = [e for e in graph.edges if e.edge_type == "jawab_shart_of"]
+        if not jawab_edges:
+            return Answer(
+                query=query, kind="Zero",
+                contract=self.CONTRACT_ANSWER,
+                rejected_reason="لا جَواب شَرط مَكشوف في شَبَكَة المَعنى.",
+            )
+
+        cert_edges = [e for e in jawab_edges
+                      if getattr(e, "proof_kind", "") == "Certificate"]
+        if not cert_edges:
+            return Answer(
+                query=query, kind="Zero",
+                contract=self.CONTRACT_ANSWER,
+                rejected_reason="حافَة jawab_shart_of مَوجودَة لَكِنَّها ليسَت Certificate.",
+            )
+        edge = cert_edges[0]
+
+        jawab_node = graph.get_node(edge.source)
+        cond_node = graph.get_node(edge.target)
+        if not (jawab_node and cond_node):
+            return Answer(
+                query=query, kind="Zero",
+                contract=self.CONTRACT_ANSWER,
+                rejected_reason="عُقَد جَواب الشَّرط غَير مَوجودَة في الشَّبَكَة.",
+            )
+
+        tool_node = None
+        for e in graph.edges:
+            if e.edge_type == "condition_tool_of" and e.target == edge.target:
+                tool_node = graph.get_node(e.source)
+                break
+
+        marker = getattr(edge, "operator", "") or ""
+
+        parts = [f"جَواب الشَّرط هو {jawab_node.surface}",
+                 f"مَربوط بِفِعل الشَّرط {cond_node.surface}"]
+        if tool_node and getattr(tool_node, "surface", ""):
+            parts.append(f"أَداة الشَّرط: {tool_node.surface}")
+        if marker == "فَ":
+            parts.append(f"مَع فاء الجَواب {marker}")
+        answer_text = "، ".join(parts) + "."
+
+        return Answer(
+            query=query, kind="Certificate",
+            contract=self.CONTRACT_ANSWER,
+            answer=answer_text,
+            evidence=[getattr(edge, "edge_id", "")],
         )
 
 

@@ -29,4 +29,6 @@ priority,trigger_word,query_type,in_scope,answer_strategy,description
 28,تَحَوَّلَ,transformation,true,find_transformation,التحول
 29,تحول,transformation,true,find_transformation,التحول
 30,صار_إلى,transformation,true,find_transformation,صار إلى
+31,جَواب_الشَّرط,conditional_answer,true,find_jawab_shart,جَواب الشَّرط — يَستَهلِك الحافَة jawab_shart_of المَوجودَة
+32,جواب_الشرط,conditional_answer,true,find_jawab_shart,جواب الشرط — تَطبيع بِلا تَشكيل
 
