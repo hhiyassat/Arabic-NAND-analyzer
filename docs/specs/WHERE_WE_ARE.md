@@ -1,8 +1,9 @@
 # WHERE WE ARE — Arabic Quranic Analyzer
 
 > **Type:** Living status document. The single "where we are" map for the whole project.
-> **Last updated:** 2026-05-31 (post-PR-#1 merge)
-> **HEAD on `main`:** `9f5033b` (merge commit) — preserves gated history of all batches below.
+> **Last updated:** 2026-06-14 (project MVP-closed; final closure report committed)
+> **HEAD on `main`:** advanced to the closure-report commit. Closure cycle on `main`: `1ca6306` → `0854059` → `8690586` → `76c8c3d` → `a3d2cac` → `01ab3b9` → this commit.
+> **Project status:** **MVP-CLOSED.** See `PROJECT_CLOSURE_REPORT.md` and `PROJECT_CLOSURE_BACKLOG.md`.
 
 This file is updated after **every** completed batch, report, merge, or major decision. It is the operational map Claude must consult before recommending any next step.
 
@@ -51,20 +52,24 @@ The broad production-path branch (`patch0-production-path-trace`) was merged int
 - ✅ `main` contains the gated history of every batch listed in §3.
 - ✅ `patch0-production-path-trace` still exists as a preserved branch (not deleted post-merge).
 - ✅ Working tree on `main` is clean except for `.claude/` (untracked, intentionally never committed).
-- ✅ All 5 active test suites green on `main` at the merge commit:
+- ✅ All 6 active test suites green on `main` at the closure commit:
+  - `test_project_closure_batch_a_l8_shart_jawab.py` — 10/10
   - `test_shart_jawab_relations_pilot_2_282.py` — 11/11
   - `test_production_path_segmentation.py` — 159/159
   - `test_maani_batch_b_author_position.py` — 6/6
   - `test_maani_batch_c2_afal_tahwil_hygiene.py` — 20/20
   - `test_phase4_certificate_reevaluation.py` — 12/12
-  - **Total: 208/208**
+  - **Total: 218/218**
 
 ### Tracks merged into `main`
 
 | Track | Status | Latest commit on track |
 |---|---|---|
+| **Closure Batch A** (L8 SHART_JAWAB consumer) | Closed | `76c8c3d` (report) |
+| **Closure Batch B** (2:282 final audit) | Closed | `a3d2cac` (report) |
+| **Closure Batch C** (closure backlog) | Closed | `01ab3b9` (backlog doc) |
 | **Phase 5 Batch B** (relation/clause wiring) | Closed | `a715cb3` (report) |
-| **SHART_JAWAB pilot for 2:282** | Implemented (under Batch B) | `236a885` |
+| **SHART_JAWAB pilot for 2:282** | Implemented (under Phase 5 Batch B) | `236a885` |
 | **MAANI Batch C2** (AFAL_TAHWIL hygiene/migration) | Closed | `05a7f25` (report) |
 | **MAANI Batch B** (author_position downgrade) | Closed | `63438ec` |
 | **MASAQ F3** (classification + lookup fixes) | Multiple commits; foundational | `c66b559` and others |
@@ -133,9 +138,11 @@ Surah 1 verse-by-verse audit and per-verse fixes (1:1 / 1:4 / 1:6 / 1:7) are in 
 
 ---
 
-## 4. Current gaps (priority order)
+## 4. Gaps — closure status
 
-### Gap 1 — L8 does not yet use the new condition/jawab structure
+> **At MVP closure:** Gap 1 is closed (Closure Batch A), Gap 9 is partially closed (2:282 audit only — Closure Batch B), and Gaps 2 – 8 and 10 are **filed to `PROJECT_CLOSURE_BACKLOG.md`** (Closure Batch C, commit `01ab3b9`). Each backlog entry has a controlled re-opening contract (`why_deferred` / `trigger_for_reopening` / `likely_files` / `invariants_to_preserve` / `next_spec_template`). The gap descriptions below are preserved verbatim from the pre-closure state for historical reference.
+
+### Gap 1 — [CLOSED — Closure Batch A] L8 does not yet use the new condition/jawab structure
 
 **Current:** L4 and L7 know:
 
@@ -160,7 +167,7 @@ But L8's `ما تَسَلسُل الأَحداث؟` answer still renders events 
 
 (structural conditional grouping, NOT tafsir; the answer is purely "X is conditioned by Y per the L4/L7 edges").
 
-### Gap 2 — L5 event scope is still shallow
+### Gap 2 — [FILED TO BACKLOG — C1] L5 event scope is still shallow
 
 **Current:** L5 emits events per verb but does not deeply annotate event scope:
 
@@ -173,13 +180,13 @@ Both `تَدَايَنتُم` and `فَٱكْتُبُوهُ` carry `time=when_fu
 
 **Needed later:** Phase 5 Batch C — event scope derived from clause graph (per the original Phase 5 SPEC §7).
 
-### Gap 3 — L6 resolution remains cautious and weak
+### Gap 3 — [FILED TO BACKLOG — C2] L6 resolution remains cautious and weak
 
 **Current:** Many pronouns and relatives in 2:282 resolve to `بِلا مَرجِع` / Zero (5 such in the current 2:282 run). This is **intentional** (Zero over unsafe guessing) but a known gap.
 
 **Needed later:** Phase 5 Batch D — use Phase 5 clause boundaries to improve safe resolution (relative-clause antecedent search; hidden-subject signals to clause-anchored event agents).
 
-### Gap 4 — L1/L2 segmentation issues remain
+### Gap 4 — [FILED TO BACKLOG — C3] L1/L2 segmentation issues remain
 
 **Known examples:**
 
@@ -193,7 +200,7 @@ Both `تَدَايَنتُم` and `فَٱكْتُبُوهُ` carry `time=when_fu
 - no stripped-diacritic comparison
 - no broad random fixes; only narrow batch-based corrections with SPEC + tests
 
-### Gap 5 — L3 i3rab / classification still has weak roles
+### Gap 5 — [FILED TO BACKLOG — C3] L3 i3rab / classification still has weak roles
 
 **Known issue family:** false FIIL, false HARF, weak roots / wazn / roles. Examples visible in 2:282 output:
 
@@ -203,7 +210,7 @@ Both `تَدَايَنتُم` and `فَٱكْتُبُوهُ` carry `time=when_fu
 
 Future work must be **batch-based, not random** (one false-role family per SPEC).
 
-### Gap 6 — conditional tools beyond the first إِذَا are not implemented
+### Gap 6 — [FILED TO BACKLOG — C4] conditional tools beyond the first إِذَا are not implemented
 
 **Do not claim general SHART coverage yet.** SHART_JAWAB Batch B pilot covers exactly **one** construction (first إِذَا in 2:282).
 
@@ -223,7 +230,7 @@ Future families requiring their own SPEC + RULE_LOCK (each):
 
 Each requires Phase 5's own `ConditionalScopeContract` to extend first; then a SHART_JAWAB-style sub-pilot.
 
-### Gap 7 — other relation families are missing
+### Gap 7 — [FILED TO BACKLOG — C5] other relation families are missing
 
 Future L4 relation families that the analyzer does not yet expose:
 
@@ -238,7 +245,7 @@ Future L4 relation families that the analyzer does not yet expose:
 - العَطف البِنيَويّ (structural conjunction)
 - التَّوكيد (emphasis — partial; `tawkid` exists in some places but not as L4 edge)
 
-### Gap 8 — MAANI still needs directed, not random, expansion
+### Gap 8 — [FILED TO BACKLOG — C6] MAANI still needs directed, not random, expansion
 
 MAANI (Samarrai's «معاني النحو») should expand **only** when it supports a concrete relation/reasoning gap.
 
@@ -247,7 +254,7 @@ MAANI (Samarrai's «معاني النحو») should expand **only** when it supp
 - ✓ Prefer: one fact → one proper semantic home.
 - ✓ Expansion must follow Vector V4/V5/V6/V7 framing from the handoff document; each Vector is its own batch.
 
-### Gap 9 — Quran-wide validation is not complete
+### Gap 9 — [PARTIAL — 2:282 closed by Closure Batch B audit; broader Quran-wide FILED TO BACKLOG as C7] Quran-wide validation is not complete
 
 **Current:** Pilot / sample / per-batch validation exists (e.g., MAANI C2's sweep test; SHART_JAWAB's single-verse test).
 
@@ -259,7 +266,7 @@ MAANI (Samarrai's «معاني النحو») should expand **only** when it supp
 4. ~1000-ayah sample
 5. Full Quran sweep + golden regression
 
-### Gap 10 — user-facing output layer is still not final
+### Gap 10 — [FILED TO BACKLOG — C8] user-facing output layer is still not final
 
 **Current:** Debug output (`analyze_verse_v3 --all`) is excellent for development. It exposes L1–L8 with explanations.
 
@@ -316,39 +323,17 @@ Any recommendation that fails to answer all 7 questions is rejected.
 
 ---
 
-## 7. Current recommended next step
+## 7. Recommended next step — none. Project is MVP-closed.
 
-**Option A — Phase 5 Batch E SPEC (recommended)**
+There is **no recommended next step**. The project is closed as MVP at the closure commit referenced in the header.
 
-**What:** Make L8 consume the existing L4/L7 condition/jawab relations for 2:282 so that `ما تَسَلسُل الأَحداث؟` can render conditional structure (e.g., `إِذَا تَدَايَنتُم → فَٱكْتُبُوهُ` as a conditional dependency, not a flat sequence).
+Any future work — extending L5 event scope, deepening L6 resolution, stabilizing L1/L2/L3 classifications, adding more conditional tools, opening more relation families, expanding MAANI, running Quran-wide validation, building a user-facing UI — is filed under one of the eight backlog categories C1 – C8 in `docs/specs/PROJECT_CLOSURE_BACKLOG.md`.
 
-**Why this is the recommended next step:**
+To re-open any backlog category, follow that document's "controlled re-opening contract": SPEC → RULE_LOCK → narrow implementation → tests → report. The recommended-next-step policy in §6 above remains binding for any re-opening.
 
-- Closes **Gap 1** (the highest-priority remaining gap).
-- The L4/L7 bridge is already implemented (Batch B closed); L8 consumption is the natural next consumer in Phase 5's planned rollout (Batch E per original Phase 5 SPEC §7).
-- The most visible remaining gap to a project user is that L8 doesn't yet leverage the structural knowledge that L4/L7 already have. Closing this gap makes the architectural payoff of Batch B visible.
-- It is closer to the project aim (auditable reasoning over conditional structure) than opening a new grammar family.
-- It honors the Phase 5 batch-rollout governance — each batch authorized separately under its own SPEC.
+The do-not-open-now list in §5 also remains binding. The five project laws in §1 remain binding.
 
-**Strict scope (for the SPEC, when authorized):**
-
-- SPEC only at first; no implementation.
-- 2:282 first إِذَا only (carries forward SHART_JAWAB's pilot scope).
-- No new L4 relation extraction (Batch B already did that).
-- No MAANI work.
-- No MASAQ work.
-- No L1/L2/L3 changes.
-- No L6 changes.
-- No broad conditional grammar.
-- Reuse Phase 5 isolation discipline: `reasoning_engine.py` would become the next allow-list entry, narrowed and asserted.
-
-**Alternative if you prefer stabilization first:**
-
-**Option B — MASAQ-guided L1/L2/L3 stabilization SPEC for known false classifications**
-
-Close Gap 4 + Gap 5 partially by writing a SPEC that lists, for example, the `تَدَايَنتُم` Form-VI segmentation issue + 2-3 other concrete L3 wazn/role mismatches observed in 2:282. Tighten one family at a time. Strict scope: SPEC only; per-issue test cases; no broad MASAQ sweep.
-
-**Either option requires explicit approval before SPEC drafting begins. Do not start either silently.**
+> **Restated for emphasis:** Closure is not freeze. The project can be re-opened by any future user or agent via the backlog. But until that happens, the project is at rest, and `WHERE_WE_ARE.md` is **not** updated except by an explicit re-opening commit.
 
 ---
 
@@ -381,3 +366,52 @@ Do not say **"finished"** unless **all** of the following are true:
 5. The next step is clearly stated in §7, **or** the user has explicitly requested STOP.
 
 If any of these is missing, the work is **not** finished — it is in-progress. Report it as such.
+
+---
+
+## 10. MVP closure state
+
+> **The Arabic Quranic Analyzer is MVP-CLOSED at the closure commit referenced in the header.**
+
+### 10.1 Closure cycle commits
+
+```
+1ca6306  Document project closure MVP spec draft
+3ad474c  Document current project state and next-step policy
+0854059  Document project closure Batch A L8 rule lock
+8690586  Project closure Batch A: add L8 shart jawab answer
+76c8c3d  Document project closure Batch A implementation report
+a3d2cac  Document project closure Batch B 2:282 final audit report
+01ab3b9  Document project closure Batch C backlog of deferred gaps
+<this>   Document project closure report and update WHERE_WE_ARE for MVP closure
+```
+
+All eight commits by `Hussein Hiyassat <hhiyassat@eqratech.com>`, on `main`, pushed to `origin/main` after this commit lands.
+
+### 10.2 Closure scope
+
+- ✅ **One architectural claim is proven** on the anchor verse 2:282: layered linguistic analysis → graph relations → user-visible structural reasoning with audit trail and ProofKind discipline.
+- ✅ **Five binding laws are honored**: لا إزالة للتشكيل، لا تخزّن ما تستطيع توليده، no silent ProofKind upgrade، Zero preferred over guessing، no tafsir/fiqh.
+- ✅ **Test suite green at 218/218** across six suites.
+- ✅ **All 10 gaps are accounted for**: Gap 1 closed (Batch A), Gap 9 partially closed (Batch B audit), Gaps 2 – 8 and 10 filed to backlog (Batch C).
+- ✅ **One Certificate-grade answer surfaces in L8** for the anchor verse: «جَواب الشَّرط هو فَٱكْتُبُوهُ، مَربوط بِفِعل الشَّرط تَدَايَنتُم، أَداة الشَّرط: إِذَا، مَع فاء الجَواب فَ.»
+
+### 10.3 What closure is NOT
+
+- ❌ Not a claim of universal Quranic grammar coverage.
+- ❌ Not a claim that all 10 gaps were solved (only Gap 1 was).
+- ❌ Not a freeze. Re-opening is contractually defined in `PROJECT_CLOSURE_BACKLOG.md`.
+- ❌ Not a removal of any branch, file, or rule.
+- ❌ Not a relaxation of any of the five project laws.
+
+### 10.4 Closure references
+
+- `docs/specs/PROJECT_CLOSURE_REPORT.md` — the final closure report (full statement).
+- `docs/specs/PROJECT_CLOSURE_BACKLOG.md` — the controlled re-opening register for Gaps 2 – 8 and Gap 10.
+- `docs/specs/PROJECT_CLOSURE_2_282_FINAL_AUDIT_REPORT.md` — the 2:282 audit (Closure Batch B).
+- `docs/specs/PROJECT_CLOSURE_BATCH_A_REPORT.md` — the L8 SHART_JAWAB consumer report (Closure Batch A).
+- `docs/specs/PROJECT_CLOSURE_SPEC_DRAFT.md` (`1ca6306`) — the SPEC that authorized this entire closure cycle.
+
+### 10.5 Final statement
+
+The project is at rest. Future work is contractually addressable. The `WHERE_WE_ARE.md` map will be re-opened only by an explicit re-opening commit.
